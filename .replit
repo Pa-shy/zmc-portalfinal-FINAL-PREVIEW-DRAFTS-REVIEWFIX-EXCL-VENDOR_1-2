@@ -44,7 +44,7 @@ externalPort = 5173
 [deployment]
 deploymentTarget = "vm"
 run = ["php", "-S", "0.0.0.0:5000", "-t", "public", "public/index.php"]
-build = ["bash", "-c", "php artisan config:cache && php artisan route:cache && php artisan view:cache"]
+build = ["bash", "-c", "php artisan route:cache && php artisan view:cache && php artisan config:clear"]
 publicDir = "public"
 
 [userenv]
@@ -54,8 +54,6 @@ SESSION_DRIVER = "database"
 SESSION_SAME_SITE = "none"
 SESSION_SECURE_COOKIE = "true"
 APP_NAME = "Laravel"
-APP_ENV = "local"
-APP_DEBUG = "true"
 APP_URL = "https://ec25d393-35c9-480e-9ff6-5cbaddfac38f-00-ou15qwfsjqgz.worf.replit.dev"
 APP_LOCALE = "en"
 APP_FALLBACK_LOCALE = "en"
@@ -85,3 +83,11 @@ DB_USERNAME = "postgres"
 DB_PASSWORD = "password"
 SESSION_PARTITIONED_COOKIE = "true"
 SESSION_DOMAIN = ""
+
+[userenv.development]
+APP_ENV = "local"
+APP_DEBUG = "true"
+
+[userenv.production]
+APP_ENV = "production"
+APP_DEBUG = "false"
