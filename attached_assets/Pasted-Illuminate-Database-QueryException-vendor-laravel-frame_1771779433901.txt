@@ -1,0 +1,66 @@
+Illuminate\Database\QueryException
+vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+SQLSTATE[42703]: Undefined column: 7 ERROR: column "registrar_reviewed_at" does not exist LINE 1: ...egate from "applications" where "status" = $1 and "registrar... ^ (Connection: pgsql, Host: helium, Port: 5432, Database: heliumdb, SQL: select count(*) as aggregate from "applications" where "status" = registrar_review and "registrar_reviewed_at" is null and "payment_status" != paid and ("assigned_officer_id" is null or "assigned_officer_id" = 3))
+
+LARAVEL
+12.48.1
+PHP
+8.4.16
+UNHANDLED
+CODE 42703
+500
+GET
+https://ec25d393-35c9-480e-9ff6-5cbaddfac38f-00-ou15qwfsjqgz.worf.replit.dev/staff/registrar?_auth_token=262dd74606f929371415f87ce50586a8d1b2b4d9f55ea3fff303763d60f4a30d
+
+Exception trace
+10 vendor frames
+
+App\Http\Controllers\Staff\RegistrarController->dashboard(object(Illuminate\Http\Request))
+app/Http/Controllers/Staff/RegistrarController.php:56
+
+51                ->where('payment_status', '!=', 'paid')
+52                ->where(function($q) use ($user) {
+53                    $q->whereNull('assigned_officer_id')
+54                      ->orWhere('assigned_officer_id', $user->id);
+55                })
+56                ->count(),
+57        ];
+58
+59        // Global Filters logic for the main dashboard list
+60        $query = Application::query()
+61            ->with(['applicant', 'lastActionBy'])
+62            ->withCount('printLogs');
+63
+64        // Concurrency visibility logic
+65        $query->where(function($q) use ($user) {
+66            $q->whereNull('assigned_officer_id')
+67              ->orWhere('assigned_officer_id', $user->id);
+68
+6 vendor frames
+
+App\Http\Middleware\BlockDirectorOperationalRoles->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/BlockDirectorOperationalRoles.php:28
+
+3 vendor frames
+
+App\Http\Middleware\EnsureStaffPortal->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/EnsureStaffPortal.php:43
+
+1 vendor frame
+
+App\Http\Middleware\SetLocale->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/SetLocale.php:25
+
+1 vendor frame
+
+App\Http\Middleware\ZmcGatekeeper->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/ZmcGatekeeper.php:39
+
+1 vendor frame
+
+App\Http\Middleware\AddRequestId->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/AddRequestId.php:16
+
+7 vendor frames
+
+app/Http/Middleware/TokenAuth.php
