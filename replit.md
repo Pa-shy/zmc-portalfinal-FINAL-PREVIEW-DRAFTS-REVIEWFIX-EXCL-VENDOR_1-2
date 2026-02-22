@@ -12,7 +12,7 @@ This is a Laravel 12 PHP application for the Zimbabwe Media Commission portal. I
 ### Tech Stack
 - **Backend**: Laravel 12 (PHP 8.4)
 - **Frontend**: Blade templates with AdminLTE theme, Vite, Tailwind CSS, Bootstrap 5
-- **Database**: SQLite (development) - stored at `database/database.sqlite`
+- **Database**: PostgreSQL (Replit built-in Neon-backed)
 - **Authentication**: Laravel UI with custom staff authentication
 
 ### Directory Structure
