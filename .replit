@@ -46,15 +46,14 @@ localPort = 5173
 externalPort = 5173
 
 [deployment]
-deploymentTarget = "vm"
-run = ["bash", "-c", "PHP_CLI_SERVER_WORKERS=4 php -S 0.0.0.0:5000 -t public public/router.php"]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "php -S 0.0.0.0:${PORT:-5000} -t public public/router.php"]
 build = ["bash", "-c", "php artisan migrate --force && php artisan route:cache && php artisan view:cache && php artisan config:clear"]
 publicDir = "public"
 
 [userenv]
 
 [userenv.shared]
-SESSION_DRIVER = "database"
 SESSION_SAME_SITE = "none"
 SESSION_SECURE_COOKIE = "true"
 APP_NAME = "Laravel"
@@ -74,7 +73,6 @@ SESSION_PATH = "/"
 BROADCAST_CONNECTION = "log"
 FILESYSTEM_DISK = "local"
 QUEUE_CONNECTION = "database"
-CACHE_STORE = "database"
 MAIL_MAILER = "log"
 MAIL_PORT = "2525"
 MAIL_FROM_ADDRESS = "hello@example.com"
@@ -91,7 +89,11 @@ SESSION_DOMAIN = ""
 [userenv.development]
 APP_ENV = "local"
 APP_DEBUG = "true"
+SESSION_DRIVER = "database"
+CACHE_STORE = "database"
 
 [userenv.production]
 APP_ENV = "production"
 APP_DEBUG = "false"
+SESSION_DRIVER = "file"
+CACHE_STORE = "file"
