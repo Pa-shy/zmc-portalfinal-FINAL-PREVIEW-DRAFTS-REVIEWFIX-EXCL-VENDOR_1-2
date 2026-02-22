@@ -43,7 +43,7 @@ externalPort = 5173
 
 [deployment]
 deploymentTarget = "vm"
-run = ["php", "-S", "0.0.0.0:5000", "-t", "public", "public/index.php"]
+run = ["php", "-S", "0.0.0.0:5000", "-t", "public", "public/router.php"]
 build = ["bash", "-c", "php artisan route:cache && php artisan view:cache && php artisan config:clear"]
 publicDir = "public"
 
