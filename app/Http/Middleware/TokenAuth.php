@@ -15,7 +15,9 @@ class TokenAuth
             return $next($request);
         }
 
-        $token = $request->query('_auth_token') ?? $request->header('X-Auth-Token');
+        $token = $request->query('_auth_token')
+            ?? $request->input('_auth_token')
+            ?? $request->header('X-Auth-Token');
 
         if ($token) {
             $data = Cache::get('login_token:' . $token);
@@ -29,6 +31,8 @@ class TokenAuth
 
                 $request->session()->put('_current_auth_token', $token);
                 Cache::put('login_token:' . $token, $data, now()->addHours(8));
+
+                $request->attributes->set('_token_authenticated', true);
             }
         }
 
