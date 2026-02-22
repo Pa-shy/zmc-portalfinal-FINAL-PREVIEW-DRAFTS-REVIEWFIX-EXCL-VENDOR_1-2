@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
+class UserAccessController extends Controller
+{
+    /**
+     * /admin/users
+     *
+     * Landing page that routes users to the dedicated lists.
+     * The user request was to have Public Users and Staff Users in their own lists.
+     */
+    public function index(Request $request)
+    {
+        return redirect()->route('admin.users.staff');
+    }
+
+    /**
+     * Staff users list.
+     */
+    public function staffIndex(Request $request)
+    {
+        return $this->renderList($request, 'staff');
+    }
+
+    /**
+     * Public users list.
+     */
+    public function publicIndex(Request $request)
+    {
+        return $this->renderList($request, 'public');
+    }
+
+    /**
+     * Shared list renderer.
+     */
+    private function renderList(Request $request, string $type)
+    {
+        $q = $request->get('q');
+
+        $base = User::query()
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($qq) use ($q) {
+                    $qq->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%");
+                });
+            })
+            ->where('account_type', $type)
+            ->latest();
+
+        $users = (clone $base)
+            ->paginate(20)
+            ->withQueryString();
+
+        $counts = [
+            'staff'  => User::where('account_type', 'staff')->count(),
+            'public' => User::where('account_type', 'public')->count(),
+        ];
+
+        $title = $type === 'staff' ? 'Staff Users' : 'Public Users';
+
+        return view('admin.users.list', compact('users', 'counts', 'q', 'type', 'title'));
+    }
+
+    public function create()
+    {
+        $roles = Role::orderBy('name')->get();
+        return view('admin.users.create', compact('roles'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:6'],
+            'designation' => ['nullable', 'string', 'max:255'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['string'],
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'designation' => $data['designation'] ?? null,
+            'approved_at' => now(),
+            'approved_by' => auth()->id(),
+            'account_status' => 'active',
+            // Accounts created by Super Admin are STAFF users
+            'account_type' => 'staff',
+        ]);
+
+        $user->syncRoles($data['roles'] ?? []);
+
+        \App\Support\AuditTrail::log('account_created_by_superadmin', $user, ['roles' => $data['roles'] ?? []]);
+
+        return redirect()->route('admin.users.staff')->with('success', 'User created.');
+    }
+
+    public function editAccess(User $user)
+    {
+        $roles = Role::orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+
+        $userRoleNames = $user->roles->pluck('name')->toArray();
+        $userPermNames = $user->permissions->pluck('name')->toArray();
+
+        return view('admin.users.access', compact(
+            'user',
+            'roles',
+            'permissions',
+            'userRoleNames',
+            'userPermNames'
+        ));
+    }
+
+    public function updateAccess(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'password' => ['nullable', 'string', 'min:6'],
+            'designation' => ['nullable', 'string', 'max:255'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['string'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string'],
+        ]);
+
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->designation = $data['designation'] ?? null;
+        if (!empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
+        }
+        $user->save();
+
+        $user->syncRoles($data['roles'] ?? []);
+        $user->syncPermissions($data['permissions'] ?? []);
+
+        \App\Support\AuditTrail::log('user_access_updated', $user, [
+            'roles' => $data['roles'] ?? [],
+            'permissions' => $data['permissions'] ?? []
+        ]);
+
+        return back()->with('success', 'User account and access updated.');
+    }
+
+    public function resetAccount(User $user)
+    {
+        $token = \Illuminate\Support\Str::random(64);
+
+        $user->forceFill([
+            'setup_token' => $token,
+            'account_status' => 'pending_setup',
+            'password' => Hash::make(\Illuminate\Support\Str::random(32)), // Deactivate current password
+        ])->save();
+
+        \App\Support\AuditTrail::log('account_reset_initiated', $user, ['token' => $token]);
+
+        return back()->with('success', 'Account reset initiated. Share the setup link with the user.');
+    }
+}
