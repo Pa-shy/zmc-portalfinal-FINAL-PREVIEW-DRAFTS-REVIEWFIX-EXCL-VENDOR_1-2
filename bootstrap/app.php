@@ -38,13 +38,27 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Director has oversight rights, but must not run operational workflows
             'block.director.operational' => \App\Http\Middleware\BlockDirectorOperationalRoles::class,
+
+            // Token-based auth for iframe cookie bypass
+            'token.auth' => \App\Http\Middleware\TokenAuth::class,
         ]);
 
-        // Global portal guard (maintenance + availability toggles)
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\AddRequestId::class,
+            \App\Http\Middleware\TokenAuth::class,
             \App\Http\Middleware\ZmcGatekeeper::class,
             \App\Http\Middleware\SetLocale::class,
+        ]);
+
+        $middleware->priority([
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \App\Http\Middleware\TokenAuth::class,
+            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \Illuminate\Auth\Middleware\Authorize::class,
         ]);
 
     })

@@ -358,24 +358,24 @@ Route::middleware('auth')->group(function () {
                 ->middleware('module.enabled:notices')
                 ->name('content.index');
             Route::post('/content/notices', [\App\Http\Controllers\Admin\ContentController::class, 'storeNotice'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
-	                ->name('content.notices.store');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
+                        ->name('content.notices.store');
             Route::put('/content/notices/{notice}', [\App\Http\Controllers\Admin\ContentController::class, 'updateNotice'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
-	                ->name('content.notices.update');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
+                        ->name('content.notices.update');
             Route::delete('/content/notices/{notice}', [\App\Http\Controllers\Admin\ContentController::class, 'destroyNotice'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
-	                ->name('content.notices.destroy');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
+                        ->name('content.notices.destroy');
 
             Route::post('/content/events', [\App\Http\Controllers\Admin\ContentController::class, 'storeEvent'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:events'])
-	                ->name('content.events.store');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:events'])
+                        ->name('content.events.store');
             Route::put('/content/events/{event}', [\App\Http\Controllers\Admin\ContentController::class, 'updateEvent'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:events'])
-	                ->name('content.events.update');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:events'])
+                        ->name('content.events.update');
             Route::delete('/content/events/{event}', [\App\Http\Controllers\Admin\ContentController::class, 'destroyEvent'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:events'])
-	                ->name('content.events.destroy');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:events'])
+                        ->name('content.events.destroy');
 
 
             // News (for website)
@@ -383,14 +383,14 @@ Route::middleware('auth')->group(function () {
                 ->middleware('module.enabled:news')
                 ->name('news.index');
             Route::post('/news', [\App\Http\Controllers\Admin\NewsController::class, 'store'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:news'])
-	                ->name('news.store');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:news'])
+                        ->name('news.store');
             Route::put('/news/{news}', [\App\Http\Controllers\Admin\NewsController::class, 'update'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:news'])
-	                ->name('news.update');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:news'])
+                        ->name('news.update');
             Route::delete('/news/{news}', [\App\Http\Controllers\Admin\NewsController::class, 'destroy'])
-	                ->middleware(['role:super_admin|it_admin','module.enabled:news'])
-	                ->name('news.destroy');
+                        ->middleware(['role:super_admin|it_admin','module.enabled:news'])
+                        ->name('news.destroy');
 
             // Complaints & Appeals (from website)
             Route::get('/complaints', [\App\Http\Controllers\Admin\ComplaintsController::class, 'index'])

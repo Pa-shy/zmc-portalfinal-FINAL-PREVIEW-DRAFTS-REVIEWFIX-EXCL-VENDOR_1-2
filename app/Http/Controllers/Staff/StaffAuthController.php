@@ -52,6 +52,12 @@ class StaffAuthController extends Controller
 
         $request->session()->regenerate();
 
+        $loginToken = bin2hex(random_bytes(32));
+        \Illuminate\Support\Facades\Cache::put('login_token:' . $loginToken, [
+            'user_id' => Auth::id(),
+            'role' => $selectedRole,
+        ], now()->addMinutes(2));
+
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
@@ -107,6 +113,8 @@ class StaffAuthController extends Controller
         \App\Support\AuditTrail::log('login_staff', $user, ['role' => $selectedRole]);
 
         $redirectUrl = $this->getRoleDashboardUrl($selectedRole);
+        $separator = str_contains($redirectUrl, '?') ? '&' : '?';
+        $redirectUrl .= $separator . '_auth_token=' . $loginToken;
         return response(
             '<html><head><meta http-equiv="refresh" content="0;url=' . e($redirectUrl) . '"></head>'
             . '<body><p>Redirecting…</p><script>window.location.href="' . e($redirectUrl) . '";</script></body></html>'
