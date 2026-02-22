@@ -1,0 +1,69 @@
+Illuminate\Database\QueryException
+vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+SQLSTATE[42703]: Undefined column: 7 ERROR: column "c" does not exist LINE 1: ...nce" is not null group by "paynow_reference" having "c" > $1 ^ (Connection: pgsql, Host: helium, Port: 5432, Database: heliumdb, SQL: select paynow_reference, COUNT(*) as c from "applications" where "paynow_reference" is not null group by "paynow_reference" having "c" > 1)
+
+LARAVEL
+12.48.1
+PHP
+8.4.16
+UNHANDLED
+CODE 42703
+500
+GET
+https://ec25d393-35c9-480e-9ff6-5cbaddfac38f-00-ou15qwfsjqgz.worf.replit.dev/staff/auditor/payments/paynow?_auth_token=7c626a0b8802eafe0caf48f4e26474d1605c4bea9323beda183b9eef9583c79c
+
+Exception trace
+8 vendor frames
+
+App\Http\Controllers\Staff\AuditorController->paynow(object(Illuminate\Http\Request))
+app/Http/Controllers/Staff/AuditorController.php:318
+
+313        $duplicateRefs = Application::query()
+314            ->selectRaw('paynow_reference, COUNT(*) as c')
+315            ->whereNotNull('paynow_reference')
+316            ->groupBy('paynow_reference')
+317            ->having('c', '>', 1)
+318            ->pluck('paynow_reference')
+319            ->toArray();
+320
+321        return view('staff.auditor.paynow', compact('applications','duplicateRefs'));
+322    }
+323
+324    public function proofs(Request $request)
+325    {
+326        $q = Application::query()->with('applicant')
+327            ->whereNotNull('payment_proof_path');
+328
+329        if ($request->filled('status')) $q->where('proof_status', $request->string('status'));
+330
+8 vendor frames
+
+App\Http\Middleware\EnsureStaffPortal->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/EnsureStaffPortal.php:43
+
+1 vendor frame
+
+App\Http\Middleware\SetLocale->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/SetLocale.php:25
+
+1 vendor frame
+
+App\Http\Middleware\ZmcGatekeeper->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/ZmcGatekeeper.php:39
+
+1 vendor frame
+
+App\Http\Middleware\AddRequestId->handle(object(Illuminate\Http\Request), object(Closure))
+app/Http/Middleware/AddRequestId.php:16
+
+7 vendor frames
+
+app/Http/Middleware/TokenAuth.php
+app/Http/Middleware/TokenAuth.php:39
+
+39 vendor frames
+
+public/index.php
+public/index.php:20
+
+1 vendor frame

@@ -314,7 +314,7 @@ class AuditorController extends Controller
             ->selectRaw('paynow_reference, COUNT(*) as c')
             ->whereNotNull('paynow_reference')
             ->groupBy('paynow_reference')
-            ->having('c', '>', 1)
+            ->havingRaw('COUNT(*) > 1')
             ->pluck('paynow_reference')
             ->toArray();
 

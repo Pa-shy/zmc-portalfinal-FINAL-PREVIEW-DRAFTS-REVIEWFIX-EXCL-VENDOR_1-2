@@ -128,7 +128,7 @@ class ActivityLogRepository
                 ->where('created_at', '>=', $startOfMonth)
                 ->select('user_id', DB::raw('COUNT(*) as count'))
                 ->groupBy('user_id')
-                ->having('count', '>', 5)
+                ->havingRaw('COUNT(*) > 5')
                 ->count(),
             
             'high_waiver_frequency' => ActivityLog::where('action', 'waiver_approved')
