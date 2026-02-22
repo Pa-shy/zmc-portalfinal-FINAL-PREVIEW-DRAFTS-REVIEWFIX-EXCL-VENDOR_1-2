@@ -13,7 +13,7 @@ This is a Laravel 12 PHP application for the Zimbabwe Media Commission portal. I
 - **Backend**: Laravel 12 (PHP 8.4)
 - **Frontend**: Blade templates with AdminLTE theme, Vite, Tailwind CSS, Bootstrap 5
 - **Database**: PostgreSQL (Replit built-in Neon-backed)
-- **Authentication**: Laravel UI with custom staff authentication
+- **Authentication**: Laravel UI with token-based auth for iframe environments
 
 ### Directory Structure
 - `app/` - Application code (Controllers, Models, Services, Middleware)
@@ -51,6 +51,14 @@ php artisan migrate
 ```bash
 php artisan db:seed
 ```
+
+### Authentication Architecture (Iframe Token Auth)
+Since Replit runs apps inside an iframe proxy, browser cookies often don't persist (blocked as third-party cookies). The portal uses a token-based auth workaround:
+- **Login**: StaffAuthController generates a random token, stores user data in Laravel Cache (8hr TTL), and redirects with `?_auth_token=TOKEN`
+- **TokenAuth Middleware**: Registered in web group with priority before Laravel's auth, reads token from URL query or X-Auth-Token header, authenticates user via `Auth::loginUsingId()`
+- **Client-side forwarding**: JavaScript in portal.blade.php and staff.blade.php stores token in localStorage and automatically appends it to all same-origin links, form submissions, fetch(), and XHR requests
+- **Logout**: Clears both server-side cache token and client-side localStorage
+- **Key files**: `app/Http/Middleware/TokenAuth.php`, `bootstrap/app.php` (middleware priority), layout Blade files
 
 ## Recent Changes
 - January 05, 2026: Green theme implementation

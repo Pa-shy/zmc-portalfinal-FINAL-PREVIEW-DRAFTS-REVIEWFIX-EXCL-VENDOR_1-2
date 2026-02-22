@@ -11,10 +11,14 @@ class TokenAuth
 {
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->query('_auth_token');
+        if (Auth::check()) {
+            return $next($request);
+        }
 
-        if ($token && !Auth::check()) {
-            $data = Cache::pull('login_token:' . $token);
+        $token = $request->query('_auth_token') ?? $request->header('X-Auth-Token');
+
+        if ($token) {
+            $data = Cache::get('login_token:' . $token);
 
             if ($data && is_array($data) && isset($data['user_id'])) {
                 Auth::loginUsingId($data['user_id']);
@@ -22,6 +26,9 @@ class TokenAuth
                 if (isset($data['role'])) {
                     $request->session()->put('active_staff_role', $data['role']);
                 }
+
+                $request->session()->put('_current_auth_token', $token);
+                Cache::put('login_token:' . $token, $data, now()->addHours(8));
             }
         }
 

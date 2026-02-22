@@ -377,6 +377,49 @@
       }
     });
   </script>
+  <script>
+  (function(){
+    var p='_auth_token', u=new URLSearchParams(window.location.search), t=u.get(p);
+    if(t) localStorage.setItem(p,t);
+    var s=localStorage.getItem(p);
+    if(!s) return;
+    document.addEventListener('click',function(e){
+      var a=e.target.closest('a');
+      if(!a||!a.href) return;
+      try{
+        var l=new URL(a.href);
+        if(l.origin===window.location.origin && !l.searchParams.has(p)){
+          l.searchParams.set(p,s);
+          a.href=l.toString();
+        }
+      }catch(x){}
+    },true);
+    document.addEventListener('submit',function(e){
+      var f=e.target;
+      if(f.tagName==='FORM' && !f.querySelector('input[name="'+p+'"]')){
+        var i=document.createElement('input');
+        i.type='hidden'; i.name=p; i.value=s;
+        f.appendChild(i);
+      }
+    },true);
+    var origFetch=window.fetch;
+    window.fetch=function(url,opts){
+      if(typeof url==='string' && url.startsWith('/')){
+        var sep=url.indexOf('?')>=0?'&':'?';
+        url+=sep+p+'='+s;
+      }
+      return origFetch.call(this,url,opts);
+    };
+    var origOpen=XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open=function(method,url){
+      if(typeof url==='string' && url.startsWith('/')){
+        var sep=url.indexOf('?')>=0?'&':'?';
+        url+=sep+p+'='+s;
+      }
+      return origOpen.apply(this,arguments);
+    };
+  })();
+  </script>
 </body>
 </html>
 

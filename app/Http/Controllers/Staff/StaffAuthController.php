@@ -56,7 +56,7 @@ class StaffAuthController extends Controller
         \Illuminate\Support\Facades\Cache::put('login_token:' . $loginToken, [
             'user_id' => Auth::id(),
             'role' => $selectedRole,
-        ], now()->addMinutes(2));
+        ], now()->addHours(8));
 
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
@@ -123,13 +123,22 @@ class StaffAuthController extends Controller
 
     public function logout(Request $request)
     {
+        $token = $request->session()->get('_current_auth_token')
+            ?? $request->query('_auth_token');
+        if ($token) {
+            \Illuminate\Support\Facades\Cache::forget('login_token:' . $token);
+        }
+
         Auth::logout();
 
-        $request->session()->forget(['active_staff_role', 'staff_selected_role']);
+        $request->session()->forget(['active_staff_role', 'staff_selected_role', '_current_auth_token']);
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('staff.entry');
+        $url = route('staff.entry');
+        return response(
+            '<html><head></head><body><script>localStorage.removeItem("_auth_token");window.location.href="' . e($url) . '";</script></body></html>'
+        )->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     private function redirectAfterLogin($user, Request $request)
