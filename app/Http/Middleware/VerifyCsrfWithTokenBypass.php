@@ -6,6 +6,11 @@ use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 
 class VerifyCsrfWithTokenBypass extends ValidateCsrfToken
 {
+    protected $except = [
+        'logout',
+        'staff/logout',
+    ];
+
     protected function tokensMatch($request): bool
     {
         if ($request->attributes->get('_token_authenticated')) {

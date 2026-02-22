@@ -46,7 +46,7 @@
     .vertical-menu > *{ position: relative; z-index: 1; }
     .main{ margin-left: 270px; }
     .navbar-brand-box{ padding: 18px 16px; display:flex; gap:10px; align-items:center; border-bottom: 1px solid rgba(255,255,255,.08); justify-content: space-between; }
-    .navbar-brand-box img{ width: 46px; height: 46px; object-fit:contain; border-radius:0; }
+    .navbar-brand-box img{ width: 64px; height: 64px; object-fit:contain; border-radius:0; }
     .logo-text{ display:block; font-weight: 900; font-size: 13px; letter-spacing:.4px; text-align: right; }
     .logo-text span.zimbabwe { color: #000; }
     .logo-text span.media { color: #2e7d32; }
