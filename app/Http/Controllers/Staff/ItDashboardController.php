@@ -92,8 +92,7 @@ class ItDashboardController extends Controller
         // Accreditation trends (monthly last 12 months)
         $accreditationTrend = [];
         if (Schema::hasColumn('applications', 'issued_at')) {
-            $isSqlite   = DB::getDriverName() === 'sqlite';
-            $dateFormat = $isSqlite ? "strftime('%Y-%m', issued_at)" : "DATE_FORMAT(issued_at, '%Y-%m')";
+            $dateFormat = "TO_CHAR(issued_at, 'YYYY-MM')";
             $rows = Application::selectRaw("$dateFormat as ym, COUNT(*) as c")
                 ->whereNotNull('issued_at')
                 ->where('issued_at', '>=', now()->subMonths(11)->startOfMonth())
@@ -109,10 +108,7 @@ class ItDashboardController extends Controller
         $avgProcessingHours = 0;
         if (Schema::hasColumn('applications', 'submitted_at')) {
             try {
-                $isSqlite       = DB::getDriverName() === 'sqlite';
-                $diffExpression = $isSqlite
-                    ? "(strftime('%s', COALESCE(decided_at, approved_at, rejected_at)) - strftime('%s', submitted_at)) / 3600"
-                    : "TIMESTAMPDIFF(HOUR, submitted_at, COALESCE(decided_at, approved_at, rejected_at))";
+                $diffExpression = "EXTRACT(EPOCH FROM (COALESCE(decided_at, approved_at, rejected_at) - submitted_at)) / 3600";
                 $avgProcessingHours = (float) Application::whereNotNull('submitted_at')
                     ->where(function ($q) { $q->whereNotNull('decided_at')->orWhereNotNull('approved_at')->orWhereNotNull('rejected_at'); })
                     ->selectRaw("AVG($diffExpression) as avg_h")
@@ -169,10 +165,9 @@ class ItDashboardController extends Controller
         ];
 
         // Trends for ApexCharts with dynamic range
-        $isSqlite = DB::getDriverName() === 'sqlite';
         $range = $request->input('trend_range', '12_months');
         $startDate = now()->subMonths(11)->startOfMonth();
-        $groupFormat = $isSqlite ? "strftime('%Y-%m', created_at)" : "DATE_FORMAT(created_at, '%Y-%m')";
+        $groupFormat = "TO_CHAR(created_at, 'YYYY-MM')";
         $labelFormat = 'M Y';
         $period = 'months';
         $count = 12;
@@ -180,14 +175,14 @@ class ItDashboardController extends Controller
         switch ($range) {
             case '30_days':
                 $startDate = now()->subDays(29)->startOfDay();
-                $groupFormat = $isSqlite ? "strftime('%Y-%m-%d', created_at)" : "DATE_FORMAT(created_at, '%Y-%m-%d')";
+                $groupFormat = "TO_CHAR(created_at, 'YYYY-MM-DD')";
                 $labelFormat = 'd M';
                 $period = 'days';
                 $count = 30;
                 break;
             case '90_days':
                 $startDate = now()->subDays(89)->startOfDay();
-                $groupFormat = $isSqlite ? "strftime('%Y-%m-%d', created_at)" : "DATE_FORMAT(created_at, '%Y-%m-%d')";
+                $groupFormat = "TO_CHAR(created_at, 'YYYY-MM-DD')";
                 $labelFormat = 'd M';
                 $period = 'days';
                 $count = 90;
@@ -244,10 +239,7 @@ class ItDashboardController extends Controller
         $currentRangeLabel = $rangeLabels[$range] ?? 'Last 12 Months';
 
         // Avg processing time for dashboard
-        $isSqlite = DB::getDriverName() === 'sqlite';
-        $diffExpression = $isSqlite
-            ? "(julianday(updated_at) - julianday(submitted_at)) * 24"
-            : "TIMESTAMPDIFF(HOUR, submitted_at, updated_at)";
+        $diffExpression = "EXTRACT(EPOCH FROM (updated_at - submitted_at)) / 3600";
 
         $avgProcessingTime = Application::where('status', Application::ISSUED)
             ->whereNotNull('submitted_at')

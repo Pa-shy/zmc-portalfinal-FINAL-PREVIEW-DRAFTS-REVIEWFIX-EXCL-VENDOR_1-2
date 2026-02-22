@@ -96,7 +96,7 @@ class PaymentRepository
     }
 
     /**
-     * Get monthly revenue trend (SQLite compatible using strftime)
+     * Get monthly revenue trend
      * 
      * @param int $months
      * @return Collection
@@ -106,7 +106,7 @@ class PaymentRepository
         $startDate = now()->subMonths($months)->startOfMonth();
         
         return Payment::select(
-            DB::raw("strftime('%Y-%m', confirmed_at) as month"),
+            DB::raw("TO_CHAR(confirmed_at, 'YYYY-MM') as month"),
             DB::raw('SUM(amount) as total_revenue'),
             DB::raw('COUNT(*) as transaction_count')
         )
@@ -119,7 +119,7 @@ class PaymentRepository
     }
 
     /**
-     * Get outstanding payments with aging (SQLite compatible)
+     * Get outstanding payments with aging
      * 
      * @return array
      */

@@ -58,7 +58,7 @@ class ApplicationRepository
     }
 
     /**
-     * Get monthly application counts (SQLite compatible using strftime)
+     * Get monthly application counts
      * 
      * @param int $months
      * @return Collection
@@ -68,7 +68,7 @@ class ApplicationRepository
         $startDate = now()->subMonths($months)->startOfMonth();
         
         return Application::select(
-            DB::raw("strftime('%Y-%m', created_at) as month"),
+            DB::raw("TO_CHAR(created_at, 'YYYY-MM') as month"),
             DB::raw("COUNT(*) as total_submitted"),
             DB::raw("SUM(CASE WHEN status = 'issued' THEN 1 ELSE 0 END) as total_approved"),
             DB::raw("SUM(CASE WHEN status LIKE '%rejected%' THEN 1 ELSE 0 END) as total_rejected")
@@ -81,7 +81,7 @@ class ApplicationRepository
     }
 
     /**
-     * Get average processing time in hours (calculated in PHP for SQLite compatibility)
+     * Get average processing time in hours
      * 
      * @param string|null $stage
      * @return float

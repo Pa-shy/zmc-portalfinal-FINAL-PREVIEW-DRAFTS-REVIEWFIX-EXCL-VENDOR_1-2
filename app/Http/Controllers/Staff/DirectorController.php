@@ -216,7 +216,7 @@ class DirectorController extends Controller
         }
         
         // Accreditation trends (excluding registrations)
-        $accreditationData = Application::selectRaw("strftime('%Y-%m', created_at) as month")
+        $accreditationData = Application::selectRaw("TO_CHAR(created_at, 'YYYY-MM') as month")
             ->selectRaw('COUNT(*) as total_submitted')
             ->selectRaw("SUM(CASE WHEN status = 'issued' THEN 1 ELSE 0 END) as total_approved")
             ->where('application_type', '!=', 'registration')
@@ -227,7 +227,7 @@ class DirectorController extends Controller
             ->keyBy('month');
         
         // Registration trends
-        $registrationData = Application::selectRaw("strftime('%Y-%m', created_at) as month")
+        $registrationData = Application::selectRaw("TO_CHAR(created_at, 'YYYY-MM') as month")
             ->selectRaw('COUNT(*) as total_submitted')
             ->selectRaw("SUM(CASE WHEN status = 'issued' THEN 1 ELSE 0 END) as total_approved")
             ->where('application_type', 'registration')

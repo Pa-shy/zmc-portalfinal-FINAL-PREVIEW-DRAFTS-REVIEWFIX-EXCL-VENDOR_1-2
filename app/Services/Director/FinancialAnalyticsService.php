@@ -48,7 +48,7 @@ class FinancialAnalyticsService
         $previousYearEnd = now()->subYear()->endOfMonth();
         
         $previousYearData = Payment::select(
-            DB::raw("strftime('%Y-%m', confirmed_at) as month"),
+            DB::raw("TO_CHAR(confirmed_at, 'YYYY-MM') as month"),
             DB::raw('SUM(amount) as total_revenue')
         )
         ->where('status', 'paid')
