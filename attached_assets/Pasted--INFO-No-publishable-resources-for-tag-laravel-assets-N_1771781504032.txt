@@ -1,0 +1,135 @@
+
+   INFO  No publishable resources for tag [laravel-assets].  
+
+
+No security vulnerability advisories found.
+
+--> composer install
+
+Installing dependencies from lock file (including require-dev)
+
+Verifying lock file contents can be installed on current platform.
+
+Nothing to install, update or remove
+
+Generating optimized autoload files
+
+> Illuminate\Foundation\ComposerScripts::postAutoloadDump
+
+> @php artisan package:discover --ansi
+
+
+   INFO  Discovering packages.  
+
+
+  barryvdh/laravel-dompdf 
+...............................................
+ DONE
+
+  jeroennoten/laravel-adminlte ..........................................
+ DONE
+
+  laravel/pail 
+..........................................................
+ DONE
+
+  laravel/sail 
+..........................................................
+ DONE
+  laravel/sanctum 
+.......................................................
+ DONE
+
+  laravel/tinker 
+........................................................
+ DONE
+  laravel/ui 
+............................................................
+ DONE
+  nesbot/carbon 
+.........................................................
+ DONE
+
+  nunomaduro/collision .................................................. DONE
+  nunomaduro/termwind 
+...................................................
+ DONE
+
+  owen-it/laravel-auditing 
+..............................................
+ DONE
+
+  spatie/laravel-permission 
+.............................................
+ DONE
+
+
+84 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+
+--> npm install
+
+--> npm install
+
+
+up to date, audited 106 packages in 933ms
+
+
+up to date, audited 106 packages in 933ms
+
+29 packages are looking for funding
+  run `npm fund` for details
+
+29 packages are looking for funding
+  run `npm fund` for details
+
+
+1 high severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+
+1 high severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.10.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+npm notice To update run: npm install -g npm@11.10.1
+npm notice
+
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.10.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+npm notice To update run: npm install -g npm@11.10.1
+npm notice
+
+2026-02-22T17:29:34Z info: Starting Build
+   LogicException 
+
+  Unable to prepare route [admin/approvals] for serialization. Another route has already been assigned name [admin.approvals.index].
+
+  at vendor/laravel/framework/src/Illuminate/Routing/AbstractRouteCollection.php:257
+
+    253▕             $route->name($this->generateRouteName());
+    254▕ 
+    255▕             $this->add($route);
+    256▕         } elseif (! is_null($symfonyRoutes->get($name))) {
+  ➜ 257▕             throw new LogicException("Unable to prepare route [{$route->uri}] for serialization. Another route has already been assigned name [{$name}].");
+    258▕         }
+    259▕ 
+    260▕         $symfonyRoutes->add($route->getName(), $route->toSymfonyRoute());
+    261▕
+
+
+      +18 vendor frames 
+
+  19  artisan:16
+      Illuminate\Foundation\Console\Kernel::handle(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))

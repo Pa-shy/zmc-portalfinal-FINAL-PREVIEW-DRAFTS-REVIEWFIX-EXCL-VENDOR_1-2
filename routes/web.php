@@ -958,14 +958,6 @@ Route::middleware('auth')->group(function () {
     | USER APPROVALS (Director / Super Admin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['staff.portal','role:director|super_admin|it_admin'])
-        ->prefix('admin/approvals')
-        ->name('admin.approvals.')
-        ->group(function () {
-            Route::get('/', [UserApprovalController::class, 'index'])->name('index');
-            Route::post('/{user}/approve', [UserApprovalController::class, 'approve'])->name('approve');
-            Route::post('/{user}/reject', [UserApprovalController::class, 'reject'])->name('reject');
-        });
 
     /*
     |--------------------------------------------------------------------------
