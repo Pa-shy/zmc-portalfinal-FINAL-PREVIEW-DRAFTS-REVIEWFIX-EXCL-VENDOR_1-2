@@ -66,7 +66,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark zmc-topbar">
     <div class="container-fluid px-3">
         <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
-            <img src="{{ asset('zmc_logo.png') }}" alt="ZMC" style="height:34px">
+            <img src="{{ asset('zmc_logo.png') }}" alt="ZMC" style="height:48px">
             ZMC Staff Portal
         </span>
 
