@@ -46,8 +46,8 @@ build = ["npm", "run", "build"]
 
 [userenv.shared]
 SESSION_DRIVER = "database"
-SESSION_SAME_SITE = "none"
-SESSION_SECURE_COOKIE = "true"
+SESSION_SAME_SITE = "lax"
+SESSION_SECURE_COOKIE = "false"
 APP_NAME = "Laravel"
 APP_ENV = "local"
 APP_DEBUG = "true"
@@ -78,4 +78,4 @@ DB_PORT = "5432"
 DB_DATABASE = "heliumdb"
 DB_USERNAME = "postgres"
 DB_PASSWORD = "password"
-SESSION_PARTITIONED_COOKIE = "true"
+SESSION_PARTITIONED_COOKIE = "false"

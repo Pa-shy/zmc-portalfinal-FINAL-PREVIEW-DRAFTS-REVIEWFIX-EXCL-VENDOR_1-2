@@ -101,13 +101,16 @@ class StaffAuthController extends Controller
                 ->withErrors(['email' => 'You are not authorized for the selected staff role.']);
         }
 
-        // Set active role for session & clear selection
         $request->session()->put('active_staff_role', $selectedRole);
         $request->session()->forget('staff_selected_role');
 
         \App\Support\AuditTrail::log('login_staff', $user, ['role' => $selectedRole]);
 
-        return $this->redirectToRoleDashboard($selectedRole);
+        $redirectUrl = $this->getRoleDashboardUrl($selectedRole);
+        return response(
+            '<html><head><meta http-equiv="refresh" content="0;url=' . e($redirectUrl) . '"></head>'
+            . '<body><p>Redirecting…</p><script>window.location.href="' . e($redirectUrl) . '";</script></body></html>'
+        )->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function logout(Request $request)
@@ -151,16 +154,21 @@ class StaffAuthController extends Controller
 
     private function redirectToRoleDashboard(string $role)
     {
+        return redirect($this->getRoleDashboardUrl($role));
+    }
+
+    private function getRoleDashboardUrl(string $role): string
+    {
         return match ($role) {
-            'super_admin'            => redirect()->route('admin.dashboard'),
-            'accreditation_officer'  => redirect()->route('staff.officer.dashboard'),
-            'registrar'              => redirect()->route('staff.registrar.dashboard'),
-            'accounts_payments'      => redirect()->route('staff.accounts.dashboard'),
-            'production'             => redirect()->route('staff.production.dashboard'),
-            'it_admin'               => redirect()->route('staff.it.dashboard'),
-            'auditor'                => redirect()->route('staff.auditor.dashboard'),
-            'director'               => redirect()->route('staff.director.dashboard'),
-            default                  => redirect()->route('staff.entry'),
+            'super_admin'            => route('admin.dashboard'),
+            'accreditation_officer'  => route('staff.officer.dashboard'),
+            'registrar'              => route('staff.registrar.dashboard'),
+            'accounts_payments'      => route('staff.accounts.dashboard'),
+            'production'             => route('staff.production.dashboard'),
+            'it_admin'               => route('staff.it.dashboard'),
+            'auditor'                => route('staff.auditor.dashboard'),
+            'director'               => route('staff.director.dashboard'),
+            default                  => route('staff.entry'),
         };
     }
 
