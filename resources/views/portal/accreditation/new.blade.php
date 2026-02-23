@@ -774,12 +774,17 @@
     foreigners.forEach(el => setRequiredWithin(el, scope === 'foreign'));
   }
 
-  function visible(el){
+  function scopeVisible(el){
     if (!el) return false;
     if (el.closest('.scope-local') && document.getElementById('ap3_scope').value !== 'local') return false;
     if (el.closest('.scope-foreign') && document.getElementById('ap3_scope').value !== 'foreign') return false;
     if (el.closest('.employment-only') && currentEmploymentType() !== 'employed') return false;
     if (el.closest('.freelancer-only') && currentEmploymentType() !== 'freelancer') return false;
+    return true;
+  }
+
+  function visible(el){
+    if (!scopeVisible(el)) return false;
     if (el.offsetParent === null) return false;
     return true;
   }
@@ -1311,7 +1316,7 @@
 
     const fileInputs = document.querySelectorAll('#ap3Form input[type="file"]');
     fileInputs.forEach(input => {
-      if (!visible(input)) return;
+      if (!scopeVisible(input)) return;
       if (input.files && input.files[0]) submitData.append(input.name, input.files[0]);
     });
 
