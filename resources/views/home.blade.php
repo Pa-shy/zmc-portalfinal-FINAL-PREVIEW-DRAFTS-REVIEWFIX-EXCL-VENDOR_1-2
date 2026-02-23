@@ -40,8 +40,7 @@
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* More vibrant, dynamic gradient with better transparency */
-            background: radial-gradient(circle at top right, rgba(45, 90, 39, 0.65) 0%, rgba(13, 40, 16, 0.85) 100%);
+            background: radial-gradient(circle at top right, rgba(45, 90, 39, 0.45) 0%, rgba(13, 40, 16, 0.6) 100%);
             z-index: -1;
         }
 
