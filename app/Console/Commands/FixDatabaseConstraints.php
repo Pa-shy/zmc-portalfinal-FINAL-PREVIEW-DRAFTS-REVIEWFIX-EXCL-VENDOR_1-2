@@ -42,11 +42,47 @@ class FixDatabaseConstraints extends Command
             ]::text[]))");
             $this->info('  - application_documents.status constraint updated');
 
+            $cols = [
+                'owner_id' => 'BIGINT',
+                'mime' => 'VARCHAR(255)',
+                'size' => 'BIGINT',
+                'sha256' => 'VARCHAR(64)',
+                'thumbnail_path' => 'VARCHAR(255)',
+                'file_data' => 'BYTEA',
+            ];
+            foreach ($cols as $col => $type) {
+                DB::statement("ALTER TABLE application_documents ADD COLUMN IF NOT EXISTS {$col} {$type}");
+            }
+            $this->info('  - application_documents missing columns added');
+
+            if (!$this->columnExists('files', 'id')) {
+                DB::statement("CREATE TABLE IF NOT EXISTS files (
+                    id BIGSERIAL PRIMARY KEY,
+                    owner_id BIGINT,
+                    application_id BIGINT,
+                    path VARCHAR(255),
+                    mime VARCHAR(255),
+                    size BIGINT,
+                    sha256 VARCHAR(64),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )");
+                $this->info('  - files table created');
+            }
+
             $this->info('All constraints fixed successfully!');
             return 0;
         } catch (\Throwable $e) {
             $this->error('Failed to fix constraints: ' . $e->getMessage());
             return 1;
         }
+    }
+
+    private function columnExists(string $table, string $column): bool
+    {
+        return DB::selectOne(
+            "SELECT 1 FROM information_schema.columns WHERE table_name = ? AND column_name = ?",
+            [$table, $column]
+        ) !== null;
     }
 }

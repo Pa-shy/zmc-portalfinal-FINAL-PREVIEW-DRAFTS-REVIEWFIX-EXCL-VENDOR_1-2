@@ -117,7 +117,7 @@
                                         <td class="small fw-bold">{{ strtoupper(str_replace('_',' ', $doc->doc_type)) }}</td>
                                         <td><span class="badge bg-success-subtle text-success">PRESENT</span></td>
                                         <td class="text-end">
-                                            <a href="{{ \Illuminate\Support\Facades\Storage::url($doc->file_path) }}" target="_blank" class="btn btn-xs btn-outline-primary">
+                                            <a href="{{ $doc->url }}" target="_blank" class="btn btn-xs btn-outline-primary">
                                                 <i class="ri-eye-line"></i> Preview
                                             </a>
                                         </td>

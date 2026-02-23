@@ -16,6 +16,9 @@ php artisan db:fix-constraints 2>&1 || echo "Constraint fix warning (continuing.
 echo "==> Seeding database..."
 php artisan db:seed --force 2>&1 || echo "Seeding skipped"
 
+echo "==> Creating storage link..."
+php artisan storage:link 2>&1 || true
+
 echo "==> Clearing caches..."
 php artisan route:clear
 php artisan view:clear

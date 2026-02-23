@@ -19,7 +19,10 @@ class ApplicationDocument extends Model
         'sha256',
         'status',
         'review_notes',
+        'file_data',
     ];
+
+    protected $hidden = ['file_data'];
 
     public function application(): BelongsTo
     {
@@ -37,31 +40,30 @@ class ApplicationDocument extends Model
             'id_scan' => 'National ID / Passport',
             'passport_photo' => 'Passport Photo',
             'employment_letter' => 'Employment Letter',
+            'reference_letter' => 'Reference / Testimonial',
+            'educational_certificate' => 'Educational Certificate',
+            'passport_biodata_page' => 'Passport Bio Data Page',
+            'clearance_letter' => 'Clearance Letter',
             'current_card' => 'Current Accreditation Card',
             'employer_letter' => 'Employer Letter',
             'affidavit' => 'Affidavit',
             'police_report' => 'Police Report',
             'payment_supporting' => 'Supporting Document',
         ];
-        
+
         return $types[$this->doc_type] ?? ucwords(str_replace('_', ' ', $this->doc_type));
     }
 
     public function getUrlAttribute(): string
     {
-        // For staff, use a secure controller route (avoids 403/permission issues and enforces RBAC).
         try {
-            $user = auth()->user();
-            if ($user && $user->hasAnyRole([
-                'accreditation_officer','registrar','auditor','accounts_payments',
-                'production','director','super_admin','it_admin'
-            ])) {
-                return route('staff.documents.show', $this);
-            }
-        } catch (\Throwable $e) {
-            // fall back to public asset
+            return route('staff.documents.show', $this);
+        } catch (\Throwable $e) {}
+
+        if ($this->file_path) {
+            return asset('storage/' . $this->file_path);
         }
 
-        return asset('storage/' . $this->file_path);
+        return '#';
     }
 }

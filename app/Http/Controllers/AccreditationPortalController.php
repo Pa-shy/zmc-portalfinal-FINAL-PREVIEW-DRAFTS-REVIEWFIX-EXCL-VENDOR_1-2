@@ -277,11 +277,15 @@ class AccreditationPortalController extends Controller
             if (!$file) continue;
 
             $sha256 = null;
-            try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
+            $fileContent = null;
+            try {
+                $realPath = $file->getRealPath();
+                $sha256 = hash_file('sha256', $realPath);
+                $fileContent = file_get_contents($realPath);
+            } catch (\Throwable $e) {}
 
-            // Block duplicates per application if possible
-            if ($sha256 && \Illuminate\Support\Facades\Schema::hasColumn('application_documents', 'sha256')) {
-                $exists = \App\Models\ApplicationDocument::where('application_id', $application->id)
+            if ($sha256) {
+                $exists = ApplicationDocument::where('application_id', $application->id)
                     ->where('sha256', $sha256)
                     ->exists();
                 if ($exists) continue;
@@ -298,21 +302,21 @@ class AccreditationPortalController extends Controller
                     'file_path'      => $path,
                     'original_name'  => $file->getClientOriginalName(),
                     'owner_id'       => auth()->id(),
-                    'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size'           => method_exists($file, 'getSize') ? $file->getSize() : null,
+                    'mime'           => $file->getMimeType(),
+                    'size'           => $file->getSize(),
                     'sha256'         => $sha256,
+                    'file_data'      => $fileContent,
                     'status'         => 'draft',
                 ]
             );
 
-            // Optional mirror into files table
             if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
                 \App\Models\FileRecord::create([
                     'owner_id' => auth()->id(),
                     'application_id' => $application->id,
                     'path' => $path,
-                    'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
+                    'mime' => $file->getMimeType(),
+                    'size' => $file->getSize(),
                     'sha256' => $sha256,
                 ]);
             }
@@ -553,14 +557,20 @@ class AccreditationPortalController extends Controller
 
                 $file = $request->file($field);
                 $sha256 = null;
-                try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
+                $fileContent = null;
+                try {
+                    $realPath = $file->getRealPath();
+                    $sha256 = hash_file('sha256', $realPath);
+                    $fileContent = file_get_contents($realPath);
+                } catch (\Throwable $e) {}
 
-                if ($sha256 && \Illuminate\Support\Facades\Schema::hasColumn('application_documents', 'sha256')) {
-                    $exists = \App\Models\ApplicationDocument::where('application_id', $application->id)
+                if ($sha256) {
+                    $exists = ApplicationDocument::where('application_id', $application->id)
                         ->where('sha256', $sha256)
                         ->exists();
                     if ($exists) continue;
                 }
+
                 $path = $file->store('documents/' . $application->id, 'public');
 
                 ApplicationDocument::updateOrCreate(
@@ -572,23 +582,13 @@ class AccreditationPortalController extends Controller
                         'file_path'      => $path,
                         'original_name'  => $file->getClientOriginalName(),
                         'owner_id'       => $user->id,
-                        'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                        'size'           => method_exists($file, 'getSize') ? $file->getSize() : null,
+                        'mime'           => $file->getMimeType(),
+                        'size'           => $file->getSize(),
                         'sha256'         => $sha256,
+                        'file_data'      => $fileContent,
                         'status'         => 'pending',
                     ]
                 );
-
-                if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
-                    \App\Models\FileRecord::create([
-                        'owner_id' => $user->id,
-                        'application_id' => $application->id,
-                        'path' => $path,
-                        'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                        'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
-                        'sha256' => $sha256,
-                    ]);
-                }
             }
 
             return response()->json([

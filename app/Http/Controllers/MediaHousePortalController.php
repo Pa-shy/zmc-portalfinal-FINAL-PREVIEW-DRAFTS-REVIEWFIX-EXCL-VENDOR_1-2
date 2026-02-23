@@ -212,7 +212,7 @@ class MediaHousePortalController extends Controller
             $sha256 = null;
             try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
 
-            if ($sha256 && \Illuminate\Support\Facades\Schema::hasColumn('application_documents', 'sha256')) {
+            if ($sha256) {
                 $exists = \App\Models\ApplicationDocument::where('application_id', $draft->id)
                     ->where('sha256', $sha256)
                     ->exists();
@@ -227,23 +227,13 @@ class MediaHousePortalController extends Controller
                     'file_path' => $path,
                     'original_name' => $file->getClientOriginalName(),
                     'owner_id' => $user->id,
-                    'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
+                    'mime' => $file->getMimeType(),
+                    'size' => $file->getSize(),
                     'sha256' => $sha256,
+                    'file_data' => file_get_contents($file->getRealPath()),
                     'status' => 'uploaded'
                 ]
             );
-
-            if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
-                \App\Models\FileRecord::create([
-                    'owner_id' => $user->id,
-                    'application_id' => $draft->id,
-                    'path' => $path,
-                    'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
-                    'sha256' => $sha256,
-                ]);
-            }
         }
     }
 
@@ -406,9 +396,21 @@ class MediaHousePortalController extends Controller
             $file = $request->file($field);
             $path = $file->store('documents/' . $application->id, 'public');
 
+            $sha256 = null;
+            try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
+
             ApplicationDocument::updateOrCreate(
                 ['application_id' => $application->id, 'doc_type' => $docType],
-                ['file_path' => $path, 'original_name' => $file->getClientOriginalName(), 'status' => 'pending']
+                [
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'owner_id' => $user->id,
+                    'mime' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                    'sha256' => $sha256,
+                    'file_data' => file_get_contents($file->getRealPath()),
+                    'status' => 'pending',
+                ]
             );
         }
 
@@ -511,6 +513,9 @@ class MediaHousePortalController extends Controller
             $file = $request->file($field);
             $path = $file->store('documents/' . $application->id, 'public');
 
+            $sha256 = null;
+            try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
+
             ApplicationDocument::updateOrCreate(
                 [
                     'application_id' => $application->id,
@@ -519,6 +524,11 @@ class MediaHousePortalController extends Controller
                 [
                     'file_path' => $path,
                     'original_name' => $file->getClientOriginalName(),
+                    'owner_id' => $user->id,
+                    'mime' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                    'sha256' => $sha256,
+                    'file_data' => file_get_contents($file->getRealPath()),
                     'status' => 'pending',
                 ]
             );
@@ -541,16 +551,26 @@ class MediaHousePortalController extends Controller
     {
         if (!$request->hasFile('documents')) return;
 
+        $user = Auth::user();
+
         foreach ((array) $request->file('documents') as $docType => $file) {
             if (!$file) continue;
 
             $path = $file->store("documents/{$application->id}", 'public');
+
+            $sha256 = null;
+            try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
 
             ApplicationDocument::create([
                 'application_id' => $application->id,
                 'doc_type' => (string) $docType,
                 'file_path' => $path,
                 'original_name' => $file->getClientOriginalName(),
+                'owner_id' => $user?->id,
+                'mime' => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'sha256' => $sha256,
+                'file_data' => file_get_contents($file->getRealPath()),
                 'status' => 'pending',
             ]);
         }

@@ -116,7 +116,7 @@
           <div class="list-group">
             @foreach($application->documents as $doc)
               <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                 href="{{ \Illuminate\Support\Facades\Storage::url($doc->file_path) }}" target="_blank" rel="noopener">
+                 href="{{ $doc->url }}" target="_blank" rel="noopener">
                 <div>
                   <div class="fw-semibold">{{ $doc->original_name ?? $doc->doc_type }}</div>
                   <div class="small text-muted">{{ strtoupper($doc->doc_type) }} • Uploaded {{ $doc->created_at?->format('Y-m-d H:i') }}</div>
