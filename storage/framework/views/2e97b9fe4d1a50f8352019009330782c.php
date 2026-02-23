@@ -1266,7 +1266,7 @@
 
     const response = await fetch('<?php echo e(route("accreditation.saveDraft")); ?>', {
       method: 'POST',
-      headers: { 'X-CSRF-TOKEN': csrfToken },
+      headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
       body: fd,
     });
 
@@ -1323,7 +1323,7 @@
 
       const response = await fetch(submitUrl, {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': csrfToken },
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
         body: submitData,
       });
 
