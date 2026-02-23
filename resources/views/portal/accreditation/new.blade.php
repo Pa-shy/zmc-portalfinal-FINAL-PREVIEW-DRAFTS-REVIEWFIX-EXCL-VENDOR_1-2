@@ -407,12 +407,13 @@
             </div>
           </div>
 
-          {{-- Foreign-only employment extras --}}
-          <div class="scope-foreign employment-only">
+          {{-- Foreign-only travel details (visible for all foreign applicants) --}}
+          <div class="scope-foreign">
+            <h6 class="mt-4 fw-bold">TRAVEL DETAILS</h6>
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Country in which journalist is based</label>
-                <input type="text" class="form-control" name="journalist_based_country">
+                <label class="form-label required">Country in which journalist is based</label>
+                <input type="text" class="form-control" name="journalist_based_country" data-req="1">
               </div>
               <div class="form-field">
                 <label class="form-label required">Arrived on</label>
@@ -1133,7 +1134,7 @@
       `;
     }
 
-    const employmentExtraForeign = (formData.journalist_scope === 'foreign' && empType === 'employed') ? `
+    const employmentExtraForeign = (formData.journalist_scope === 'foreign') ? `
       <div class="col-6"><p><strong>Country based:</strong> ${formData.journalist_based_country || '-'}</p></div>
       <div class="col-6"><p><strong>Arrived on:</strong> ${formData.arrived_on || '-'}</p></div>
       <div class="col-6"><p><strong>By Air/Road:</strong> ${formData.arrival_mode || '-'}</p></div>
@@ -1194,10 +1195,10 @@
             <div class="col-6"><p><strong>Immediate Supervisor:</strong> ${formData.immediate_supervisor || '-'}</p></div>
             <div class="col-6"><p><strong>String for Orgs:</strong> ${formData.string_for_orgs || '-'}</p></div>
             <div class="col-6"><p><strong>Details:</strong> ${formData.string_for_details || '-'}</p></div>
-            ${employmentExtraForeign}
           ` : `
             <div class="col-12"><div class="alert alert-light border mb-0">Freelancer selected — organisation fields were not required.</div></div>
           `}
+          ${employmentExtraForeign}
         </div>
       </div>
 

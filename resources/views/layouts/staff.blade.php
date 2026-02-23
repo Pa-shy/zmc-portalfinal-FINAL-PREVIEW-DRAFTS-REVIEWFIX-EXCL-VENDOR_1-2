@@ -128,19 +128,34 @@
   },true);
   var origFetch=window.fetch;
   window.fetch=function(url,opts){
-    if(typeof url==='string' && url.startsWith('/')){
-      var sep=url.indexOf('?')>=0?'&':'?';
-      url+=sep+p+'='+s;
+    if(typeof url==='string'){
+      try{
+        var u2=new URL(url,window.location.origin);
+        if((u2.origin===window.location.origin||url.startsWith('/'))&&!u2.searchParams.has(p)){
+          u2.searchParams.set(p,s);
+          url=u2.toString();
+        }
+      }catch(x){
+        if(url.startsWith('/')){var sep=url.indexOf('?')>=0?'&':'?';url+=sep+p+'='+s;}
+      }
     }
     return origFetch.call(this,url,opts);
   };
   var origOpen=XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open=function(method,url){
-    if(typeof url==='string' && url.startsWith('/')){
-      var sep=url.indexOf('?')>=0?'&':'?';
-      url+=sep+p+'='+s;
+    if(typeof url==='string'){
+      try{
+        var u3=new URL(url,window.location.origin);
+        if((u3.origin===window.location.origin||url.startsWith('/'))&&!u3.searchParams.has(p)){
+          u3.searchParams.set(p,s);
+          url=u3.toString();
+        }
+      }catch(x){
+        if(url.startsWith('/')){var sep=url.indexOf('?')>=0?'&':'?';url+=sep+p+'='+s;}
+      }
     }
-    return origOpen.apply(this,arguments);
+    var args=Array.prototype.slice.call(arguments);args[1]=url;
+      return origOpen.apply(this,args);
   };
 })();
 </script>

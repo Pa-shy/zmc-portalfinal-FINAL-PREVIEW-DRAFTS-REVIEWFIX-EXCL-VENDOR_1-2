@@ -13,13 +13,10 @@ php artisan migrate --force 2>&1 || echo "Migration skipped (DB may not be avail
 echo "==> Seeding database..."
 php artisan db:seed --force 2>&1 || echo "Seeding skipped"
 
-echo "==> Caching routes..."
-php artisan route:cache
-
-echo "==> Caching views..."
-php artisan view:cache
-
-echo "==> Clearing config cache..."
+echo "==> Clearing caches..."
+php artisan route:clear
+php artisan view:clear
 php artisan config:clear
+php artisan cache:clear 2>&1 || true
 
 echo "==> Build complete!"

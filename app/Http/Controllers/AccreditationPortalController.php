@@ -411,9 +411,7 @@ class AccreditationPortalController extends Controller
                 }
             }
 
-            // Foreign employment travel fields (only if employed fields are being captured)
-            // Your spec puts these in employment section; we enforce them for foreign.
-            $requiredForeignTravel = ['arrived_on', 'arrival_mode', 'port_of_entry', 'departing_on', 'special_assignment'];
+            $requiredForeignTravel = ['journalist_based_country', 'arrived_on', 'arrival_mode', 'port_of_entry', 'departing_on', 'special_assignment'];
             foreach ($requiredForeignTravel as $k) {
                 if (empty($formData[$k])) {
                     return response()->json(['success'=>false,'message'=>"Missing required foreign field: {$k}"], 422);
