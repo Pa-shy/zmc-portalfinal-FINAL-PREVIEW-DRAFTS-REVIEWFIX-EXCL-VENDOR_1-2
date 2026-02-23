@@ -1,9 +1,22 @@
 <?php
 
-$uri = $_SERVER['REQUEST_URI'] ?? '/';
-$path = parse_url($uri, PHP_URL_PATH);
+$_SERVER['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '/';
+$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$_SERVER['SERVER_NAME'] = $_SERVER['SERVER_NAME'] ?? 'localhost';
+$_SERVER['SERVER_PORT'] = $_SERVER['SERVER_PORT'] ?? '5000';
+$_SERVER['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+$_SERVER['SERVER_PROTOCOL'] = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
+$_SERVER['SCRIPT_NAME'] = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
+$_SERVER['SCRIPT_FILENAME'] = $_SERVER['SCRIPT_FILENAME'] ?? __DIR__ . '/index.php';
+$_SERVER['DOCUMENT_ROOT'] = $_SERVER['DOCUMENT_ROOT'] ?? __DIR__;
+$_SERVER['PHP_SELF'] = $_SERVER['PHP_SELF'] ?? '/index.php';
 
-if ($path === '/' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+$uri = $_SERVER['REQUEST_URI'];
+$path = parse_url($uri, PHP_URL_PATH);
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($path === '/' && $method === 'GET') {
     $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
