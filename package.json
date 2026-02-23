@@ -5,7 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "start": "php artisan serve --host=0.0.0.0 --port=5000"
+        "start": "php -d upload_max_filesize=20M -d post_max_size=25M artisan serve --host=0.0.0.0 --port=5000"
     },
     "devDependencies": {
         "@popperjs/core": "^2.11.6",

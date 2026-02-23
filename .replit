@@ -47,7 +47,7 @@ externalPort = 5173
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["php", "-S", "0.0.0.0:5000", "public/router.php"]
+run = ["php", "-d", "upload_max_filesize=20M", "-d", "post_max_size=25M", "-S", "0.0.0.0:5000", "public/router.php"]
 build = ["bash", "build.sh"]
 publicDir = "public"
 
