@@ -10,6 +10,9 @@ mkdir -p storage/logs
 echo "==> Running migrations..."
 php artisan migrate --force 2>&1 || echo "Migration skipped (DB may not be available during build)"
 
+echo "==> Seeding database..."
+php artisan db:seed --force 2>&1 || echo "Seeding skipped"
+
 echo "==> Caching routes..."
 php artisan route:cache
 
