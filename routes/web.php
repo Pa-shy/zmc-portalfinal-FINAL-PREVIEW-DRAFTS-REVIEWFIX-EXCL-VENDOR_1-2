@@ -7,6 +7,7 @@ Route::get('/health', \App\Http\Controllers\HealthController::class)->name('syst
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MiscRoutesController;
 use App\Http\Controllers\PortalController;
 
 use App\Http\Controllers\Auth\LoginController;
@@ -60,16 +61,7 @@ Route::get('/', [HomeController::class, 'index'])->name('public.home');
 |--------------------------------------------------------------------------
 | Stores public portal choice then routes user to login/signup.
 */
-Route::post('/choose-portal', function (Request $request) {
-    $data = $request->validate([
-        'portal' => ['required', 'in:journalist,mass_media'],
-    ]);
-
-    $request->session()->put('public_selected_portal', $data['portal']);
-
-    // Force public auth (login/signup)
-    return redirect()->route('login');
-})->name('public.choose_portal');
+Route::post('/choose-portal', [MiscRoutesController::class, 'choosePortal'])->name('public.choose_portal');
 
 /*
 |--------------------------------------------------------------------------
@@ -106,14 +98,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // Language switcher
-Route::get('/lang/{locale}', function (Request $request, string $locale) {
-    abort_unless(in_array($locale, ['en','sn','nd','ny','cwa','kck','nmq','ndc','tso','st','toi','tn','ven','xh'], true), 404);
-    $request->session()->put('app_locale', $locale);
-    if (auth()->check()) {
-        auth()->user()->update(['locale' => $locale]);
-    }
-    return back();
-})->name('lang.switch');
+Route::get('/lang/{locale}', [MiscRoutesController::class, 'switchLang'])->name('lang.switch');
 
 /*
 |--------------------------------------------------------------------------
@@ -154,24 +139,7 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     | routes user into portal chosen on public landing page
     */
-    Route::get('/home', function (Request $request) {
-
-        $selected = $request->session()->get('public_selected_portal');
-
-        if ($selected === 'journalist') {
-            $request->session()->forget('public_selected_portal');
-            return redirect()->route('accreditation.home');
-        }
-
-        if ($selected === 'mass_media') {
-            $request->session()->forget('public_selected_portal');
-            return redirect()->route('mediahouse.portal');
-        }
-
-        // fallback if user didn't choose (or direct login)
-        return redirect()->route('portal');
-
-    })->name('home');
+    Route::get('/home', [MiscRoutesController::class, 'home'])->name('home');
 
     /*
     |--------------------------------------------------------------------------

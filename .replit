@@ -48,7 +48,7 @@ externalPort = 5173
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "php -S 0.0.0.0:${PORT:-5000} -t public public/router.php"]
-build = ["bash", "-c", "mkdir -p storage/framework/sessions storage/framework/cache/data storage/framework/views storage/logs && php artisan migrate --force && php artisan route:cache && php artisan view:cache && php artisan config:clear"]
+build = ["bash", "-c", "mkdir -p storage/framework/sessions storage/framework/cache/data storage/framework/views storage/logs && (php artisan migrate --force 2>&1 || echo 'Migration skipped') && php artisan route:cache && php artisan view:cache && php artisan config:clear"]
 publicDir = "public"
 
 [userenv]
