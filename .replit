@@ -95,5 +95,5 @@ CACHE_STORE = "database"
 [userenv.production]
 APP_ENV = "production"
 APP_DEBUG = "false"
-SESSION_DRIVER = "file"
-CACHE_STORE = "file"
+SESSION_DRIVER = "database"
+CACHE_STORE = "database"
