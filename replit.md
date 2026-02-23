@@ -61,6 +61,14 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - **Key files**: `app/Http/Middleware/TokenAuth.php`, `bootstrap/app.php` (middleware priority), layout Blade files
 
 ## Recent Changes
+- February 23, 2026: Fixed production deployment migration failure
+  - Created SafeMigrate command (db:safe-migrate) to handle existing database tables
+  - Detects empty migrations tracker with existing tables and populates records intelligently
+  - Maps migration files to their created tables and only marks as run if table exists
+  - Updated build.sh to use db:safe-migrate instead of plain migrate
+  - Switched build from cache clearing to cache building (config:cache, route:cache, view:cache)
+  - Populated production migrations table with all 60 migration records
+
 - February 23, 2026: Production deployment preparation
   - Created build.sh for deployment build steps
   - Moved closure routes to MiscRoutesController for route caching compatibility
