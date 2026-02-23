@@ -311,16 +311,6 @@ class AccreditationPortalController extends Controller
                 ]
             );
 
-            if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
-                \App\Models\FileRecord::create([
-                    'owner_id' => auth()->id(),
-                    'application_id' => $application->id,
-                    'path' => $path,
-                    'mime' => $file->getMimeType(),
-                    'size' => $file->getSize(),
-                    'sha256' => $sha256,
-                ]);
-            }
         }
     }
 
