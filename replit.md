@@ -61,6 +61,15 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - **Key files**: `app/Http/Middleware/TokenAuth.php`, `bootstrap/app.php` (middleware priority), layout Blade files
 
 ## Recent Changes
+- February 23, 2026: Production deployment preparation
+  - Created build.sh for deployment build steps
+  - Moved closure routes to MiscRoutesController for route caching compatibility
+  - Token-based auth for iframe environments (bypasses third-party cookie blocking)
+  - Database-backed sessions and cache for autoscale compatibility
+  - Added missing columns to applications, document_versions, print_logs, audit_flags, audit_logs tables for Director dashboard
+  - Health check router.php for non-browser requests
+  - Deployment target: autoscale with build: bash build.sh, run: php public/router.php
+
 - January 05, 2026: Green theme implementation
   - Updated color theme from black to dark green (#1a3a1a) across all pages
   - Landing page: Dark green gradient background with visible white text
