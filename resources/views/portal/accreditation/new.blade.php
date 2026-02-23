@@ -1329,20 +1329,22 @@
         body: submitData,
       });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error('Submission failed:', errText);
-        throw new Error('Server returned an error (' + response.status + '). Please check the console for details.');
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        let msg = result?.message || '';
+        if (result?.errors) {
+          const errs = Object.values(result.errors).flat();
+          msg = errs.join('\n');
+        }
+        alert('Submission error: ' + (msg || 'Please check all required fields and try again.'));
+        console.error('Submission failed:', result);
+        return;
       }
 
-      const result = await response.json();
-      if (result.success) {
-        bootstrap.Modal.getInstance(document.getElementById('ap3ReviewModal')).hide();
-        alert('Application submitted successfully! Reference: ' + result.reference);
-        window.location.href = "{{ route('accreditation.home') }}";
-      } else {
-        alert('Failed to submit application: ' + (result.message || 'Please try again.'));
-      }
+      bootstrap.Modal.getInstance(document.getElementById('ap3ReviewModal')).hide();
+      alert('Application submitted successfully! Reference: ' + result.reference);
+      window.location.href = "{{ route('accreditation.home') }}";
     } catch (error) {
       console.error(error);
       alert('An error occurred while submitting the application: ' + error.message);
