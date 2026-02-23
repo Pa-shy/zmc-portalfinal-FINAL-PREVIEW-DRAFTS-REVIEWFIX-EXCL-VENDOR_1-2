@@ -469,7 +469,7 @@ class MediaHousePortalController extends Controller
 
         $lastRef = Application::where('reference', 'like', $prefix . '%')
             ->where('reference', 'not like', 'DRAFT%')
-            ->orderByRaw("CAST(SUBSTR(reference, -4) AS INTEGER) DESC")
+            ->orderByRaw("CAST(RIGHT(reference, 4) AS INTEGER) DESC")
             ->value('reference');
 
         $nextNum = $lastRef ? ((int) substr($lastRef, -4) + 1) : 1;
