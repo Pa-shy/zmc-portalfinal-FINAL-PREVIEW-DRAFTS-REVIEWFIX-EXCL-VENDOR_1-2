@@ -200,71 +200,72 @@ class AccreditationPortalController extends Controller
      */
     public function saveDraft(Request $request)
     {
-        $user = Auth::user();
+        try {
+            $user = Auth::user();
 
-        // form_data may arrive as JSON string
-        $rawFormData = $request->input('form_data');
-        $formData = $rawFormData;
+            $rawFormData = $request->input('form_data');
+            $formData = $rawFormData;
 
-        if (is_string($rawFormData)) {
-            $decoded = json_decode($rawFormData, true);
-            $formData = is_array($decoded) ? $decoded : [];
+            if (is_string($rawFormData)) {
+                $decoded = json_decode($rawFormData, true);
+                $formData = is_array($decoded) ? $decoded : [];
+            }
+            if (!is_array($formData)) {
+                $formData = [];
+            }
+
+            $draft = Application::where('applicant_user_id', $user->id)
+                ->where('application_type', 'accreditation')
+                ->where('request_type', 'new')
+                ->where('is_draft', true)
+                ->first();
+
+            $reference = $draft?->reference ?: ('DRAFT-AP3-' . now()->format('Y') . '-' . Str::random(6));
+
+            $draft = Application::updateOrCreate(
+                [
+                    'applicant_user_id' => $user->id,
+                    'application_type'  => 'accreditation',
+                    'request_type'      => 'new',
+                    'is_draft'          => true,
+                ],
+                [
+                    'reference'         => $reference,
+                    'journalist_scope'  => $request->input('journalist_scope', $formData['journalist_scope'] ?? null),
+                    'collection_region' => $request->input('collection_region', $formData['collection_region'] ?? null),
+                    'form_data'         => $formData,
+                    'status'            => Application::DRAFT,
+                ]
+            );
+
+            $this->saveDraftDocuments($request, $draft, [
+                'passport_photo', 'id_scan', 'employment_letter',
+                'reference_letter', 'educational_certificate',
+                'passport_biodata_page', 'clearance_letter',
+            ]);
+
+            $this->mergeIntoProfile([
+                'title' => $formData['title'] ?? null,
+                'first_name' => $formData['first_name'] ?? null,
+                'surname' => $formData['surname'] ?? null,
+                'other_names' => $formData['other_names'] ?? null,
+                'phone' => ($formData['phone_country_code'] ?? '') . ($formData['phone'] ?? ''),
+                'email' => $formData['email'] ?? null,
+            ]);
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Draft saved successfully',
+                'draft_id' => $draft->id,
+                'reference' => $draft->reference,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('SaveDraft error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving draft: ' . $e->getMessage(),
+            ], 500);
         }
-        if (!is_array($formData)) {
-            $formData = [];
-        }
-
-        $draft = Application::where('applicant_user_id', $user->id)
-            ->where('application_type', 'accreditation')
-            ->where('request_type', 'new')
-            ->where('is_draft', true)
-            ->first();
-
-        $reference = $draft?->reference ?: ('DRAFT-AP3-' . now()->format('Y') . '-' . Str::random(6));
-
-        $draft = Application::updateOrCreate(
-            [
-                'applicant_user_id' => $user->id,
-                'application_type'  => 'accreditation',
-                'request_type'      => 'new',
-                'is_draft'          => true,
-            ],
-            [
-                'reference'         => $reference,
-                'journalist_scope'  => $request->input('journalist_scope', $formData['journalist_scope'] ?? null),
-                'collection_region' => $request->input('collection_region', $formData['collection_region'] ?? 'harare'),
-                'form_data'         => $formData,
-                'status'            => Application::DRAFT,
-            ]
-        );
-
-        // Save draft documents (NEW: support all doc fields used in your blade)
-        $this->saveDraftDocuments($request, $draft, [
-            'passport_photo',
-            'id_scan',
-            'employment_letter',
-            'reference_letter',
-            'educational_certificate',
-            'passport_biodata_page',
-            'clearance_letter',
-        ]);
-
-        // Keep profile updated using formData values
-        $this->mergeIntoProfile([
-            'title' => $formData['title'] ?? null,
-            'first_name' => $formData['first_name'] ?? null,
-            'surname' => $formData['surname'] ?? null,
-            'other_names' => $formData['other_names'] ?? null,
-            'phone' => ($formData['phone_country_code'] ?? '') . ($formData['phone'] ?? ''),
-            'email' => $formData['email'] ?? null,
-        ]);
-
-        return response()->json([
-            'success'  => true,
-            'message'  => 'Draft saved successfully',
-            'draft_id' => $draft->id,
-            'reference' => $draft->reference,
-        ]);
     }
 
     private function saveDraftDocuments(Request $request, Application $application, array $fields): void
@@ -324,16 +325,19 @@ class AccreditationPortalController extends Controller
      */
     public function submit(Request $request)
     {
-        $this->ensureWindowOpen('accreditation');
+        try {
+            $this->ensureWindowOpen('accreditation');
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+
         $user = Auth::user();
 
-        // Base request validation for files + top fields
-        $validated = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'journalist_scope'   => 'required|in:local,foreign',
-            'collection_region'  => 'nullable|in:harare,bulawayo,mutare,masvingo', // only required for local in our rules
+            'collection_region'  => 'nullable|in:harare,bulawayo,mutare,masvingo,gweru,chinhoyi',
             'form_data'          => 'nullable',
 
-            // Uploads
             'passport_photo'        => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
             'id_scan'               => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'employment_letter'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -343,6 +347,17 @@ class AccreditationPortalController extends Controller
             'passport_biodata_page' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'clearance_letter'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
+
+        if ($validator->fails()) {
+            \Log::error('Submit validation failed', ['errors' => $validator->errors()->toArray()]);
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors()->toArray(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
 
         // Decode form_data safely
         $rawFormData = $request->input('form_data');
@@ -469,117 +484,125 @@ class AccreditationPortalController extends Controller
             'employment_type' => $formData['employment_type'] ?? null,
         ]);
 
-        // Generate reference (ZMC-AP3-YYYY-0001)
-        $year = now()->format('Y');
-        $prefix = "ZMC-AP3-{$year}-";
+        try {
+            // Generate reference (ZMC-AP3-YYYY-0001)
+            $year = now()->format('Y');
+            $prefix = "ZMC-AP3-{$year}-";
 
-        $lastRef = Application::where('reference', 'like', $prefix . '%')
-            ->where('reference', 'not like', 'DRAFT%')
-            ->orderByRaw("CAST(RIGHT(reference, 4) AS INTEGER) DESC")
-            ->value('reference');
+            $lastRef = Application::where('reference', 'like', $prefix . '%')
+                ->where('reference', 'not like', 'DRAFT%')
+                ->orderByRaw("CAST(RIGHT(reference, 4) AS INTEGER) DESC")
+                ->value('reference');
 
-        $nextNum = 1;
-        if ($lastRef) {
-            $lastNum = (int) substr($lastRef, -4);
-            $nextNum = $lastNum + 1;
-        }
-
-        $reference = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
-
-        // Convert draft -> submitted if exists
-        $existingDraft = Application::where('applicant_user_id', $user->id)
-            ->where('application_type', 'accreditation')
-            ->where('request_type', 'new')
-            ->where('is_draft', true)
-            ->first();
-
-        $collectionRegion = $request->input('collection_region') ?: ($formData['collection_region'] ?? 'harare');
-
-        if ($existingDraft) {
-            $existingDraft->update([
-                'reference'         => $reference,
-                'journalist_scope'  => $scope,
-                'collection_region' => $collectionRegion,
-                'form_data'         => $formData,
-                'is_draft'          => false,
-                'status'            => Application::SUBMITTED,
-                'submitted_at'      => now(),
-            ]);
-            $application = $existingDraft;
-        } else {
-            $application = Application::create([
-                'reference'         => $reference,
-                'applicant_user_id' => $user->id,
-                'application_type'  => 'accreditation',
-                'request_type'      => 'new',
-                'journalist_scope'  => $scope,
-                'collection_region' => $collectionRegion,
-                'form_data'         => $formData,
-                'is_draft'          => false,
-                'status'            => Application::SUBMITTED,
-                'submitted_at'      => now(),
-            ]);
-        }
-
-        // Upload documents to ApplicationDocument
-        $fileFields = [
-            'passport_photo',
-            'id_scan',
-            'employment_letter',
-            'reference_letter',
-            'educational_certificate',
-            'passport_biodata_page',
-            'clearance_letter',
-        ];
-
-        foreach ($fileFields as $field) {
-            if (!$request->hasFile($field)) continue;
-
-            $file = $request->file($field);
-            $sha256 = null;
-            try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
-
-            if ($sha256 && \Illuminate\Support\Facades\Schema::hasColumn('application_documents', 'sha256')) {
-                $exists = \App\Models\ApplicationDocument::where('application_id', $application->id)
-                    ->where('sha256', $sha256)
-                    ->exists();
-                if ($exists) continue;
+            $nextNum = 1;
+            if ($lastRef) {
+                $lastNum = (int) substr($lastRef, -4);
+                $nextNum = $lastNum + 1;
             }
-            $path = $file->store('documents/' . $application->id, 'public');
 
-            ApplicationDocument::updateOrCreate(
-                [
-                    'application_id' => $application->id,
-                    'doc_type'       => $field,
-                ],
-                [
-                    'file_path'      => $path,
-                    'original_name'  => $file->getClientOriginalName(),
-                    'owner_id'       => $user->id,
-                    'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size'           => method_exists($file, 'getSize') ? $file->getSize() : null,
-                    'sha256'         => $sha256,
-                    'status'         => 'pending',
-                ]
-            );
+            $reference = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
 
-            if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
-                \App\Models\FileRecord::create([
-                    'owner_id' => $user->id,
-                    'application_id' => $application->id,
-                    'path' => $path,
-                    'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
-                    'sha256' => $sha256,
+            // Convert draft -> submitted if exists
+            $existingDraft = Application::where('applicant_user_id', $user->id)
+                ->where('application_type', 'accreditation')
+                ->where('request_type', 'new')
+                ->where('is_draft', true)
+                ->first();
+
+            $collectionRegion = $request->input('collection_region') ?: ($formData['collection_region'] ?? 'harare');
+
+            if ($existingDraft) {
+                $existingDraft->update([
+                    'reference'         => $reference,
+                    'journalist_scope'  => $scope,
+                    'collection_region' => $collectionRegion,
+                    'form_data'         => $formData,
+                    'is_draft'          => false,
+                    'status'            => Application::SUBMITTED,
+                    'submitted_at'      => now(),
+                ]);
+                $application = $existingDraft;
+            } else {
+                $application = Application::create([
+                    'reference'         => $reference,
+                    'applicant_user_id' => $user->id,
+                    'application_type'  => 'accreditation',
+                    'request_type'      => 'new',
+                    'journalist_scope'  => $scope,
+                    'collection_region' => $collectionRegion,
+                    'form_data'         => $formData,
+                    'is_draft'          => false,
+                    'status'            => Application::SUBMITTED,
+                    'submitted_at'      => now(),
                 ]);
             }
-        }
 
-        return response()->json([
-            'success'   => true,
-            'message'   => 'Application submitted successfully',
-            'reference' => $application->reference,
-        ]);
+            // Upload documents to ApplicationDocument
+            $fileFields = [
+                'passport_photo',
+                'id_scan',
+                'employment_letter',
+                'reference_letter',
+                'educational_certificate',
+                'passport_biodata_page',
+                'clearance_letter',
+            ];
+
+            foreach ($fileFields as $field) {
+                if (!$request->hasFile($field)) continue;
+
+                $file = $request->file($field);
+                $sha256 = null;
+                try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
+
+                if ($sha256 && \Illuminate\Support\Facades\Schema::hasColumn('application_documents', 'sha256')) {
+                    $exists = \App\Models\ApplicationDocument::where('application_id', $application->id)
+                        ->where('sha256', $sha256)
+                        ->exists();
+                    if ($exists) continue;
+                }
+                $path = $file->store('documents/' . $application->id, 'public');
+
+                ApplicationDocument::updateOrCreate(
+                    [
+                        'application_id' => $application->id,
+                        'doc_type'       => $field,
+                    ],
+                    [
+                        'file_path'      => $path,
+                        'original_name'  => $file->getClientOriginalName(),
+                        'owner_id'       => $user->id,
+                        'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
+                        'size'           => method_exists($file, 'getSize') ? $file->getSize() : null,
+                        'sha256'         => $sha256,
+                        'status'         => 'pending',
+                    ]
+                );
+
+                if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
+                    \App\Models\FileRecord::create([
+                        'owner_id' => $user->id,
+                        'application_id' => $application->id,
+                        'path' => $path,
+                        'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
+                        'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
+                        'sha256' => $sha256,
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success'   => true,
+                'message'   => 'Application submitted successfully',
+                'reference' => $application->reference,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Submit DB error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function renewals(Request $request)
