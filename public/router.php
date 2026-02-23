@@ -24,4 +24,21 @@ if ($path !== '/' && is_file(__DIR__ . $path)) {
     return false;
 }
 
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
+$logFile = __DIR__ . '/../storage/logs/production_errors.log';
+set_error_handler(function($errno, $errstr, $errfile, $errline) use ($logFile) {
+    $msg = date('Y-m-d H:i:s') . " PHP Error [$errno]: $errstr in $errfile:$errline\n";
+    @file_put_contents($logFile, $msg, FILE_APPEND);
+    return false;
+});
+
+set_exception_handler(function($e) use ($logFile) {
+    $msg = date('Y-m-d H:i:s') . " Uncaught Exception: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
+    @file_put_contents($logFile, $msg, FILE_APPEND);
+    http_response_code(500);
+    echo "Server Error - check logs";
+});
+
 require __DIR__ . '/index.php';
