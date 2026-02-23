@@ -8,7 +8,10 @@ mkdir -p storage/framework/views
 mkdir -p storage/logs
 
 echo "==> Running migrations..."
-php artisan migrate --force 2>&1 || echo "Migration skipped (DB may not be available during build)"
+php artisan migrate --force 2>&1 || echo "Migration warning (continuing...)"
+
+echo "==> Fixing database constraints..."
+php artisan db:fix-constraints 2>&1 || echo "Constraint fix warning (continuing...)"
 
 echo "==> Seeding database..."
 php artisan db:seed --force 2>&1 || echo "Seeding skipped"
