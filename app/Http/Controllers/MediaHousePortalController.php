@@ -230,7 +230,7 @@ class MediaHousePortalController extends Controller
                     'mime' => $file->getMimeType(),
                     'size' => $file->getSize(),
                     'sha256' => $sha256,
-                    'file_data' => file_get_contents($file->getRealPath()),
+                    'file_data' => base64_encode(file_get_contents($file->getRealPath())),
                     'status' => 'uploaded'
                 ]
             );
@@ -408,7 +408,7 @@ class MediaHousePortalController extends Controller
                     'mime' => $file->getMimeType(),
                     'size' => $file->getSize(),
                     'sha256' => $sha256,
-                    'file_data' => file_get_contents($file->getRealPath()),
+                    'file_data' => base64_encode(file_get_contents($file->getRealPath())),
                     'status' => 'pending',
                 ]
             );
@@ -528,7 +528,7 @@ class MediaHousePortalController extends Controller
                     'mime' => $file->getMimeType(),
                     'size' => $file->getSize(),
                     'sha256' => $sha256,
-                    'file_data' => file_get_contents($file->getRealPath()),
+                    'file_data' => base64_encode(file_get_contents($file->getRealPath())),
                     'status' => 'pending',
                 ]
             );
@@ -570,7 +570,7 @@ class MediaHousePortalController extends Controller
                 'mime' => $file->getMimeType(),
                 'size' => $file->getSize(),
                 'sha256' => $sha256,
-                'file_data' => file_get_contents($file->getRealPath()),
+                'file_data' => base64_encode(file_get_contents($file->getRealPath())),
                 'status' => 'pending',
             ]);
         }

@@ -281,7 +281,8 @@ class AccreditationPortalController extends Controller
             try {
                 $realPath = $file->getRealPath();
                 $sha256 = hash_file('sha256', $realPath);
-                $fileContent = file_get_contents($realPath);
+                $rawContent = file_get_contents($realPath);
+                $fileContent = $rawContent !== false ? base64_encode($rawContent) : null;
             } catch (\Throwable $e) {}
 
             if ($sha256) {
@@ -561,7 +562,8 @@ class AccreditationPortalController extends Controller
                 try {
                     $realPath = $file->getRealPath();
                     $sha256 = hash_file('sha256', $realPath);
-                    $fileContent = file_get_contents($realPath);
+                    $rawContent = file_get_contents($realPath);
+                    $fileContent = $rawContent !== false ? base64_encode($rawContent) : null;
                 } catch (\Throwable $e) {}
 
                 if ($sha256) {
@@ -597,10 +599,10 @@ class AccreditationPortalController extends Controller
                 'reference' => $application->reference,
             ]);
         } catch (\Throwable $e) {
-            \Log::error('Submit DB error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            \Log::error('Submit DB error', ['message' => mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8'), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
-                'message' => 'Database error: ' . $e->getMessage(),
+                'message' => 'Submission failed. Please try again or contact support.',
             ], 500);
         }
     }

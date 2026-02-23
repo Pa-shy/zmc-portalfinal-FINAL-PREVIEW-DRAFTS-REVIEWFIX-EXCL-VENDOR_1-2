@@ -22,6 +22,10 @@ class DocumentViewController extends Controller
             if (is_resource($data)) {
                 $data = stream_get_contents($data);
             }
+            $decoded = base64_decode($data, true);
+            if ($decoded !== false) {
+                $data = $decoded;
+            }
             return response($data, 200, [
                 'Content-Type' => $mime,
                 'Content-Disposition' => 'inline; filename="' . $downloadName . '"',
