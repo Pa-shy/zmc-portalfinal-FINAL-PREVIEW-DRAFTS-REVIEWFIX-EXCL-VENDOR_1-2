@@ -47,7 +47,7 @@ externalPort = 5173
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["php", "-S", "0.0.0.0:5000", "public/router.php"]
+run = ["bash", "-c", "cd public && php -S 0.0.0.0:5000 router.php"]
 build = ["bash", "build.sh"]
 publicDir = "public"
 
