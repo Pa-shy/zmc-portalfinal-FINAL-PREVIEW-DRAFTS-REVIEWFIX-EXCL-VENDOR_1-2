@@ -12,24 +12,25 @@ class StaffAuthController extends Controller
 {
     public function show(Request $request)
     {
-        // If user is already logged in, keep them inside staff flow
         if (Auth::check()) {
             return $this->redirectAfterLogin(Auth::user(), $request);
         }
 
-        // Must choose role first
-        if (!$request->session()->has('staff_selected_role')) {
-            return redirect()->route('staff.entry'); // /staff landing
+        $role = $request->query('role') ?? $request->session()->get('staff_selected_role');
+
+        if (!$role || !in_array($role, $this->staffAllowedRoles(), true)) {
+            return redirect()->route('staff.entry');
         }
 
-        return view('staff.login');
+        $request->session()->put('staff_selected_role', $role);
+
+        return view('staff.login', ['selectedRole' => $role]);
     }
 
     public function login(Request $request)
     {
-        // Must choose role first
-        $selectedRole = $request->session()->get('staff_selected_role');
-        if (!$selectedRole) {
+        $selectedRole = $request->input('role') ?? $request->session()->get('staff_selected_role');
+        if (!$selectedRole || !in_array($selectedRole, $this->staffAllowedRoles(), true)) {
             return redirect()->route('staff.entry');
         }
 

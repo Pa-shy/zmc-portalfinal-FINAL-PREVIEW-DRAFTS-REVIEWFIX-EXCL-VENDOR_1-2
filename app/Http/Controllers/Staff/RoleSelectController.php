@@ -73,6 +73,6 @@ class RoleSelectController extends Controller
 
         $request->session()->put('staff_selected_role', $data['role']);
 
-        return redirect()->route('staff.login');
+        return redirect()->route('staff.login', ['role' => $data['role']]);
     }
 }

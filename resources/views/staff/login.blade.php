@@ -169,6 +169,7 @@
 
         <form method="POST" action="{{ route('staff.login.store') }}">
             @csrf
+            <input type="hidden" name="role" value="{{ $selectedRole ?? '' }}">
 
             <div class="field">
                 <label for="email">Email / Username</label>

@@ -169,6 +169,7 @@
 
         <form method="POST" action="<?php echo e(route('staff.login.store')); ?>">
             <?php echo csrf_field(); ?>
+            <input type="hidden" name="role" value="<?php echo e($selectedRole ?? ''); ?>">
 
             <div class="field">
                 <label for="email">Email / Username</label>
