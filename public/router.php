@@ -16,19 +16,28 @@ $uri = $_SERVER['REQUEST_URI'];
 $path = parse_url($uri, PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
+if ($path === '/__repl_health' || $path === '/healthz') {
+    http_response_code(200);
+    header('Content-Type: text/plain');
+    echo 'OK';
+    return;
+}
+
 if ($path === '/' && $method === 'GET') {
     $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $isHealthCheck = empty($ua) ||
+        stripos($ua, 'Replit') !== false ||
+        stripos($ua, 'curl') !== false ||
+        stripos($ua, 'health') !== false ||
+        stripos($ua, 'kube') !== false ||
+        stripos($ua, 'GoogleHC') !== false ||
+        (stripos($accept, 'text/html') === false && stripos($ua, 'Mozilla') === false);
 
-    $isBrowser = (stripos($accept, 'text/html') !== false) || 
-                 (stripos($ua, 'Mozilla') !== false) || 
-                 (stripos($ua, 'Chrome') !== false) || 
-                 (stripos($ua, 'Safari') !== false);
-
-    if (!$isBrowser) {
+    if ($isHealthCheck) {
         http_response_code(200);
-        header('Content-Type: text/html; charset=UTF-8');
-        echo '<!DOCTYPE html><html><head><title>ZMC</title></head><body>OK</body></html>';
+        header('Content-Type: text/plain');
+        echo 'OK';
         return;
     }
 }
