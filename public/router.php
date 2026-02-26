@@ -42,8 +42,34 @@ if ($path === '/' && $method === 'GET') {
     }
 }
 
-if ($path !== '/' && is_file(__DIR__ . $path)) {
-    return false;
+$filePath = __DIR__ . $path;
+if ($path !== '/' && is_file($filePath)) {
+    $mimeTypes = [
+        'css' => 'text/css',
+        'js' => 'application/javascript',
+        'json' => 'application/json',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'svg' => 'image/svg+xml',
+        'webp' => 'image/webp',
+        'ico' => 'image/x-icon',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+        'eot' => 'application/vnd.ms-fontobject',
+        'pdf' => 'application/pdf',
+        'mp4' => 'video/mp4',
+        'webm' => 'video/webm',
+    ];
+    $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+    $mime = $mimeTypes[$ext] ?? mime_content_type($filePath) ?: 'application/octet-stream';
+    header('Content-Type: ' . $mime);
+    header('Content-Length: ' . filesize($filePath));
+    header('Cache-Control: public, max-age=86400');
+    readfile($filePath);
+    return;
 }
 
 ini_set('display_errors', '0');
