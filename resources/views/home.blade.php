@@ -219,18 +219,18 @@
     </div>
 
     <div class="grid">
-        <!-- Media Practitioner / Journalist -->
+        <!-- Media Practitioner -->
         <form method="POST" action="{{ route('public.choose_portal') }}">
             @csrf
             <input type="hidden" name="portal" value="journalist">
             <button type="submit" class="portal-card" style="border:none;">
                 <div>
                     <h2>Accreditation</h2>
-                    <p>Apply for new press cards, renewals, replacements, and manage your journalist profile.</p>
+                    <p>Apply for new press cards, renewals, replacements, and manage your media practitioner profile.</p>
                 </div>
                 <div class="portal-type">
                     <span>Stream</span>
-                    MEDIA PRACTITIONER / JOURNALIST
+                    MEDIA PRACTITIONER
                 </div>
                 <div class="btn">Continue</div>
             </button>

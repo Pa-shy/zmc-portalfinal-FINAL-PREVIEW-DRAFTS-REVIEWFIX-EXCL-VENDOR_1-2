@@ -17,7 +17,7 @@
     <div class="col-12 col-lg-6">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h6 class="fw-bold">Accreditation (Journalists)</h6>
+          <h6 class="fw-bold">Accreditation (Media Practitioners)</h6>
           <div class="table-responsive">
             <table class="table table-hover align-middle">
               <thead><tr><th>Holder</th><th>Certificate</th><th>Status</th><th>Expires</th></tr></thead>

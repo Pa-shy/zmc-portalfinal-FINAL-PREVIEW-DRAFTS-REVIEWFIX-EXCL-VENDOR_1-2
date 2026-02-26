@@ -13,7 +13,7 @@
 
 <div id="profile-page">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold text-dark m-0" style="font-size:18px;">Journalist Profile</h4>
+    <h4 class="fw-bold text-dark m-0" style="font-size:18px;">Media Practitioner Profile</h4>
   </div>
 
   @if(session('success'))
@@ -46,7 +46,7 @@
           <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name ?? 'User') }}&size=120&background=facc15&color=000&bold=true"
                class="rounded-circle" alt="Profile" width="120" height="120">
           <h5 class="mt-3 mb-1">{{ $user->name ?? 'User' }}</h5>
-          <p class="text-muted">Accredited Journalist</p>
+          <p class="text-muted">Accredited Media Practitioner</p>
         </div>
 
         <div class="form-row">

@@ -1,5 +1,5 @@
 @extends('layouts.portal')
-@section('title', 'Accredited Journalists')
+@section('title', 'Accredited Media Practitioners')
 
 @section('content')
 <div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
@@ -8,7 +8,7 @@
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
       <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">
-        Accredited Journalists
+        Accredited Media Practitioners
       </h4>
       <div class="text-muted mt-1" style="font-size:13px;">
         <i class="ri-information-line me-1"></i>

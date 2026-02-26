@@ -221,7 +221,7 @@ class InitialDataSeeder extends Seeder
             [
                 'title' => 'ZMC Launches New Online Portal',
                 'slug' => 'zmc-launches-new-online-portal',
-                'body' => 'The Zimbabwe Media Commission has officially launched its new online portal for journalist accreditation and media house registration. The portal enables media practitioners to apply for accreditation, track application status, and manage their profiles entirely online. Media houses can also register and renew their operating licenses through the system. This digital transformation initiative is part of ZMC\'s commitment to improving service delivery and reducing turnaround times.',
+                'body' => 'The Zimbabwe Media Commission has officially launched its new online portal for media practitioner accreditation and media house registration. The portal enables media practitioners to apply for accreditation, track application status, and manage their profiles entirely online. Media houses can also register and renew their operating licenses through the system. This digital transformation initiative is part of ZMC\'s commitment to improving service delivery and reducing turnaround times.',
                 'is_published' => true,
                 'published_at' => now()->subDays(14),
             ],
@@ -346,7 +346,7 @@ class InitialDataSeeder extends Seeder
                     'first_name' => 'Tatenda', 'last_name' => 'Chirwa',
                     'id_number' => '42-789012-C-15',
                     'category' => 'online', 'scope' => 'local',
-                    'employer' => 'Freelance', 'designation' => 'Journalist',
+                    'employer' => 'Freelance', 'designation' => 'Media Practitioner',
                 ],
                 'is_draft' => false,
                 'submitted_at' => now()->subDays(10),

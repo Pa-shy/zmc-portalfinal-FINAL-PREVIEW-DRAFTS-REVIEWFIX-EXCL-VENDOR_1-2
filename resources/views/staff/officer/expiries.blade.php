@@ -19,7 +19,7 @@
           @csrf
           <input type="hidden" name="record_type" value="accreditation">
           <button type="submit" class="btn btn-success shadow-sm btn-sm px-3" title="Send reminders to all expiring journalists">
-            <i class="ri-mail-send-line me-1"></i> Send All (Journalists)
+            <i class="ri-mail-send-line me-1"></i> Send All (Media Practitioners)
           </button>
         </form>
         <form method="POST" action="{{ route('staff.officer.renewals.send-reminders') }}" class="d-inline">
@@ -37,7 +37,7 @@
     <div class="col-12 col-lg-6">
       <div class="card shadow-sm">
         <div class="card-body">
-          <h6 class="fw-bold">Accreditation (Journalists)</h6>
+          <h6 class="fw-bold">Accreditation (Media Practitioners)</h6>
           <div class="table-responsive">
             <table class="table table-hover align-middle">
               <thead><tr><th>Holder</th><th>Certificate</th><th>Status</th><th>Expires</th><th class="text-end">Days</th></tr></thead>

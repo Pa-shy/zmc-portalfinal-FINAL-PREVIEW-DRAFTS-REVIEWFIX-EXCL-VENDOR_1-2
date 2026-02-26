@@ -46,7 +46,7 @@ class AdminApplicationsController extends Controller
         $applications = $q->paginate(20)->withQueryString();
 
         return view('admin.applications.index', [
-            'title' => 'Journalists Accreditation',
+            'title' => 'Media Practitioners Accreditation',
             'applications' => $applications,
             'type' => 'accreditation',
         ]);

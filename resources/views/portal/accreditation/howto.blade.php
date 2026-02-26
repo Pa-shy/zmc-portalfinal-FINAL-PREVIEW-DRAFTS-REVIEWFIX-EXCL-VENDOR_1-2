@@ -11,7 +11,7 @@
       <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">How to Get Accredited</h4>
       <div class="text-muted mt-1" style="font-size:13px;">
         <i class="ri-guide-line me-1"></i>
-        Step-by-step guide to the ZMC journalist accreditation process.
+        Step-by-step guide to the ZMC media practitioner accreditation process.
       </div>
     </div>
     <div class="d-flex gap-2">
@@ -29,7 +29,7 @@
       <div class="zmc-card h-100 text-center" style="border-top: 3px solid #2e7d32;">
         <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(46, 125, 50,0.1);color:#2e7d32;font-size:22px;font-weight:900;">1</div>
         <h6 class="fw-bold" style="color:#2e7d32;">Choose Type</h6>
-        <p class="text-muted small mb-0">Select whether you are a <strong>Local</strong> or <strong>Foreign</strong> journalist to determine the correct application form and requirements.</p>
+        <p class="text-muted small mb-0">Select whether you are a <strong>Local</strong> or <strong>Foreign</strong> media practitioner to determine the correct application form and requirements.</p>
       </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">

@@ -45,7 +45,7 @@
   </a>
   <a class="nav-link {{ $is('admin.accreditation') ? 'active' : '' }}" href="{{ Route::has('admin.accreditation.index') ? route('admin.accreditation.index') : '#' }}">
     <span class="nav-icon"><i class="ri-id-card-line"></i></span>
-    <span>Journalists Accreditation</span>
+    <span>Media Practitioners Accreditation</span>
   </a>
 
   <div class="nav-section">Users & Roles</div>

@@ -22,7 +22,7 @@
                 <div class="col-md-2">
                     <label class="form-label">Category</label>
                     <select name="applicant_category[]" class="form-select select2" multiple>
-                        <option value="journalist">Journalist</option>
+                        <option value="journalist">Media Practitioner</option>
                         <option value="media_practitioner">Media Practitioner</option>
                         <option value="media_house">Media House</option>
                     </select>

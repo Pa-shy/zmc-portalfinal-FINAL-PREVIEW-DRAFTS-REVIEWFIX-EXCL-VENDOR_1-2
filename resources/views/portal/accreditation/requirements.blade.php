@@ -23,7 +23,7 @@
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
         <h6 class="fw-bold mb-3" style="color:#2e7d32;">
-          <i class="ri-user-line me-2" style="color:var(--zmc-accent)"></i>Local Journalist (AP3)
+          <i class="ri-user-line me-2" style="color:var(--zmc-accent)"></i>Local Media Practitioner (AP3)
         </h6>
         <ul class="list-unstyled mb-0">
           <li class="d-flex align-items-start gap-2 mb-3">
@@ -61,7 +61,7 @@
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
         <h6 class="fw-bold mb-3" style="color:#2e7d32;">
-          <i class="ri-global-line me-2" style="color:var(--zmc-accent)"></i>Foreign Journalist (AP3)
+          <i class="ri-global-line me-2" style="color:var(--zmc-accent)"></i>Foreign Media Practitioner (AP3)
         </h6>
         <ul class="list-unstyled mb-0">
           <li class="d-flex align-items-start gap-2 mb-3">

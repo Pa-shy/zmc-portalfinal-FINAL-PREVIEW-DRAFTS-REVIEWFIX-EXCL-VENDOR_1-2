@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Journalist Portal Dashboard')
+@section('title', 'Media Practitioner Portal Dashboard')
 
 @section('content')
 @php
@@ -18,7 +18,7 @@
 
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Journalist Accreditation Dashboard</h4>
+      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Media Practitioner Accreditation Dashboard</h4>
       <div class="text-muted mt-1" style="font-size:13px;">
         <i class="ri-information-line me-1"></i>
         Track your AP3 (New Accreditation) and AP5 (Renewal/Replacement) submissions.

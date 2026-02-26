@@ -6,7 +6,7 @@
     <div>
       <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Notices & Events</h4>
       <div class="text-muted mt-1" style="font-size:13px;">
-        Manage public announcements for Journalist Accreditation Portal and Media House Registration Portal.
+        Manage public announcements for Media Practitioner Accreditation Portal and Media House Registration Portal.
       </div>
     </div>
   </div>
@@ -202,7 +202,7 @@
           <div class="col-12 col-md-6"><label class="form-label zmc-lbl">Attachment (optional)</label><input class="form-control zmc-input" type="file" name="attachment" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,image/*"></div>
           <div class="col-12 col-md-6"><label class="form-label zmc-lbl">Portal</label>
             <select class="form-select zmc-input" name="target_portal" required>
-              <option value="both">Both</option><option value="journalist">Journalist</option><option value="mediahouse">Media House</option>
+              <option value="both">Both</option><option value="journalist">Media Practitioner</option><option value="mediahouse">Media House</option>
             </select>
           </div>
           <div class="col-12 col-md-6 d-flex align-items-end">
@@ -234,7 +234,7 @@
           <div class="col-12 col-md-3"><label class="form-label zmc-lbl">Ends</label><input class="form-control zmc-input" type="datetime-local" name="ends_at"></div>
           <div class="col-12 col-md-6"><label class="form-label zmc-lbl">Portal</label>
             <select class="form-select zmc-input" name="target_portal" required>
-              <option value="both">Both</option><option value="journalist">Journalist</option><option value="mediahouse">Media House</option>
+              <option value="both">Both</option><option value="journalist">Media Practitioner</option><option value="mediahouse">Media House</option>
             </select>
           </div>
           <div class="col-12 col-md-6 d-flex align-items-end">
@@ -271,7 +271,7 @@
           <div class="col-12 col-md-6"><label class="form-label zmc-lbl">Portal</label>
             <select class="form-select zmc-input" name="target_portal" required>
               <option value="both" @selected($n->target_portal==='both')>Both</option>
-              <option value="journalist" @selected($n->target_portal==='journalist')>Journalist</option>
+              <option value="journalist" @selected($n->target_portal==='journalist')>Media Practitioner</option>
               <option value="mediahouse" @selected($n->target_portal==='mediahouse')>Media House</option>
             </select>
           </div>
@@ -304,7 +304,7 @@
           <div class="col-12 col-md-6"><label class="form-label zmc-lbl">Portal</label>
             <select class="form-select zmc-input" name="target_portal" required>
               <option value="both" @selected($e->target_portal==='both')>Both</option>
-              <option value="journalist" @selected($e->target_portal==='journalist')>Journalist</option>
+              <option value="journalist" @selected($e->target_portal==='journalist')>Media Practitioner</option>
               <option value="mediahouse" @selected($e->target_portal==='mediahouse')>Media House</option>
             </select>
           </div>

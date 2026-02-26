@@ -81,8 +81,8 @@ class AdminSystemController extends Controller
     public function fees()
     {
         $feeCatalogue = [
-            ['category' => 'Accreditation – Local Journalist', 'amount' => 'Configured in Finance', 'channel' => 'PayNow / Bank'],
-            ['category' => 'Accreditation – Foreign Journalist', 'amount' => 'Configured in Finance', 'channel' => 'PayNow / Bank'],
+            ['category' => 'Accreditation – Local Media Practitioner', 'amount' => 'Configured in Finance', 'channel' => 'PayNow / Bank'],
+            ['category' => 'Accreditation – Foreign Media Practitioner', 'amount' => 'Configured in Finance', 'channel' => 'PayNow / Bank'],
             ['category' => 'Registration – Mass Media Service', 'amount' => 'Configured in Finance', 'channel' => 'PayNow / Bank'],
             ['category' => 'Replacement – Card', 'amount' => 'Configured in Finance', 'channel' => 'Cash / Bank'],
             ['category' => 'Replacement – Certificate', 'amount' => 'Configured in Finance', 'channel' => 'Cash / Bank'],

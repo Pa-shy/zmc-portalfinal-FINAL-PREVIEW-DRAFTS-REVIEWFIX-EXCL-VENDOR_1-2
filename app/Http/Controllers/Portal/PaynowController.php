@@ -42,7 +42,7 @@ class PaynowController extends Controller
         $payment = $paynow->createPayment($application->reference, $user->email ?? 'applicant@zmc.org.zw');
 
         $description = $application->application_type === 'accreditation'
-            ? 'Journalist Accreditation Fee'
+            ? 'Media Practitioner Accreditation Fee'
             : 'Media House Registration Fee';
 
         $payment->add($description, $fee);
@@ -100,7 +100,7 @@ class PaynowController extends Controller
         $payment = $paynow->createPayment($application->reference, $user->email ?? 'applicant@zmc.org.zw');
 
         $description = $application->application_type === 'accreditation'
-            ? 'Journalist Accreditation Fee'
+            ? 'Media Practitioner Accreditation Fee'
             : 'Media House Registration Fee';
 
         $payment->add($description, $fee);

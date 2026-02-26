@@ -23,22 +23,22 @@
   } catch (\Throwable $e) {}
 
   /**
-   * Journalist Type Initials:
+   * Media Practitioner Type Initials:
    * Example given: Videographer => JV
    * Rule implemented:
    *  - Always starts with J
    *  - Second letter = first meaningful word initial of designation/type
    */
-  $designation = (string)($fd['designation'] ?? 'Journalist');
+  $designation = (string)($fd['designation'] ?? 'Media Practitioner');
   $designationClean = trim(preg_replace('/\s+/', ' ', $designation));
   $words = array_values(array_filter(explode(' ', strtoupper($designationClean))));
 
   $second = 'J';
   if (count($words) >= 1) {
     // If the designation includes JOURNALIST, use next word (PHOTO JOURNALIST => JP etc)
-    $idxJournalist = array_search('JOURNALIST', $words);
-    if ($idxJournalist !== false && isset($words[$idxJournalist + 1])) {
-      $second = substr($words[$idxJournalist + 1], 0, 1);
+    $idxPractitioner = array_search('MEDIA PRACTITIONER', $words);
+    if ($idxPractitioner !== false && isset($words[$idxPractitioner + 1])) {
+      $second = substr($words[$idxPractitioner + 1], 0, 1);
     } else {
       // Otherwise use first word (VIDEOGRAPHER => V)
       $second = substr($words[0], 0, 1);
@@ -58,7 +58,7 @@
     'name'        => $fullName,
     // reference still exists for internal use, but we DO NOT SHOW it in preview anymore
     'ref'         => $application->reference ?? ('APP-' . $application->id),
-    'designation' => $designationClean ?: 'Journalist',
+    'designation' => $designationClean ?: 'Media Practitioner',
     'organisation'=> $fd['employer_name'] ?? '—',
     'scope'       => strtoupper((string)($application->journalist_scope ?? 'local')),
     'region'      => strtoupper((string)($application->collection_region ?? '—')),

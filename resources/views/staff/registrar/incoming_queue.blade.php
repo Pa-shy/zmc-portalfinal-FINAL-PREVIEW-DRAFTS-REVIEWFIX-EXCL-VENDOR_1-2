@@ -479,7 +479,7 @@
             ${zmcTextarea('Local address', (app.zim_local_address || app.zim_address))}
           </div>
         `;
-        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Journalist details`, body);
+        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Media Practitioner details`, body);
       }
 
       if (formCode === 'AP1') {

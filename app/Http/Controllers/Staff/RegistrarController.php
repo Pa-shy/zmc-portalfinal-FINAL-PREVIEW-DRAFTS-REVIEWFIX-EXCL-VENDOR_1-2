@@ -602,7 +602,7 @@ class RegistrarController extends Controller
             }
         }
 
-        return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'journalists' : 'media houses') . ".");
+        return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'media practitioners' : 'media houses') . ".");
     }
 
     private function audit(string $action, Application $application, ?string $from, ?string $to, array $meta = []): void

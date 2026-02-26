@@ -125,7 +125,7 @@ class AdminDashboardController extends Controller
 
 
         // Recent users split into two groups on the Superadmin dashboard:
-        // 1) Public Users: self-registered during Journalist Accreditation
+        // 1) Public Users: self-registered during Media Practitioner Accreditation
         // 2) Staff Users: created by Superadmin or IT Admin
         $staffCreatedIds = AuditLog::query()
             ->whereIn('action', ['account_created_by_superadmin', 'account_created_by_it_admin'])

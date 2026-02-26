@@ -822,7 +822,7 @@
         if (!f.files || !f.files[0]) { alert('Please upload all required annexures.'); return false; }
       }
       
-      // Journalist list is required for Foreign Media
+      // Media practitioner list is required for Foreign Media
       if (scope === 'foreign') {
         const jList = document.querySelector('input[name="documents[journalist_list]"]');
         if (jList && (!jList.files || !jList.files[0])) {

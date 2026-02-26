@@ -16,7 +16,7 @@
       Hi! I can help with common questions. Try one of these:
     </div>
     <div class="faq-chips" id="chatbotFaq">
-      <button type="button" class="faq-chip" data-q="How do I get accredited as a journalist?">Journalist Accreditation</button>
+      <button type="button" class="faq-chip" data-q="How do I get accredited as a media practitioner?">Media Practitioner Accreditation</button>
       <button type="button" class="faq-chip" data-q="How do I register a media house?">Media House Registration</button>
       <button type="button" class="faq-chip" data-q="What documents are required for accreditation?">Accreditation Documents</button>
       <button type="button" class="faq-chip" data-q="What documents are required for registration?">Registration Documents</button>

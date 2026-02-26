@@ -16,7 +16,7 @@
       $items = [
         ['label'=>'Applications','type'=>'applications','icon'=>'ri-file-list-3-line', 'description' => 'Accreditation and Registration records'],
         ['label'=>'Staff Users','type'=>'users_staff','icon'=>'ri-shield-user-line', 'description' => 'System administrators and officers'],
-        ['label'=>'Public Users','type'=>'users_public','icon'=>'ri-user-smile-line', 'description' => 'Journalists and media house applicants'],
+        ['label'=>'Public Users','type'=>'users_public','icon'=>'ri-user-smile-line', 'description' => 'Media practitioners and media house applicants'],
         ['label'=>'Complaints & Appeals','type'=>'complaints','icon'=>'ri-chat-1-line', 'description' => 'Submitted complaints and status'],
         ['label'=>'Notices','type'=>'notices','icon'=>'ri-notification-3-line', 'description' => 'Published portal notices'],
         ['label'=>'Events','type'=>'events','icon'=>'ri-calendar-event-line', 'description' => 'System and industry events'],

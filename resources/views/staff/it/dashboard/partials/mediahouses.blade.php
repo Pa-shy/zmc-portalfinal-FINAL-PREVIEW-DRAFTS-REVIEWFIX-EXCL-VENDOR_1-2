@@ -31,7 +31,7 @@
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-icon" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i></button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    <li><a class="dropdown-item small" href="#"><i class="ri-links-line me-2"></i> Link Journalists</a></li>
+                                    <li><a class="dropdown-item small" href="#"><i class="ri-links-line me-2"></i> Link Media Practitioners</a></li>
                                     <li><a class="dropdown-item small text-danger" href="#"><i class="ri-forbid-line me-2"></i> Suspend Membership</a></li>
                                 </ul>
                             </div>

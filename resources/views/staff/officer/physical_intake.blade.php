@@ -32,7 +32,7 @@
           <label class="form-label fw-semibold">Application Type <span class="text-danger">*</span></label>
           <select name="application_type" class="form-select" required>
             <option value="">-- Select --</option>
-            <option value="accreditation" @selected(old('application_type') === 'accreditation')>Accreditation (Journalist)</option>
+            <option value="accreditation" @selected(old('application_type') === 'accreditation')>Accreditation (Media Practitioner)</option>
             <option value="registration" @selected(old('application_type') === 'registration')>Registration (Media House)</option>
           </select>
         </div>

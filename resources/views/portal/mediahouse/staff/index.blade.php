@@ -10,11 +10,11 @@
       <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Staff Management</h4>
       <div class="text-muted mt-1" style="font-size:13px;">
         <i class="ri-information-line me-1"></i>
-        Link journalists and media practitioners to your organisation.
+        Link media practitioners and media practitioners to your organisation.
       </div>
     </div>
     <button type="button" class="btn btn-dark btn-sm px-3" data-bs-toggle="modal" data-bs-target="#linkStaffModal">
-      <i class="ri-user-add-line me-1"></i> Link Journalist
+      <i class="ri-user-add-line me-1"></i> Link Media Practitioner
     </button>
   </div>
 
@@ -85,7 +85,7 @@
           <div>
             <div class="zmc-modal-title">
               <i class="ri-user-add-line me-2" style="color:var(--zmc-accent-dark)"></i>
-              Link Journalist
+              Link Media Practitioner
             </div>
             <div class="zmc-modal-sub">Add a journalist to your organisation by email.</div>
           </div>
@@ -94,7 +94,7 @@
 
         <div class="modal-body p-4">
           <div class="mb-3">
-            <label class="form-label fw-bold small text-muted">Journalist Email Address</label>
+            <label class="form-label fw-bold small text-muted">Media Practitioner Email Address</label>
             <input type="email" name="email" class="form-control zmc-input" placeholder="e.g. journalist@example.com" required>
             <div class="form-text mt-1" style="font-size:11px;">The journalist must already have an account on the ZMC Portal.</div>
           </div>

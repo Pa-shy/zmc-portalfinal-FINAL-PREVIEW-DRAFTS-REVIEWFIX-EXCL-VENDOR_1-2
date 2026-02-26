@@ -64,7 +64,7 @@
         Records
       </li>
       <li class="{{ request()->routeIs('staff.officer.records.journalists') ? 'active' : '' }}">
-        <a href="{{ route('staff.officer.records.journalists') }}"><i class="ri-id-card-line"></i> <span>Accredited Journalists</span></a>
+        <a href="{{ route('staff.officer.records.journalists') }}"><i class="ri-id-card-line"></i> <span>Accredited Media Practitioners</span></a>
       </li>
       <li class="{{ request()->routeIs('staff.officer.records.mediahouses') ? 'active' : '' }}">
         <a href="{{ route('staff.officer.records.mediahouses') }}"><i class="ri-building-2-line"></i> <span>Registered Media Houses</span></a>
@@ -433,7 +433,7 @@
       <li class="{{ request()->routeIs('admin.accreditation.*') ? 'active' : '' }}">
         <a href="{{ route('admin.accreditation.index') }}">
           <i class="ri-id-card-line"></i>
-          <span>Journalists Accreditation</span>
+          <span>Media Practitioners Accreditation</span>
           <span class="badge bg-light text-dark" style="margin-left:auto;">{{ $c['accreditation_total'] ?? 0 }}</span>
         </a>
       </li>

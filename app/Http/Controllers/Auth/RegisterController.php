@@ -26,7 +26,7 @@ class RegisterController extends Controller
         // Preserve portal choice (journalist vs mediahouse) across login session regeneration.
         $portal = $request->session()->get('public_selected_portal');
         // Portal-aware validation:
-        // - Journalist: first + last name
+        // - Media Practitioner: first + last name
         // - Mass media (media house): organization_name
         $rules = [
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],

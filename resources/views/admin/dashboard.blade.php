@@ -228,7 +228,7 @@
                             <i class="ri-building-2-line me-1"></i> Media House Registrations
                         </a>
                         <a href="{{ route('admin.accreditation.index') }}" class="btn btn-outline-secondary btn-sm">
-                            <i class="ri-user-search-line me-1"></i> Journalist Accreditation
+                            <i class="ri-user-search-line me-1"></i> Media Practitioner Accreditation
                         </a>
                         <a href="{{ route('admin.users.staff') }}" class="btn btn-outline-success btn-sm">
                             <i class="ri-user-settings-line me-1"></i> User & Account Management

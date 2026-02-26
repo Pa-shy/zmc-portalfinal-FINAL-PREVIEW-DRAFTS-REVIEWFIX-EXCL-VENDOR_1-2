@@ -193,7 +193,7 @@
       <img src="{{ asset('zmc_logo.png') }}" alt="ZMC Logo">
       <div>
         <span class="logo-text"><span class="zimbabwe">ZIMBABWE</span> <span class="media">MEDIA</span> <span class="commission">COMMISSION</span></span>
-        <span class="logo-sub">Journalist Accreditation</span>
+        <span class="logo-sub">Media Practitioner Accreditation</span>
       </div>
     </div>
 

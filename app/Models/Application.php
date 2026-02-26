@@ -378,7 +378,7 @@ class Application extends Model
     }
 
     /**
-     * Accreditation categories for journalist accreditation approvals.
+     * Accreditation categories for media practitioner accreditation approvals.
      */
     public static function accreditationCategories(): array
     {

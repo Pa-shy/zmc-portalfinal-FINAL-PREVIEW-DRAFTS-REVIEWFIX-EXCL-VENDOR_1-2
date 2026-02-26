@@ -2,7 +2,7 @@
 
 ## Overview
 This is a Laravel 12 PHP application for the Zimbabwe Media Commission portal. It provides:
-- Journalist accreditation management
+- Media practitioner accreditation management
 - Media house registration
 - Staff dashboards for various roles (admin, registrar, accounts, production, etc.)
 - Role-based access control using Spatie Laravel Permission

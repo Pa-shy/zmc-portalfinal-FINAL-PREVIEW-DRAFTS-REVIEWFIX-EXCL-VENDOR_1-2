@@ -14,7 +14,7 @@
 
   <div class="form-container">
     <div class="form-header">
-      <h1>Application for Accreditation of a Journalist</h1>
+      <h1>Application for Accreditation of a Media Practitioner</h1>
       <p>Zimbabwe Media Commission Act (2020), Statutory Instrument 169C (Registration, Accreditation and Levy) Regulations (2002)</p>
     </div>
 
@@ -49,14 +49,14 @@
           <h3 class="step-title">Select Applicant Type</h3>
           <div class="current-step-info">
             <i class="ri-information-line me-2"></i>
-            Select whether you are a Local or Foreign journalist. Different requirements apply.
+            Select whether you are a Local or Foreign media practitioner. Different requirements apply.
           </div>
 
           <div class="app-type-container">
             <div class="app-type-cards">
               <div class="app-type-card" data-type="local">
                 <i class="ri-user-3-line"></i>
-                <h4>Local Journalist</h4>
+                <h4>Local Media Practitioner</h4>
                 <p>Zimbabwean citizens/residents applying for accreditation.</p>
                 <div style="margin-top:15px;">
                   <span class="badge bg-light text-dark">14 Days Processing</span>
@@ -66,8 +66,8 @@
 
               <div class="app-type-card" data-type="foreign">
                 <i class="ri-global-line"></i>
-                <h4>Foreign Journalist</h4>
-                <p>International journalists seeking temporary accreditation.</p>
+                <h4>Foreign Media Practitioner</h4>
+                <p>International media practitioners seeking temporary accreditation.</p>
                 <div style="margin-top:15px;">
                   <span class="badge bg-light text-dark">21 Days Processing</span>
                   <span class="badge bg-light text-dark">Passport Required</span>
@@ -827,7 +827,7 @@
   function ap3ValidateStep(step){
     const scope = document.getElementById('ap3_scope').value;
     if(step === 1){
-      if(!scope){ alert('Please select an applicant type (Local or Foreign Journalist)'); return false; }
+      if(!scope){ alert('Please select an applicant type (Local or Foreign Media Practitioner)'); return false; }
     }
 
     const currentContent = ap3StepContents[step-1];
@@ -1071,7 +1071,7 @@
 
   function showReviewModal() {
     const formData = getFormData();
-    const scope = formData.journalist_scope === 'foreign' ? 'Foreign Journalist' : 'Local Journalist';
+    const scope = formData.journalist_scope === 'foreign' ? 'Foreign Media Practitioner' : 'Local Media Practitioner';
     const empType = formData.employment_type || '-';
 
     const highest = extractRows('highest_academic_', formData, ['year','institution','qualification']);

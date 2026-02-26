@@ -1,10 +1,10 @@
-<!-- APPLICANT SIDEBAR (Journalist + Media House) -->
+<!-- APPLICANT SIDEBAR (Media Practitioner + Media House) -->
 @php
   $isAccred = request()->routeIs('accreditation.*') || str_contains(request()->path(), 'portal/accreditation');
   $isMedia  = request()->routeIs('mediahouse.*') || str_contains(request()->path(), 'media-house/registration');
 
   $subTitle = $isAccred
-    ? 'Journalist Accreditation'
+    ? 'Media Practitioner Accreditation'
     : 'Mass Media Service Registration';
 @endphp
 

@@ -73,7 +73,7 @@
         @if($application->application_type === 'accreditation')
         <form method="POST" action="{{ route('staff.production.applications.generate_card', $application) }}" class="mb-3">
           @csrf
-          <label class="form-label fw-semibold">Journalist type code</label>
+          <label class="form-label fw-semibold">Media practitioner type code</label>
           <input class="form-control mb-2" name="journalist_type_code" placeholder="e.g. JV" value="{{ old('journalist_type_code','JV') }}" required>
           <button class="btn btn-success w-100"><i class="ri-id-card-line me-1"></i>Generate Accreditation Card (PDF)</button>
         </form>

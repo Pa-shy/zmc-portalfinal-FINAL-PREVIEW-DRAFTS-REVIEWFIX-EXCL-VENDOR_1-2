@@ -101,7 +101,7 @@ class AccreditationOfficerController extends Controller
                 ->get();
         }
 
-        // Inactive journalists (2-3 years without login)
+        // Inactive media practitioners (2-3 years without login)
         $inactiveJournalists = collect();
         $twoYearsAgo = now()->subYears(2);
         $threeYearsAgo = now()->subYears(3);
@@ -359,7 +359,7 @@ public function approve(Request $request, Application $application)
     }
 
     /**
-     * Display paginated list of accredited journalists with filters
+     * Display paginated list of accredited media practitioners with filters
      */
     public function accreditedJournalists(Request $request)
     {
@@ -403,7 +403,7 @@ public function approve(Request $request, Application $application)
 
         $journalists = $query->paginate(20)->appends($request->query());
 
-        return view('staff.officer.accredited_journalists', compact('journalists'));
+        return view('staff.officer.accredited_journalists', compact('media practitioners'));
     }
 
     /**
@@ -502,7 +502,7 @@ public function approve(Request $request, Application $application)
             }
         }
 
-        return back()->with('success', "Collection reminders sent to {$count} " . ($type === 'accreditation' ? 'journalists' : 'media houses') . ".");
+        return back()->with('success', "Collection reminders sent to {$count} " . ($type === 'accreditation' ? 'media practitioners' : 'media houses') . ".");
     }
 
     public function sendMessage(Request $request, Application $application)
@@ -579,7 +579,7 @@ public function approve(Request $request, Application $application)
             }
         }
 
-        return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'journalists' : 'media houses') . ".");
+        return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'media practitioners' : 'media houses') . ".");
     }
 
     public function idVerify(Request $request, Application $application)
@@ -645,7 +645,7 @@ public function approve(Request $request, Application $application)
     }
 
     // --- Records ---
-    public function recordsJournalists() { return $this->recordsListPage('Accredited Journalists', 'accreditation'); }
+    public function recordsJournalists() { return $this->recordsListPage('Accredited Media Practitioners', 'accreditation'); }
     public function recordsMediaHouses() { return $this->recordsListPage('Registered Media Houses', 'registration'); }
     public function recordsHistory()     { return $this->placeholder('Accreditation & Registration History', 'Shows historical issuance/renewal activity once records are populated.'); }
     public function recordsSuspended()   { abort(404); }

@@ -112,7 +112,7 @@
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start mb-3">
           <div>
-            <h6 class="fw-bold m-0">Accredited Journalists</h6>
+            <h6 class="fw-bold m-0">Accredited Media Practitioners</h6>
             <div class="text-muted small">View all accredited journalists and their collection status</div>
           </div>
           <div class="icon-box text-primary"><i class="ri-user-star-line"></i></div>
@@ -136,7 +136,7 @@
           </div>
         </div>
         <a href="{{ route('staff.officer.records.accredited-journalists') }}" class="btn btn-outline-primary w-100">
-          <i class="ri-eye-line me-1"></i> View All Journalists
+          <i class="ri-eye-line me-1"></i> View All Media Practitioners
         </a>
       </div>
     </div>
@@ -191,7 +191,7 @@
           <div class="col-12 col-lg-6">
             <div class="border rounded p-3">
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="fw-bold small text-muted">Journalists ({{ $expiringJournalists->count() }})</div>
+                <div class="fw-bold small text-muted">Media Practitioners ({{ $expiringJournalists->count() }})</div>
                 <form method="POST" action="{{ route('staff.officer.renewals.send-reminders') }}" class="d-inline">
                   @csrf
                   <input type="hidden" name="record_type" value="accreditation">
@@ -284,12 +284,12 @@
     </div>
   @endif
 
-  {{-- Inactive Journalists Section --}}
+  {{-- Inactive Media Practitioners Section --}}
   @if($inactiveJournalists && $inactiveJournalists->count() > 0)
     <div class="zmc-card mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-bold m-0">
-          <i class="ri-user-unfollow-line me-2" style="color:#dc3545"></i> Inactive Journalists (2-3 Years)
+          <i class="ri-user-unfollow-line me-2" style="color:#dc3545"></i> Inactive Media Practitioners (2-3 Years)
         </h6>
         <span class="badge bg-danger">{{ $inactiveJournalists->count() }} inactive</span>
       </div>
@@ -640,7 +640,7 @@
             ${zmcTextarea('Local address', (app.zim_local_address || app.zim_address))}
           </div>
         `;
-        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Journalist details`, body);
+        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Media Practitioner details`, body);
       }
 
       if (formCode === 'AP1') {

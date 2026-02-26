@@ -33,7 +33,7 @@ class RoleSelectController extends Controller
             [
                 'key' => 'production',
                 'title' => 'Production Officer',
-                'desc' => 'Generate press cards for journalists and certificates for media houses with QR codes. Handle printing and issuance. Multi-user role assigned by region.',
+                'desc' => 'Generate press cards for media practitioners and certificates for media houses with QR codes. Handle printing and issuance. Multi-user role assigned by region.',
                 'icon' => 'ri-printer-line',
             ],
             [

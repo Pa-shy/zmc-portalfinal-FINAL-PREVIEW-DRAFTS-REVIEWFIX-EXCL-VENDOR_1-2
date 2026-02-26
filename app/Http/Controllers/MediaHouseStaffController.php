@@ -40,7 +40,7 @@ class MediaHouseStaffController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Journalist already linked to your media house.');
+            return back()->with('error', 'Media practitioner already linked to your media house.');
         }
 
         MediaHouseStaff::create([
@@ -50,7 +50,7 @@ class MediaHouseStaffController extends Controller
             'status' => 'active',
         ]);
 
-        return back()->with('success', 'Journalist linked successfully.');
+        return back()->with('success', 'Media practitioner linked successfully.');
     }
 
     public function unlink(MediaHouseStaff $staff)
@@ -60,6 +60,6 @@ class MediaHouseStaffController extends Controller
 
         $staff->delete();
 
-        return back()->with('success', 'Journalist unlinked successfully.');
+        return back()->with('success', 'Media practitioner unlinked successfully.');
     }
 }
