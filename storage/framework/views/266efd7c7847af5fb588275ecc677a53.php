@@ -12,10 +12,10 @@
 
     <style>
         :root {
-            --bg-dark: #1a3a1a;
-            --bg-dark-2: #0d2810;
-            --zmc-green: #2d5a27;
-            --zmc-green-light: #3d7a35;
+            --bg-dark: #2e7d32;
+            --bg-dark-2: #1b5e20;
+            --zmc-green: #388e3c;
+            --zmc-green-light: #4caf50;
             --zmc-yellow: #c9a227;
             --zmc-orange: #ea580c;
             --card-bg: rgba(255, 255, 255, 0.08);
@@ -40,7 +40,7 @@
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at top right, rgba(45, 90, 39, 0.65) 0%, rgba(13, 40, 16, 0.85) 100%);
+            background: radial-gradient(circle at top right, rgba(46, 125, 50, 0.55) 0%, rgba(27, 94, 32, 0.72) 100%);
             z-index: -1;
         }
 
@@ -171,7 +171,7 @@
             display: inline-block;
             border: 1px solid var(--zmc-yellow);
             background: var(--zmc-yellow);
-            color: #1a3a1a;
+            color: #2e7d32;
             width: fit-content;
         }
 

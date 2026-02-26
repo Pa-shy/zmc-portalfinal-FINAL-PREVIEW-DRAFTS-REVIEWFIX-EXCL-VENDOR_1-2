@@ -26,30 +26,30 @@
 
   <div class="row g-3 mb-4">
     <div class="col-12 col-md-6 col-lg-3">
-      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #1a3a1a;">
-        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(26,58,26,0.1);color:#1a3a1a;font-size:22px;font-weight:900;">1</div>
-        <h6 class="fw-bold" style="color:#1a3a1a;">Choose Type</h6>
+      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #2e7d32;">
+        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(46, 125, 50,0.1);color:#2e7d32;font-size:22px;font-weight:900;">1</div>
+        <h6 class="fw-bold" style="color:#2e7d32;">Choose Type</h6>
         <p class="text-muted small mb-0">Select whether you are a <strong>Local</strong> or <strong>Foreign</strong> journalist to determine the correct application form and requirements.</p>
       </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">
-      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #1a3a1a;">
-        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(26,58,26,0.1);color:#1a3a1a;font-size:22px;font-weight:900;">2</div>
-        <h6 class="fw-bold" style="color:#1a3a1a;">Prepare Documents</h6>
+      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #2e7d32;">
+        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(46, 125, 50,0.1);color:#2e7d32;font-size:22px;font-weight:900;">2</div>
+        <h6 class="fw-bold" style="color:#2e7d32;">Prepare Documents</h6>
         <p class="text-muted small mb-0">Gather all required documents: ID/Passport, passport photo, employer letter, qualifications, and referee details.</p>
       </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">
-      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #1a3a1a;">
-        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(26,58,26,0.1);color:#1a3a1a;font-size:22px;font-weight:900;">3</div>
-        <h6 class="fw-bold" style="color:#1a3a1a;">Submit AP3</h6>
+      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #2e7d32;">
+        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(46, 125, 50,0.1);color:#2e7d32;font-size:22px;font-weight:900;">3</div>
+        <h6 class="fw-bold" style="color:#2e7d32;">Submit AP3</h6>
         <p class="text-muted small mb-0">Fill in all required fields accurately in the AP3 form and upload your supporting documents.</p>
       </div>
     </div>
     <div class="col-12 col-md-6 col-lg-3">
-      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #1a3a1a;">
-        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(26,58,26,0.1);color:#1a3a1a;font-size:22px;font-weight:900;">4</div>
-        <h6 class="fw-bold" style="color:#1a3a1a;">Pay & Collect</h6>
+      <div class="zmc-card h-100 text-center" style="border-top: 3px solid #2e7d32;">
+        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:50px;height:50px;border-radius:50%;background:rgba(46, 125, 50,0.1);color:#2e7d32;font-size:22px;font-weight:900;">4</div>
+        <h6 class="fw-bold" style="color:#2e7d32;">Pay & Collect</h6>
         <p class="text-muted small mb-0">After approval, pay the accreditation fee and collect your press card from your chosen office.</p>
       </div>
     </div>
@@ -58,43 +58,43 @@
   <div class="row g-3 mb-4">
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#1a3a1a;">
+        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
           <i class="ri-file-list-3-line me-2" style="color:var(--zmc-accent)"></i>Required Documents Checklist
         </h6>
         <div class="row g-2">
           <div class="col-12 col-md-6">
             <div class="d-flex align-items-center gap-2 p-2 border rounded mb-1" style="border-radius:8px !important;">
-              <i class="ri-camera-line" style="color:#1a3a1a;"></i>
+              <i class="ri-camera-line" style="color:#2e7d32;"></i>
               <span class="small fw-bold">Passport-size Photo</span>
             </div>
           </div>
           <div class="col-12 col-md-6">
             <div class="d-flex align-items-center gap-2 p-2 border rounded mb-1" style="border-radius:8px !important;">
-              <i class="ri-id-card-line" style="color:#1a3a1a;"></i>
+              <i class="ri-id-card-line" style="color:#2e7d32;"></i>
               <span class="small fw-bold">National ID / Passport</span>
             </div>
           </div>
           <div class="col-12 col-md-6">
             <div class="d-flex align-items-center gap-2 p-2 border rounded mb-1" style="border-radius:8px !important;">
-              <i class="ri-mail-open-line" style="color:#1a3a1a;"></i>
+              <i class="ri-mail-open-line" style="color:#2e7d32;"></i>
               <span class="small fw-bold">Employment Letter</span>
             </div>
           </div>
           <div class="col-12 col-md-6">
             <div class="d-flex align-items-center gap-2 p-2 border rounded mb-1" style="border-radius:8px !important;">
-              <i class="ri-award-line" style="color:#1a3a1a;"></i>
+              <i class="ri-award-line" style="color:#2e7d32;"></i>
               <span class="small fw-bold">Educational Certificates</span>
             </div>
           </div>
           <div class="col-12 col-md-6">
             <div class="d-flex align-items-center gap-2 p-2 border rounded mb-1" style="border-radius:8px !important;">
-              <i class="ri-user-voice-line" style="color:#1a3a1a;"></i>
+              <i class="ri-user-voice-line" style="color:#2e7d32;"></i>
               <span class="small fw-bold">3 Referees' Details</span>
             </div>
           </div>
           <div class="col-12 col-md-6">
             <div class="d-flex align-items-center gap-2 p-2 border rounded mb-1" style="border-radius:8px !important;">
-              <i class="ri-shield-check-line" style="color:#1a3a1a;"></i>
+              <i class="ri-shield-check-line" style="color:#2e7d32;"></i>
               <span class="small fw-bold">Clearance Letter (Foreign)</span>
             </div>
           </div>
@@ -109,7 +109,7 @@
 
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#1a3a1a;">
+        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
           <i class="ri-bank-card-line me-2" style="color:var(--zmc-accent)"></i>Payment Options
         </h6>
         <div class="mb-3">
@@ -152,7 +152,7 @@
   <div class="row g-3 mb-4">
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#1a3a1a;">
+        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
           <i class="ri-time-line me-2" style="color:var(--zmc-accent)"></i>Expected Timelines
         </h6>
         <div class="table-responsive">
@@ -172,7 +172,7 @@
               </tr>
               <tr>
                 <td class="fw-bold border-0">Total (Estimated)</td>
-                <td class="fw-bold border-0" style="color:#1a3a1a;">10 - 21 working days</td>
+                <td class="fw-bold border-0" style="color:#2e7d32;">10 - 21 working days</td>
               </tr>
             </tbody>
           </table>
@@ -185,7 +185,7 @@
 
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#1a3a1a;">
+        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
           <i class="ri-customer-service-2-line me-2" style="color:var(--zmc-accent)"></i>Need Help?
         </h6>
         <div class="d-flex align-items-start gap-3 mb-3">
@@ -196,14 +196,14 @@
           </div>
         </div>
         <div class="d-flex align-items-start gap-3 mb-3">
-          <i class="ri-mail-line" style="font-size:20px;margin-top:2px;color:#1a3a1a;"></i>
+          <i class="ri-mail-line" style="font-size:20px;margin-top:2px;color:#2e7d32;"></i>
           <div>
             <div class="fw-bold small">Email Support</div>
             <div class="text-muted small">info@zmc.org.zw / zmcaccreditation@gmail.com</div>
           </div>
         </div>
         <div class="d-flex align-items-start gap-3">
-          <i class="ri-phone-line" style="font-size:20px;margin-top:2px;color:#1a3a1a;"></i>
+          <i class="ri-phone-line" style="font-size:20px;margin-top:2px;color:#2e7d32;"></i>
           <div>
             <div class="fw-bold small">Telephone</div>
             <div class="text-muted small">+263 242 253509/10 | +263 242 253572/75/76</div>
@@ -214,7 +214,7 @@
   </div>
 
   <div class="text-center">
-    <a href="{{ route('accreditation.new') }}" class="btn btn-lg px-5 py-3" style="background:#1a3a1a;color:#fff;border-radius:12px;font-weight:900;">
+    <a href="{{ route('accreditation.new') }}" class="btn btn-lg px-5 py-3" style="background:#2e7d32;color:#fff;border-radius:12px;font-weight:900;">
       <i class="ri-file-add-line me-2"></i> Start Your Application Now
     </a>
     <div class="text-muted small mt-2">You can save your progress as a draft and return later.</div>

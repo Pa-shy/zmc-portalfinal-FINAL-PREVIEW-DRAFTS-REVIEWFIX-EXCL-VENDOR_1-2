@@ -20,8 +20,8 @@
             --border: #e2e8f0;
             --muted: #64748b;
             --text: #0f172a;
-            --green: #1a3a1a;
-            --green-hover: #0d2810;
+            --green: #2e7d32;
+            --green-hover: #1b5e20;
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             --radius: 16px;
         }
@@ -82,7 +82,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(26, 58, 26, 0.1);
+            background: rgba(46, 125, 50, 0.1);
             color: var(--green);
             padding: 6px 14px;
             border-radius: 99px;
@@ -123,7 +123,7 @@
         }
         .input:focus{
             border-color: var(--green);
-            box-shadow: 0 0 0 4px rgba(26, 58, 26, 0.1);
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
         }
 
         .toggle{
@@ -154,7 +154,7 @@
         }
 
         .info-box{
-            background: rgba(26, 58, 26, 0.05);
+            background: rgba(46, 125, 50, 0.05);
             border-left: 3px solid var(--green);
             padding: 12px 16px;
             border-radius: 8px;

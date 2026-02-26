@@ -150,6 +150,12 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - Used by Registrar to send notifications to portal users
 
 ## Recent Changes
+- February 26, 2026: Reduced green opacity system-wide
+  - Lightened primary green from #1a3a1a to #2e7d32 (medium green)
+  - Lightened dark green from #0d2810 to #1b5e20
+  - Reduced overlay opacity on sidebar, topbar, and landing page (0.94→0.82, 0.97→0.85)
+  - Updated all inline color references across howto, requirements, auth, and layout templates
+
 - February 26, 2026: Comprehensive workflow enforcement & new features
   - 15+ new application status constants for granular state tracking
   - ApplicationWorkflow state machine with enforced transitions

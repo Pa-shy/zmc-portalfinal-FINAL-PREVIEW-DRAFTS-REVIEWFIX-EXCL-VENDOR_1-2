@@ -18,8 +18,8 @@
             --border: #e2e8f0;
             --muted: #64748b;
             --text: #111827;
-            --green: #1a3a1a;
-            --green-hover: #0d2810;
+            --green: #2e7d32;
+            --green-hover: #1b5e20;
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             --radius: 16px;
         }

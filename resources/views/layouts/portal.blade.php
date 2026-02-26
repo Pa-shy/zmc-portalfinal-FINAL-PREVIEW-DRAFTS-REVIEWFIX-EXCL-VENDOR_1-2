@@ -26,7 +26,7 @@
       --accent:#c9a227; --accent-dark:#b8931f;
       --bg:#f3f4f6; --card:#ffffff; --border:#e5e7eb;
       --text:#111827; --muted:#6b7280;
-      --sidebar:#1a3a1a; --sidebar-2:#0d2810; --sidebar-text:#e8f5e9;
+      --sidebar:#2e7d32; --sidebar-2:#1b5e20; --sidebar-text:#e8f5e9;
       --shadow:0 14px 40px rgba(0,0,0,.08); --radius:14px;
       --zmc-accent: #fbbf24; --zmc-accent-dark: #f59e0b;
       --zmc-border: #e2e8f0; --zmc-soft: #f8fafc;
@@ -42,7 +42,7 @@
 
     /* Sidebar */
     .vertical-menu{ width: 270px; background: url('{{ asset("zmc_building.png") }}') center center / cover no-repeat; color:var(--sidebar-text); position: fixed; top:0; left: 0; bottom: 0; height: 100%; display:flex; flex-direction:column; overflow:hidden; z-index: 1000; }
-    .vertical-menu::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(26, 58, 26, 0.94), rgba(13, 40, 16, 0.97)); z-index: 0; pointer-events: none; }
+    .vertical-menu::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(46, 125, 50, 0.82), rgba(27, 94, 32, 0.85)); z-index: 0; pointer-events: none; }
     .vertical-menu > *{ position: relative; z-index: 1; }
     .main{ margin-left: 270px; }
     .navbar-brand-box{ padding: 18px 16px; display:flex; gap:10px; align-items:center; border-bottom: 1px solid rgba(255,255,255,.08); justify-content: space-between; }
@@ -157,8 +157,8 @@
 
   <style>
     :root{
-      --zmc-green:#2d5a27;
-      --zmc-green-dark:#1a3a1a;
+      --zmc-green:#388e3c;
+      --zmc-green-dark:#2e7d32;
     }
     .btn-primary, .btn-success{
       background: var(--zmc-green) !important;
@@ -183,7 +183,7 @@
     }
 
     .topbar{ background: url('{{ asset("zmc_building.png") }}') center center / cover no-repeat !important; border-bottom: none !important; position: relative; }
-    .topbar::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(26, 58, 26, 0.94), rgba(13, 40, 16, 0.96)); z-index: 0; }
+    .topbar::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(46, 125, 50, 0.82), rgba(27, 94, 32, 0.85)); z-index: 0; }
     .topbar > *{ position: relative; z-index: 1; }
     .topbar .icon-btn{ background: rgba(255,255,255,.1) !important; border-color: rgba(255,255,255,.2) !important; }
     .topbar .icon-btn i{ color: #fff !important; }

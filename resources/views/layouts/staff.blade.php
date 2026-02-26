@@ -14,8 +14,8 @@
 
     <style>
         :root{
-            --zmc-green:#1a3a1a;
-            --zmc-green-dark:#0d2810;
+            --zmc-green:#388e3c;
+            --zmc-green-dark:#2e7d32;
         }
         .zmc-topbar{
             background: url('{{ asset("zmc_building.png") }}') center center / cover no-repeat;
@@ -25,7 +25,7 @@
             content: "";
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, rgba(26, 58, 26, 0.94), rgba(13, 40, 16, 0.96));
+            background: linear-gradient(90deg, rgba(46, 125, 50, 0.82), rgba(27, 94, 32, 0.85));
             z-index: 0;
         }
         .zmc-topbar > *{
