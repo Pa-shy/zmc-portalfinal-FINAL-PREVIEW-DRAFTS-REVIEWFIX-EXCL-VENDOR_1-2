@@ -191,25 +191,27 @@
     .topbar-toggle{ background: rgba(255,255,255,.1) !important; border-color: rgba(255,255,255,.2) !important; }
     .topbar-toggle i{ color: #fff !important; }
 
-    /* Dark theme (basic overrides) */
+    /* Dark theme overrides */
     body.theme-dark::before{ background: rgba(6, 12, 8, 0.85) !important; }
     body.theme-dark .content{ color: #e2e8f0; }
-    body.theme-dark .card{ background: rgba(15, 23, 42, 0.88) !important; color: #e2e8f0; }
-    body.theme-dark .card .text-muted{ color: rgba(226,232,240,0.7) !important; }
+    body.theme-dark .card, body.theme-dark .zmc-card{ background: rgba(15, 23, 42, 0.88) !important; color: #e2e8f0; border-color: rgba(148,163,184,0.2) !important; }
+    body.theme-dark .card .text-muted, body.theme-dark .zmc-card .text-muted{ color: rgba(226,232,240,0.7) !important; }
     body.theme-dark .table{ color: #e2e8f0; }
+    body.theme-dark .table thead th{ background: rgba(30,41,59,0.9) !important; color: #94a3b8 !important; }
+    body.theme-dark .table tbody td{ border-color: rgba(148,163,184,0.15) !important; }
     body.theme-dark .bg-light{ background: rgba(30, 41, 59, 0.85) !important; }
     body.theme-dark .dropdown-menu{ background: #0f172a; color: #e2e8f0; }
     body.theme-dark .dropdown-item{ color: #e2e8f0; }
     body.theme-dark .dropdown-item:hover{ background: rgba(148,163,184,0.15); }
-
-    /* Hide Google Translate Banner */
-    .goog-te-banner-frame { display: none !important; }
-    body { top: 0 !important; }
-    .goog-te-balloon-frame { display: none !important; }
-    .goog-te-gadget-icon { display: none !important; }
-    .goog-te-menu-value span:last-child { display: none !important; }
-    iframe.goog-te-menu-frame { display: none !important; }
-    .skiptranslate[style*="visibility: visible"] { display: none !important; }
+    body.theme-dark .form-container{ background: rgba(15, 23, 42, 0.88) !important; border-color: rgba(148,163,184,0.2) !important; }
+    body.theme-dark .form-header{ background: linear-gradient(180deg, rgba(250,204,21,.08), rgba(255,255,255,0)) !important; border-color: rgba(148,163,184,0.2) !important; }
+    body.theme-dark .form-control, body.theme-dark .form-select{ background: rgba(30,41,59,0.8) !important; color: #e2e8f0 !important; border-color: rgba(148,163,184,0.25) !important; }
+    body.theme-dark .form-control:focus, body.theme-dark .form-select:focus{ border-color: var(--zmc-accent) !important; }
+    body.theme-dark .form-label{ color: #94a3b8 !important; }
+    body.theme-dark .modal-content{ background: #0f172a !important; color: #e2e8f0 !important; }
+    body.theme-dark h4, body.theme-dark h5, body.theme-dark h6{ color: #e2e8f0 !important; }
+    body.theme-dark .text-dark{ color: #e2e8f0 !important; }
+    body.theme-dark .alert{ background: rgba(30,41,59,0.8) !important; border-color: rgba(148,163,184,0.2) !important; color: #e2e8f0 !important; }
 
   </style>
 
@@ -315,37 +317,6 @@
   
   <?php echo $__env->yieldPushContent('scripts'); ?>
 
-  
-  <div id="google_translate_element" style="display:none;"></div>
-  <script>
-    // NOTE: This uses the free Google Translate website widget.
-    // It translates visible text like labels/buttons (e.g. "Name" -> "Zita") without needing API keys.
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        autoDisplay: false
-      }, 'google_translate_element');
-
-      const locale = <?php echo json_encode(app()->getLocale(), 15, 512) ?>;
-      if (locale && locale !== 'en') {
-        // Force widget language via cookie then reload once.
-        const desired = '/en/' + locale;
-        const current = (document.cookie.match(/(?:^|;\s*)googtrans=([^;]+)/) || [])[1];
-        if (current !== desired) {
-          document.cookie = 'googtrans=' + desired + ';path=/';
-          document.cookie = 'googtrans=' + desired + ';path=/;domain=' + window.location.hostname;
-          // Prevent infinite loop
-          if (!sessionStorage.getItem('gt_reloaded')) {
-            sessionStorage.setItem('gt_reloaded', '1');
-            window.location.reload();
-          }
-        }
-      } else {
-        sessionStorage.removeItem('gt_reloaded');
-      }
-    }
-  </script>
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   
   <script>

@@ -21,6 +21,12 @@
         <div id="pay_error" class="alert alert-danger d-none"></div>
         <div id="pay_success" class="alert alert-success d-none"></div>
 
+        <div id="pay_rejection_banner" class="alert alert-danger d-none">
+          <div class="fw-bold mb-1"><i class="ri-error-warning-line me-1"></i> Payment Rejected</div>
+          <div id="pay_rejection_reason" class="small"></div>
+          <div class="text-muted small mt-1">Please resubmit your payment using one of the options below.</div>
+        </div>
+
         <div id="pay_options">
           <div class="alert alert-light border mb-3">
             <div class="fw-bold mb-1"><i class="ri-information-line me-1"></i> Payment Information</div>
@@ -161,8 +167,27 @@
           <div class="spinner-border text-success" role="status"></div>
           <div class="mt-3 fw-bold">Waiting for payment confirmation...</div>
           <div class="text-muted small">Please approve the payment on your phone.</div>
-          <button type="button" class="btn btn-outline-secondary btn-sm mt-3" id="btnCheckStatus">
-            <i class="ri-refresh-line me-1"></i> Check Status
+          <div class="d-flex justify-content-center gap-2 mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnCheckStatus">
+              <i class="ri-refresh-line me-1"></i> Check Status
+            </button>
+            <button type="button" class="btn btn-success btn-sm fw-bold" id="btnPaynowDone">
+              <i class="ri-check-line me-1"></i> Done - Enter Reference
+            </button>
+          </div>
+        </div>
+
+        <div id="pay_reference_form" class="d-none">
+          <div class="alert alert-light border mb-3">
+            <div class="fw-bold mb-1"><i class="ri-information-line me-1"></i> Submit PayNow Reference</div>
+            <div class="text-muted small">Please enter the PayNow transaction reference number from your payment confirmation.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">PayNow Reference Number</label>
+            <input type="text" class="form-control zmc-input" id="paynow_ref_input" placeholder="e.g. PN1234567890" required>
+          </div>
+          <button type="button" class="btn btn-success w-100 fw-bold" id="btnSubmitPaynowRef">
+            <i class="ri-check-double-line me-1"></i> Submit Reference
           </button>
         </div>
       </div>
@@ -207,14 +232,15 @@
     document.getElementById('pay_loading').classList.add('d-none');
     document.getElementById('pay_options').classList.remove('d-none');
     document.getElementById('pay_polling').classList.add('d-none');
+    document.getElementById('pay_reference_form').classList.add('d-none');
+    document.getElementById('pay_rejection_banner').classList.add('d-none');
     document.getElementById('pay_phone').value = '';
+    document.getElementById('paynow_ref_input').value = '';
     if (pollingInterval) clearInterval(pollingInterval);
 
-    // reset forms
     document.getElementById('proofForm')?.reset();
     document.getElementById('waiverForm')?.reset();
 
-    // ensure PayNow tab active
     const tab = document.getElementById('tab-paynow');
     if (tab && window.bootstrap?.Tab) {
       bootstrap.Tab.getOrCreateInstance(tab).show();
@@ -303,9 +329,24 @@
 
     currentAppId = btn.getAttribute('data-app-id');
     const appRef = btn.getAttribute('data-app-ref');
+    const rejectionReason = btn.getAttribute('data-rejection-reason');
+    const paymentStage = btn.getAttribute('data-payment-stage');
 
     resetPayModal();
-    document.getElementById('pay_meta').textContent = 'Application: ' + appRef;
+
+    let metaText = 'Application: ' + appRef;
+    if (paymentStage === 'registration_fee') {
+      metaText += ' — Registration Fee';
+    } else if (paymentStage === 'application_fee') {
+      metaText += ' — Application Fee';
+    }
+    document.getElementById('pay_meta').textContent = metaText;
+
+    if (rejectionReason) {
+      const banner = document.getElementById('pay_rejection_banner');
+      document.getElementById('pay_rejection_reason').textContent = rejectionReason;
+      banner.classList.remove('d-none');
+    }
 
     const modal = document.getElementById('paymentModal');
     if (window.bootstrap && typeof bootstrap.Modal === 'function') {
@@ -409,6 +450,71 @@
     ev.preventDefault();
     if (!currentAppId) return;
     postForm(`/payments/${currentAppId}/upload-waiver`, this, document.getElementById('btnSubmitWaiver'));
+  });
+
+  document.getElementById('btnPaynowDone')?.addEventListener('click', function() {
+    if (pollingInterval) clearInterval(pollingInterval);
+    document.getElementById('pay_polling').classList.add('d-none');
+    document.getElementById('pay_reference_form').classList.remove('d-none');
+  });
+
+  document.getElementById('btnSubmitPaynowRef')?.addEventListener('click', async function() {
+    const refInput = document.getElementById('paynow_ref_input');
+    const ref = refInput.value.trim();
+
+    if (!ref) {
+      showPayError('Please enter a valid PayNow reference number.');
+      return;
+    }
+
+    if (!currentAppId) return;
+
+    const btn = this;
+    try {
+      document.getElementById('pay_error').classList.add('d-none');
+      setBusy(btn, true, 'Submitting...');
+
+      const res = await fetch(`/payments/${currentAppId}/submit-reference`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': csrf(),
+        },
+        body: JSON.stringify({ paynow_reference: ref })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) {
+        if (data.errors) {
+          const first = Object.values(data.errors)[0];
+          throw new Error(Array.isArray(first) ? first[0] : String(first));
+        }
+        throw new Error(data.message || 'Submission failed');
+      }
+
+      document.getElementById('pay_reference_form').classList.add('d-none');
+      showPaySuccess(data.message || 'PayNow reference submitted successfully.');
+
+      const rowBtn = document.querySelector(`.js-pay-now[data-app-id="${currentAppId}"]`);
+      if (rowBtn) {
+        rowBtn.classList.remove('btn-success', 'btn-danger');
+        rowBtn.classList.add('btn-outline-secondary');
+        rowBtn.innerHTML = `<i class="ri-time-line me-1"></i> Submitted`;
+        rowBtn.disabled = true;
+      }
+
+      setTimeout(() => {
+        const modalEl = document.getElementById('paymentModal');
+        const inst = window.bootstrap?.Modal?.getInstance(modalEl) || window.bootstrap?.Modal?.getOrCreateInstance(modalEl);
+        inst?.hide();
+      }, 1500);
+
+    } catch (e) {
+      showPayError(e.message || 'Network error. Please try again.');
+    } finally {
+      setBusy(btn, false);
+    }
   });
 
 })();

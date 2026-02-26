@@ -1,0 +1,292 @@
+REPLIT CHANGE REQUEST PROMPT — ZMC PORTAL + WORKFLOW ENFORCEMENT (EDIT EXISTING SYSTEM)
+
+You are working in an EXISTING Replit codebase for the Zimbabwe Media Commission Integrated Registration & Accreditation System.
+Your job is to EDIT the current system (not rebuild) to enforce the workflows and UI requirements below.
+
+NON-NEGOTIABLE:
+- Enforce rules at BACKEND/API level (server-side guards), not only in UI.
+- Maintain RBAC: Applicant, Accreditation Officer, Registrar, Accounts/Payments Officer, Auditor.
+- Every action must write to an AUDIT LOG table (actor, role, action, before_state, after_state, timestamp, notes).
+- Keep the system stable: minimize breaking changes and add DB migrations safely.
+
+Deliverables:
+1) Status/state machine implementation + migrations
+2) Updated endpoints + guards
+3) Updated UI pages/flows
+4) Tests / seed data where possible
+5) Short developer notes on how to run migrations & verify each flow
+
+────────────────────────────────────────────────────────
+SECTION 1 — CORE WORKFLOWS TO ENFORCE
+────────────────────────────────────────────────────────
+
+A) MEDIA PRACTITIONER NEW ACCREDITATION (STANDARD FLOW)
+FLOW:
+Applicant → Accreditation Officer → (Registrar + Accounts) → Accounts Verification → Production (Accreditation Officer)
+
+1) Applicant submits new accreditation
+- Status: SubmittedToAccreditationOfficer
+- Only Accreditation Officer sees it first.
+
+2) Accreditation Officer dashboard actions
+- Review fields + documents
+- Assign category
+- If missing/wrong: “Return to Applicant” with message (mandatory reason)
+  Status: ReturnedToApplicant
+- If OK: “Approve”
+  Status: ApprovedByAccreditationOfficer_AwaitingPayment
+  After approval:
+   - Application becomes visible to Registrar AND Accounts dashboards (read queues)
+   - Applicant is immediately prompted to pay.
+
+3) Payment prompt after Accreditation Officer approval
+Option 1: PayNow
+- “Pay with PayNow” opens PayNow UI
+- After payment: applicant clicks “Done”
+- Show modal requiring PayNow reference number
+- Submit reference → Status: AwaitingAccountsVerification
+
+Option 2: Upload Payment Proof/Related Doc
+- Modal for proof upload + optional payment metadata
+- Submit → Status: AwaitingAccountsVerification
+
+4) Registrar dashboard
+- Receives only ApprovedByAccreditationOfficer_AwaitingPayment applications
+- Registrar reviews documents vs form data
+- If errors: Registrar sends “Fix Request” to Accreditation Officer (internal message/task)
+  Status: RegistrarRaisedFixRequest
+  Accreditation Officer fixes and re-approves/confirm changes.
+- Registrar does NOT verify payments.
+
+5) Accounts dashboard
+- Receives AwaitingAccountsVerification applications
+- PayNow: compare submitted reference to external PayNow platform record
+  - Match → approve → Status: PaymentVerified
+  - No match → reject with reason → Status: PaymentRejected (applicant must resubmit)
+- Proof: verify against internal records → approve/reject similarly.
+- PaymentVerified applications are routed to Production.
+
+6) Production dashboard (Accreditation Officer only)
+- Shows only PaymentVerified applications
+- Generate + print card/certificate
+- Track: template version, who generated, who printed, print count, timestamps
+- Status: ProducedReadyForCollection
+- Add a sidebar link “Production” in Accreditation Officer menu for easy access.
+
+B) SPECIAL/COMPLICATED PAYMENTS (WAIVERS)
+Requirement:
+Some applications use waivers as payment proof. Accreditation Officer must be able to forward to Registrar WITHOUT approving.
+
+Add Accreditation Officer action:
+- “Forward to Registrar (No Approval)”
+  Status: ForwardedToRegistrar_NoAccredApproval
+  Must capture reason (e.g., waiver/special case)
+
+Registrar then:
+- Reviews and if satisfied:
+  - Pushes to Accounts from Registrar dashboard
+  Status: PendingAccountsReview_FromRegistrar
+
+Accounts:
+- Verifies waiver document as payment-equivalent
+- Approves → PaymentVerified → Production
+- Rejects → PaymentRejected with reason
+
+C) REGISTRAR OVERSIGHT OF ACCOUNTS
+Registrar must have READ-ONLY oversight into Accounts activity:
+- View payments queue and payment outcomes
+- View paynow references, proofs, waivers, receipt records
+- View payment audit logs and counts
+Registrar cannot approve payments.
+
+D) MEDIA HOUSE NEW REGISTRATION (TWO-STAGE PAYMENT FLOW)
+FLOW:
+Applicant → (Application Fee Payment) → Accreditation Officer → Registrar → (Registration Fee Payment) → Accounts → Production
+
+Stage 1: Submission requires Application Fee
+On submitting Media House registration:
+- Prompt for Application Fee:
+  Option 1: PayNow → Done → enter reference → attach to application
+  Option 2: Upload application fee proof via modal (details + file)
+- Block submission if application fee was not submitted.
+- Status: SubmittedWithApplicationFee_ToAccreditationOfficer
+
+Stage 2: Accreditation Officer review
+- Verify docs/fields/requirements met
+- If incomplete: return to applicant with message
+- If complete: verify/push to Registrar
+  Status: VerifiedByAccreditationOfficer_PendingRegistrarReview
+
+Stage 3: Registrar review
+- If errors: Fix Request to Accreditation Officer
+- If satisfied: Registrar approval requires uploading OFFICIAL LETTER (mandatory)
+  - Block approve if letter missing
+- After approval:
+  Status: RegistrarApproved_PendingRegistrationFeePayment
+  Applicant is prompted to pay registration fee.
+
+Stage 4: Registration fee payment (after registrar approval)
+- Option 1: PayNow → Done → enter reference
+- Option 2: Upload proof
+- Status: AwaitingAccountsVerification
+
+Accounts verifies registration fee
+- Approve → PaymentVerified → Production
+- Reject → PaymentRejected
+
+Production by Accreditation Officer.
+
+────────────────────────────────────────────────────────
+SECTION 2 — RENEWALS (SIMPLIFIED NUMBER LOOKUP FLOW)
+────────────────────────────────────────────────────────
+
+GLOBAL RENEWAL RULE:
+Applicants choose renewal type.
+Step 2 must ONLY ask for:
+- Accreditation Number (media practitioner renewal) OR
+- Registration Number (media house renewal)
+Remove other fields from Step 2.
+
+Lookup behavior:
+- On entering number, query DB for the full record.
+- Display retrieved info on screen.
+- Applicant confirms “No changes” OR indicates “There are changes” (structured change list).
+- After confirmation: applicant proceeds to payment (PayNow reference modal or proof upload).
+- Renewal flow routing:
+  Applicant → Accounts (payment approval) → Production (Accreditation Officer)
+
+MEDIA HOUSE PORTAL RENEWAL SPECIFIC:
+- Remove “Contact Details” step completely.
+- Registration Info step: enter Registration Number → lookup → display → confirm changes/no changes → payment.
+
+RENEWAL DOCUMENT RULES:
+- On renewal document upload, applicant chooses: Freelancer or Employed
+  - Freelancer: employment letter NOT required and hidden
+  - Employed: allow/require upload of employment letter
+
+MEDIA HOUSE RENEWAL REQUIRED DOCS:
+- Previous Certificate (required)
+- Official Letter requesting renewal (required)
+
+────────────────────────────────────────────────────────
+SECTION 3 — PORTAL CONTENT & UI FEATURES
+────────────────────────────────────────────────────────
+
+A) REQUIREMENTS DISPLAY ON PORTALS
+- Media Practitioner Portal:
+  - Show “Accreditation Requirements” on dashboard and a full page.
+- Media House Portal:
+  - Show “Registration Requirements” on dashboard and a full page.
+- Requirements must be dynamic (DB-driven config) and visible without starting an application.
+
+B) “HOW TO” PAGES — IMPROVE DESIGN
+- Media Practitioner Portal: redesign “How to get Accredited” page (comprehensive + nicer UX)
+- Media House Portal: redesign “How to get Registered” page similarly
+Include: steps, checklists, payment paths, timelines, help contacts, CTA buttons.
+
+C) SHOW PREVIOUS APPLICATIONS & PAYMENTS
+- In both portals: show list of previous applications for the logged-in user/entity.
+- In Accreditation Officer, Auditor, Registrar:
+  - Show the Media Practitioner name in lists.
+  - When viewing an applicant, show “Previous Applications” panel.
+- In Accounts and Auditor:
+  - Show “Previous Payments” panel per applicant/entity.
+
+D) REGISTRAR REMINDERS TO PORTALS (ATTENTION GRABBING)
+- Registrar can create reminders targeted to:
+  - a specific media practitioner
+  - a specific media house
+- Reminders must display as attention-grabbing popups/banners on portal dashboards until acknowledged.
+- Also support levy payment reminders for media houses (stored and shown on dashboard).
+- Track acknowledgement and log to audit.
+
+E) PORTAL SIDEBAR — MEDIA HUB LINK
+- Add “Media Hub” link in both portals sidebar (points to website Media Hub page).
+
+F) NOTICES & EVENTS SUPPORT IMAGES
+- Notices/Events must allow image uploads and display with thumbnails + full view.
+
+G) THEME
+- Light/Dark mode must be functional and persisted per user.
+
+H) REMOVE FEATURES
+- Remove language translation features entirely.
+- Remove Staff Management module/pages/routes/menus.
+- Remove signup/sign-in via social media links (keep standard auth only).
+
+I) PROFILE UPDATES
+- Local media practitioners: add required ID Number field.
+- Foreign media practitioners: add required Passport Number field.
+- Phone numbers: require at least TWO phone numbers in profile.
+- Media House profile: add Social Media Platforms fields (FB/X/IG/YT/TikTok/Website).
+
+J) MEDIA HOUSE DASHBOARD LICENSE STATUS
+- Show license status (active/expired/etc.) and time left before expiry.
+- Must query DB dynamically on every dashboard load (no stale display).
+- Show levy reminders created by Registrar.
+
+K) ACCREDITATION OFFICER DASHBOARD LABELING
+- Applications must be labeled as New / Renewal / Replacement in Accreditation Officer views.
+
+────────────────────────────────────────────────────────
+SECTION 4 — ACCOUNTS CASH PAYMENTS + PHYSICAL FORMS INTAKE
+────────────────────────────────────────────────────────
+
+A) ACCOUNTS CASH PAYMENTS
+- Add “Record Cash Payment” option on Accounts dashboard:
+  - Search/select application
+  - Enter receipt number + amount + date
+  - Link receipt to that application’s payment record
+  - Accounts can approve → routed to Production
+- Cash records must be auditable and immutable (void only with reason + audit).
+
+B) PHYSICAL FORMS (APPLICANT ALREADY IN DB)
+- Add Accreditation Officer “Physical Intake” action:
+  - Enter accreditation number OR registration number
+  - Query DB record and display it
+  - Confirm identity/details
+  - Enter receipt number
+  - Receipt must be visible to Accounts (linked payment record)
+  - System creates/updates an internal application record and automatically adds it to Production queue as ready (per policy)
+- Prevent duplicates: if already produced for the same cycle, block or require override with audit.
+
+────────────────────────────────────────────────────────
+SECTION 5 — PRODUCTION DASHBOARD DESIGNER
+────────────────────────────────────────────────────────
+
+Add within Production Dashboard (Accreditation Officer):
+- Card Designer interface (accreditation cards)
+- Certificate Designer interface (media house certificates/licenses)
+
+Capabilities:
+- Upload background template OR build layout
+- Place dynamic fields (name, number, category, expiry, QR)
+- Save template versions (yearly)
+- Select template during generation
+- Generate preview → generate final output → print
+- Track prints in ProductionPrintLog
+
+────────────────────────────────────────────────────────
+SECTION 6 — IMPLEMENTATION PLAN REQUIRED
+────────────────────────────────────────────────────────
+
+Before coding, inspect current codebase and identify:
+- existing tables/models for applications, payments, users, roles, audit logs, production
+- existing statuses or enums
+- existing portal pages and staff dashboards
+
+Then implement in this order:
+1) DB migrations: new fields/tables (status machine, reminders, payment stages, receipts, login activity, templates)
+2) Backend: endpoints + server-side guards for status transitions + RBAC
+3) UI changes: portals flows, dashboards, modals, tabs, “How to” pages, requirements pages
+4) Production designer module + template storage + print logs
+5) Tests: basic flow tests and regression checks
+
+You must output:
+- A status transition table (from_status → action → to_status + validation)
+- RBAC permission matrix (role → allowed actions)
+- List of endpoints changed/added
+- Screens/pages changed list
+- Notes on how to verify each flow in staging
+
+Implement EXACTLY as described. Do not skip any bullet.

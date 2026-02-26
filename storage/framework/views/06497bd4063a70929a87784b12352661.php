@@ -159,7 +159,11 @@
               $status = strtolower((string)($app->status ?? ''));
               $badge = match(true) {
                 (bool)($app->is_draft) => 'secondary',
+                in_array($status, ['payment_rejected'], true) => 'danger',
                 str_contains($status, 'rejected') => 'danger',
+                in_array($status, ['approved_awaiting_payment','registrar_approved_pending_reg_fee'], true) => 'warning',
+                in_array($status, ['awaiting_accounts_verification'], true) => 'info',
+                in_array($status, ['payment_verified'], true) => 'success',
                 str_contains($status, 'approved') || $status === 'issued' => 'success',
                 in_array($status, ['needs_correction','correction_requested'], true) => 'warning',
                 in_array($status, ['submitted','officer_review','registrar_review','accounts_review'], true) => 'info',
@@ -203,13 +207,26 @@
                         <i class="ri-edit-2-line me-1"></i> Edit
                       </a>
                     <?php endif; ?>
-                    <?php if($status === 'accounts_review'): ?>
+                    <?php if(in_array($status, ['accounts_review','approved_awaiting_payment','registrar_approved_pending_reg_fee'])): ?>
                       <button type="button" class="btn btn-sm btn-success fw-bold js-pay-now" 
                               data-app-id="<?php echo e($app->id); ?>" 
                               data-app-ref="<?php echo e($app->reference); ?>"
+                              data-payment-stage="<?php echo e($status === 'registrar_approved_pending_reg_fee' ? 'registration_fee' : 'accreditation_fee'); ?>"
                               title="Pay Now">
                         <i class="ri-bank-card-line me-1"></i> Pay
                       </button>
+                    <?php endif; ?>
+                    <?php if($status === 'payment_rejected'): ?>
+                      <button type="button" class="btn btn-sm btn-danger fw-bold js-pay-now" 
+                              data-app-id="<?php echo e($app->id); ?>" 
+                              data-app-ref="<?php echo e($app->reference); ?>"
+                              data-rejection-reason="<?php echo e($app->proof_review_notes ?? $app->rejection_reason ?? ''); ?>"
+                              title="Resubmit Payment">
+                        <i class="ri-error-warning-line me-1"></i> Resubmit Payment
+                      </button>
+                    <?php endif; ?>
+                    <?php if($status === 'awaiting_accounts_verification'): ?>
+                      <span class="badge bg-info px-2"><i class="ri-time-line me-1"></i>Verifying Payment</span>
                     <?php endif; ?>
                     <?php if(in_array($status, ['submitted','officer_review','registrar_review','accounts_review'])): ?>
                       <button type="button" class="btn btn-sm zmc-icon-btn btn-outline-danger js-withdraw-app" data-app-id="<?php echo e($app->id); ?>" title="Withdraw Application">

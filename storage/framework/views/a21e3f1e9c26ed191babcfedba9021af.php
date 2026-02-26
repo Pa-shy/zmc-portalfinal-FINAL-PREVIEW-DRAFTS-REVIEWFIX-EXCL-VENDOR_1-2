@@ -35,29 +35,6 @@
     <!-- Right Section: Utility Actions -->
     <div class="topbar-right">
 
-      <!-- Language Switch -->
-      <div class="dropdown">
-        <button class="icon-btn dropdown-toggle hide-caret" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Language">
-          <i class="ri-translate-2"></i>
-        </button>
-        <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" aria-labelledby="langDropdown" style="border-radius: 12px; max-height: 280px; overflow-y: auto; min-width: 180px;">
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'en')); ?>">English</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'sn')); ?>">Shona</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'nd')); ?>">Ndebele</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'ny')); ?>">Chewa</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'cwa')); ?>">Chibarwe</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'kck')); ?>">Kalanga</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'nmq')); ?>">Nambya</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'ndc')); ?>">Ndau</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'tso')); ?>">Shangani</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'st')); ?>">Sotho</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'toi')); ?>">Tonga</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'tn')); ?>">Tswana</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'ven')); ?>">Venda</a>
-          <a class="dropdown-item" href="<?php echo e(route('lang.switch', 'xh')); ?>">Xhosa</a>
-        </div>
-      </div>
-
       <!-- Global Search (Staff only) -->
       <?php if($isStaff): ?>
         <form action="<?php echo e(route('staff.search')); ?>" method="GET" class="d-none d-md-flex align-items-center me-2">

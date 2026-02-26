@@ -18,11 +18,17 @@ class FixDatabaseConstraints extends Command
             DB::statement('ALTER TABLE applications DROP CONSTRAINT IF EXISTS applications_status_check');
             DB::statement("ALTER TABLE applications ADD CONSTRAINT applications_status_check CHECK (status::text = ANY(ARRAY[
                 'draft', 'submitted', 'withdrawn', 'needs_correction',
-                'officer_review', 'officer_approved', 'officer_rejected', 'correction_requested',
-                'registrar_review', 'registrar_approved', 'registrar_rejected', 'returned_to_officer',
-                'accounts_review', 'paid_confirmed', 'returned_to_accounts',
+                'officer_review', 'officer_approved', 'officer_rejected',
+                'correction_requested', 'returned_to_applicant',
+                'approved_awaiting_payment', 'forwarded_to_registrar', 'registrar_fix_request',
+                'registrar_review', 'registrar_approved', 'registrar_rejected',
+                'returned_to_officer', 'pending_accounts_from_registrar', 'registrar_approved_pending_reg_fee',
+                'accounts_review', 'awaiting_accounts_verification',
+                'payment_verified', 'payment_rejected',
+                'paid_confirmed', 'returned_to_accounts',
+                'submitted_with_app_fee', 'verified_by_officer',
                 'approved_pending_payment', 'paid', 'returned_from_payments', 'returned_from_registrar', 'rejected',
-                'production_queue', 'card_generated', 'certificate_generated', 'printed', 'issued'
+                'production_queue', 'produced_ready', 'card_generated', 'certificate_generated', 'printed', 'issued'
             ]::text[]))");
             $this->info('  - applications.status constraint updated');
 

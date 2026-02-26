@@ -17,6 +17,12 @@
     </div>
 
     <div class="d-flex align-items-center gap-2">
+      <a href="{{ route('staff.registrar.accounts-oversight') }}" class="btn btn-outline-secondary btn-sm" title="Accounts Oversight">
+        <i class="ri-eye-line me-1"></i> Accounts Oversight
+      </a>
+      <a href="{{ route('staff.registrar.reminders.index') }}" class="btn btn-outline-info btn-sm" title="Reminders">
+        <i class="ri-alarm-line me-1"></i> Reminders
+      </a>
       <a href="{{ route('staff.registrar.notices-events') }}" class="btn btn-outline-primary btn-sm" title="Notices & Events">
         <i class="ri-notification-line me-1"></i> Notices & Events
       </a>
@@ -125,9 +131,49 @@
                 </div>
                 <div class="icon-box text-primary"><i class="ri-money-dollar-circle-line"></i></div>
             </div>
-            <div class="mt-2 small text-muted">Forward to Accounts</div>
+            <div class="mt-2 small text-muted">After officer approval</div>
         </div>
     </div>
+    <div class="col-12 col-md-3">
+        <div class="zmc-card h-100 border-info">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold">Forwarded to Registrar</div>
+                    <div class="h3 fw-black mb-0 text-info">{{ $k['forwarded_to_registrar'] ?? 0 }}</div>
+                </div>
+                <div class="icon-box text-info"><i class="ri-share-forward-line"></i></div>
+            </div>
+            <div class="mt-2 small text-muted">Waiver / special cases</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="zmc-card h-100 border-warning">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold">Fix Requests</div>
+                    <div class="h3 fw-black mb-0 text-warning">{{ $k['fix_requests'] ?? 0 }}</div>
+                </div>
+                <div class="icon-box text-warning"><i class="ri-tools-line"></i></div>
+            </div>
+            <div class="mt-2 small text-muted">Sent back to officer</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="zmc-card h-100 border-danger">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold">Flagged Reprints</div>
+                    <div class="h2 fw-black mb-0 text-danger">{{ $k['flagged_reprints'] ?? 0 }}</div>
+                </div>
+                <div class="icon-box text-danger"><i class="ri-error-warning-fill"></i></div>
+            </div>
+            <div class="mt-1 small text-muted">Prints > Threshold</div>
+        </div>
+    </div>
+  </div>
+
+  {{-- Third row of KPIs --}}
+  <div class="row g-3 mb-4">
     <div class="col-12 col-md-3">
         <div class="zmc-card h-100">
             <div class="d-flex justify-content-between align-items-start">
@@ -151,18 +197,6 @@
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-3">
-        <div class="zmc-card h-100 border-danger">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="text-muted small fw-bold">Flagged Reprints</div>
-                    <div class="h2 fw-black mb-0 text-danger">{{ $k['flagged_reprints'] ?? 0 }}</div>
-                </div>
-                <div class="icon-box text-danger"><i class="ri-error-warning-fill"></i></div>
-            </div>
-            <div class="mt-1 small text-muted">Prints > Threshold</div>
-        </div>
-    </div>
   </div>
 
   {{-- Quick Filters --}}
@@ -180,9 +214,13 @@
             <label class="small fw-bold text-muted">Status</label>
             <select name="status" class="form-select form-select-sm">
                 <option value="">All Statuses</option>
-                <option value="paid_confirmed" {{ request('status') == 'paid_confirmed' ? 'selected' : '' }}>Awaiting Registrar</option>
+                <option value="paid_confirmed" {{ request('status') == 'paid_confirmed' ? 'selected' : '' }}>Paid Confirmed</option>
+                <option value="registrar_review" {{ request('status') == 'registrar_review' ? 'selected' : '' }}>Registrar Review</option>
+                <option value="approved_awaiting_payment" {{ request('status') == 'approved_awaiting_payment' ? 'selected' : '' }}>Awaiting Payment</option>
+                <option value="forwarded_to_registrar" {{ request('status') == 'forwarded_to_registrar' ? 'selected' : '' }}>Forwarded to Registrar</option>
+                <option value="registrar_fix_request" {{ request('status') == 'registrar_fix_request' ? 'selected' : '' }}>Fix Request</option>
                 <option value="registrar_approved" {{ request('status') == 'registrar_approved' ? 'selected' : '' }}>Approved</option>
-                <option value="returned_to_officer" {{ request('status') == 'returned_to_officer' ? 'selected' : '' }}>Returned</option>
+                <option value="returned_to_officer" {{ request('status') == 'returned_to_officer' ? 'selected' : '' }}>Returned to Officer</option>
             </select>
         </div>
         <div class="col-md-3">
@@ -268,11 +306,16 @@
               'registrar_rejected' => 'danger',
               'registrar_approved' => 'success',
               'returned_to_accounts' => 'secondary',
+              'forwarded_to_registrar' => 'warning',
+              'approved_awaiting_payment' => 'primary',
+              'registrar_fix_request' => 'dark',
               default => 'info',
             };
 
-            $canDecide = in_array($status, ['registrar_review','paid_confirmed','accounts_review','returned_to_accounts'], true);
+            $canDecide = in_array($status, ['registrar_review','paid_confirmed','accounts_review','returned_to_accounts','approved_awaiting_payment','forwarded_to_registrar'], true);
             $canApproveForPayment = $status === 'registrar_review' && $app->payment_status !== 'paid' && !$app->registrar_reviewed_at;
+            $canFixRequest = in_array($status, ['registrar_review','approved_awaiting_payment','forwarded_to_registrar'], true);
+            $canPushToAccounts = $status === 'forwarded_to_registrar';
 
             $rowNo = method_exists($applications,'firstItem') && $applications->firstItem()
               ? ($applications->firstItem() + $i)
@@ -291,7 +334,14 @@
             <td class="text-muted small">{{ $rowNo }}</td>
             <td class="fw-bold text-dark">{{ $ref }}</td>
             <td>{{ $app->applicant?->name ?? '—' }}</td>
-            <td><span class="small fw-bold text-uppercase">{{ $type }}</span></td>
+            <td>
+              <span class="small fw-bold text-uppercase">{{ $type }}</span>
+              @php
+                $reqType = $app->request_type ?? 'new';
+                $reqBadge = match($reqType) { 'renewal' => 'warning', 'replacement' => 'info', default => 'success' };
+              @endphp
+              <span class="badge bg-{{ $reqBadge }} ms-1">{{ ucfirst($reqType) }}</span>
+            </td>
             <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
             <td>
               <span class="badge rounded-pill bg-{{ $badge }} px-3">
@@ -345,6 +395,32 @@
                 >
                   <i class="fa-regular fa-comment-dots"></i>
                 </button>
+
+                {{-- Fix Request --}}
+                @if($canFixRequest)
+                <button
+                  type="button"
+                  class="btn btn-sm zmc-icon-btn btn-outline-secondary js-open-modal"
+                  data-target="#fixRequestModal{{ $app->id }}"
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Raise Fix Request"
+                >
+                  <i class="fa-solid fa-wrench"></i>
+                </button>
+                @endif
+
+                {{-- Push to Accounts (waiver cases) --}}
+                @if($canPushToAccounts)
+                <button
+                  type="button"
+                  class="btn btn-sm zmc-icon-btn btn-outline-info js-open-modal"
+                  data-target="#pushToAccountsModal{{ $app->id }}"
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Push to Accounts"
+                >
+                  <i class="fa-solid fa-share"></i>
+                </button>
+                @endif
 
                 {{-- Reject --}}
                 <button
@@ -449,7 +525,7 @@
             {{-- Approve Modal --}}
             <div class="modal fade" id="approveModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
-                <form class="modal-content" method="POST" action="{{ $approveUrl($app->id) }}">
+                <form class="modal-content" method="POST" action="{{ $approveUrl($app->id) }}" enctype="multipart/form-data">
                   @csrf
                   <div class="modal-header zmc-modal-header">
                     <div>
@@ -458,7 +534,13 @@
                         Approve application
                         <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
                       </div>
-                      <div class="zmc-modal-sub">This will move the application to Production.</div>
+                      <div class="zmc-modal-sub">
+                        @if($isRegistration)
+                          This will approve pending registration fee. Official letter required.
+                        @else
+                          This will forward to Accounts for payment.
+                        @endif
+                      </div>
                     </div>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
@@ -481,9 +563,26 @@
                       </select>
                     </div>
 
+                    @if($isRegistration)
+                    <div class="mb-3">
+                      <label class="form-label zmc-lbl">Official Registrar Letter <span class="text-danger">*</span></label>
+                      @if($app->registrar_letter_path)
+                        <div class="small text-success mb-1"><i class="ri-check-line"></i> Letter already uploaded</div>
+                      @endif
+                      <input type="file" name="registrar_letter" class="form-control zmc-input" accept=".pdf,.jpg,.jpeg,.png" {{ empty($app->registrar_letter_path) ? 'required' : '' }}>
+                      <div class="form-text">PDF, JPG or PNG. Required for media house registration.</div>
+                    </div>
+                    @endif
+
                     <label class="form-label zmc-lbl">Notes (optional)</label>
                     <textarea name="decision_notes" class="form-control zmc-input" rows="4" placeholder="Add any notes (optional)"></textarea>
-                    <div class="form-text mt-2">Next stage: <b>Production</b> (card / certificate generation).</div>
+                    <div class="form-text mt-2">
+                      @if($isRegistration)
+                        Next stage: <b>Pending Registration Fee</b>
+                      @else
+                        Next stage: <b>Accounts</b> (payment processing)
+                      @endif
+                    </div>
                   </div>
 
                   <div class="modal-footer zmc-modal-footer">
@@ -554,6 +653,70 @@
                     <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger fw-bold">
                       <i class="fa-solid fa-xmark me-1"></i>Reject
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            {{-- Fix Request Modal --}}
+            <div class="modal fade" id="fixRequestModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content" method="POST" action="{{ route('staff.registrar.applications.fix-request', $app) }}">
+                  @csrf
+                  <div class="modal-header zmc-modal-header">
+                    <div>
+                      <div class="zmc-modal-title">
+                        <i class="fa-solid fa-wrench me-2" style="color:var(--zmc-accent-dark)"></i>
+                        Raise Fix Request
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                      </div>
+                      <div class="zmc-modal-sub">Send back to Accreditation Officer with instructions.</div>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <label class="form-label zmc-lbl">Message to Officer <span class="text-danger">*</span></label>
+                    <textarea name="message" class="form-control zmc-input" rows="4" required placeholder="Describe what needs to be fixed..."></textarea>
+                  </div>
+
+                  <div class="modal-footer zmc-modal-footer">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-secondary fw-bold">
+                      <i class="fa-solid fa-wrench me-1"></i>Send Fix Request
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            {{-- Push to Accounts Modal --}}
+            <div class="modal fade" id="pushToAccountsModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content" method="POST" action="{{ route('staff.registrar.applications.push-to-accounts', $app) }}">
+                  @csrf
+                  <div class="modal-header zmc-modal-header">
+                    <div>
+                      <div class="zmc-modal-title">
+                        <i class="fa-solid fa-share me-2" style="color:var(--zmc-accent-dark)"></i>
+                        Push to Accounts
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                      </div>
+                      <div class="zmc-modal-sub">Forward this waiver/special case to Accounts for processing.</div>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <label class="form-label zmc-lbl">Notes (optional)</label>
+                    <textarea name="notes" class="form-control zmc-input" rows="4" placeholder="Add any notes for Accounts..."></textarea>
+                  </div>
+
+                  <div class="modal-footer zmc-modal-footer">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info fw-bold">
+                      <i class="fa-solid fa-share me-1"></i>Push to Accounts
                     </button>
                   </div>
                 </form>

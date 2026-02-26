@@ -188,43 +188,6 @@
         .btn:hover { background-color: var(--green-hover); }
         .btn:active{ transform: translateY(1px); }
 
-        .divider{
-            display: flex;
-            align-items: center;
-            margin: 25px 0;
-            color: #94a3b8;
-            font-size: 12px;
-        }
-        .divider::before, .divider::after{
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-        .divider span{ padding: 0 15px; font-weight: 900; letter-spacing:.02em; }
-
-        .social{
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-        .social a{
-            width: 44px; height: 44px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none;
-            color: var(--text);
-            transition: all 0.2s;
-            background:#fff;
-        }
-        .social a i{ font-size:18px; }
-        .social a:hover{
-            background: #f8fafc;
-            border-color: var(--green);
-            color: var(--green);
-        }
-
         .footer-text{
             text-align: center;
             font-size: 14px;
@@ -351,18 +314,6 @@
                 </div>
             @endif
 
-            {{-- PUBLIC ONLY: socials --}}
-            @if(!$isStaffLogin)
-                <div class="divider">
-                    <span>OR SIGN IN WITH</span>
-                </div>
-
-                <div class="social">
-                    <a href="#" title="Facebook" aria-label="Facebook"><i class="ri-facebook-fill" aria-hidden="true"></i></a>
-                    <a href="#" title="Google" aria-label="Google"><i class="ri-google-fill" aria-hidden="true"></i></a>
-                    <a href="#" title="X" aria-label="X"><i class="ri-twitter-x-fill" aria-hidden="true"></i></a>
-                </div>
-            @endif
         </form>
     </div>
 </div>

@@ -131,6 +131,50 @@
                 </div>
             </div>
 
+            {{-- Previous Applications Panel --}}
+            @if($previousApplications->count())
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#prevAppsPanel" role="button" aria-expanded="false">
+                    <span><i class="ri-history-line me-1"></i> Previous Applications by This Applicant ({{ $previousApplications->count() }})</span>
+                    <i class="ri-arrow-down-s-line"></i>
+                </div>
+                <div class="collapse" id="prevAppsPanel">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Type</th>
+                                        <th>Request</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($previousApplications as $prevApp)
+                                        <tr>
+                                            <td class="small fw-bold">{{ $prevApp->reference }}</td>
+                                            <td class="small text-capitalize">{{ $prevApp->application_type ?? '—' }}</td>
+                                            <td>
+                                                @php
+                                                    $pReqType = $prevApp->request_type ?? 'new';
+                                                    $pReqBadge = match($pReqType) { 'renewal' => 'warning', 'replacement' => 'info', default => 'success' };
+                                                @endphp
+                                                <span class="badge bg-{{ $pReqBadge }}">{{ ucfirst($pReqType) }}</span>
+                                            </td>
+                                            <td><span class="badge bg-secondary">{{ ucwords(str_replace('_', ' ', $prevApp->status)) }}</span></td>
+                                            <td class="small text-muted">{{ $prevApp->created_at?->format('d M Y') ?? '—' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- 4) Full Application Audit Trail --}}
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white fw-bold">

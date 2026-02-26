@@ -6,6 +6,7 @@ This is a Laravel 12 PHP application for the Zimbabwe Media Commission portal. I
 - Media house registration
 - Staff dashboards for various roles (admin, registrar, accounts, production, etc.)
 - Role-based access control using Spatie Laravel Permission
+- Comprehensive workflow enforcement with granular status tracking
 
 ## Project Architecture
 
@@ -26,8 +27,73 @@ This is a Laravel 12 PHP application for the Zimbabwe Media Commission portal. I
 ### Key Features
 - **Portal Views**: Accreditation and Media House portals for public users
 - **Staff Dashboards**: Role-specific dashboards for admin, registrar, accounts, production
-- **Application Workflow**: Processing applications through various stages
-- **Activity Logging**: Tracking user actions
+- **Application Workflow**: Processing applications through various stages with enforced state machine
+- **Activity Logging**: Tracking user actions with immutable audit trail
+- **Payment Processing**: PayNow integration, manual proof uploads, cash payments
+- **Card/Certificate Designer**: Production template designer with drag-and-drop field placement
+
+## Application Workflow
+
+### Status Constants (Application Model)
+**Draft & Submission:**
+- `draft` - Application saved but not submitted
+- `submitted` - Submitted to accreditation officer queue
+- `withdrawn` - Withdrawn by applicant
+
+**Accreditation Officer:**
+- `officer_review` - Under officer review
+- `officer_approved` - Approved by officer (legacy)
+- `officer_rejected` - Rejected by officer
+- `correction_requested` - Correction requested (legacy)
+- `returned_to_applicant` - Returned for applicant corrections
+- `approved_awaiting_payment` - Officer approved, awaiting payment
+- `forwarded_to_registrar` - Forwarded to registrar (waiver/special cases)
+- `registrar_fix_request` - Registrar raised fix request to officer
+
+**Registrar:**
+- `registrar_review` - Under registrar review
+- `registrar_approved` - Approved by registrar
+- `registrar_rejected` - Rejected by registrar
+- `returned_to_officer` - Returned to accreditation officer
+- `pending_accounts_from_registrar` - Pushed to accounts from registrar
+- `registrar_approved_pending_reg_fee` - Registrar approved, pending registration fee
+
+**Accounts/Payments:**
+- `accounts_review` - Under accounts review
+- `awaiting_accounts_verification` - PayNow ref submitted, awaiting verification
+- `payment_verified` - Payment verified by accounts
+- `payment_rejected` - Payment rejected
+- `paid_confirmed` - Payment confirmed (legacy)
+- `returned_to_accounts` - Returned to accounts
+
+**Media House Specific:**
+- `submitted_with_app_fee` - Submitted with application fee paid
+- `verified_by_officer` - Verified by accreditation officer
+
+**Production:**
+- `production_queue` - In production queue
+- `produced_ready` - Produced and ready for collection
+- `card_generated` - Card generated
+- `certificate_generated` - Certificate generated
+- `printed` - Printed
+
+### Workflow Routes
+**New Application (Journalist):**
+Applicant → Submit → Officer Review → Approve (awaiting payment) → Payment → Accounts Verify → Production → Print
+
+**New Application (Media House, two-stage payment):**
+Applicant → Pay App Fee → Submit → Officer Verify → Registrar Review → Approve (pending reg fee) → Payment → Accounts Verify → Production → Print
+
+**Renewal:**
+Applicant → Submit → Accounts → Production (bypasses Officer/Registrar review)
+
+**Physical Intake (walk-in):**
+Officer enters details + receipt → Auto-creates application → Production queue
+
+### Key Services
+- `ApplicationWorkflow` - State machine with transition validation
+- `ActivityLogger` - Immutable audit trail logging
+- `ManualPaymentController` - PayNow reference and proof upload handling
 
 ## Development
 
@@ -35,7 +101,7 @@ This is a Laravel 12 PHP application for the Zimbabwe Media Commission portal. I
 ```bash
 npm run start
 ```
-This runs both Laravel's development server (port 5000) and Vite for hot module replacement.
+This runs Laravel's development server (port 5000).
 
 ### Build for Production
 ```bash
@@ -51,6 +117,7 @@ php artisan migrate
 ```bash
 php artisan db:seed
 ```
+Seeds: staff users (officer@zmc.org.zw, registrar@zmc.org.zw, accounts@zmc.org.zw, production@zmc.org.zw, itadmin@zmc.org.zw, auditor@zmc.org.zw, director@zmc.org.zw), test applicants, regions, notices, events, news, system configs, card templates. Staff password: `Staff@12345`, Test users: `Test@12345`.
 
 ### Authentication Architecture (Iframe Token Auth)
 Since Replit runs apps inside an iframe proxy, browser cookies often don't persist (blocked as third-party cookies). The portal uses a token-based auth workaround:
@@ -59,102 +126,62 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - **Client-side forwarding**: JavaScript in portal.blade.php and staff.blade.php stores token in localStorage and automatically appends it to all same-origin links, form submissions, fetch(), and XHR requests
 - **Logout**: Clears both server-side cache token and client-side localStorage
 - **Key files**: `app/Http/Middleware/TokenAuth.php`, `bootstrap/app.php` (middleware priority), layout Blade files
+- **CSRF bypass**: `VerifyCsrfWithTokenBypass` middleware bypasses CSRF for token-authenticated requests and specific routes
 
-## Recent Changes
-- February 23, 2026: Fixed production deployment migration failure
-  - Created SafeMigrate command (db:safe-migrate) to handle existing database tables
-  - Detects empty migrations tracker with existing tables and populates records intelligently
-  - Maps migration files to their created tables and only marks as run if table exists
-  - Updated build.sh to use db:safe-migrate instead of plain migrate
-  - Switched build from cache clearing to cache building (config:cache, route:cache, view:cache)
-  - Populated production migrations table with all 60 migration records
+## Models
 
-- February 23, 2026: Production deployment preparation
-  - Created build.sh for deployment build steps
-  - Moved closure routes to MiscRoutesController for route caching compatibility
-  - Token-based auth for iframe environments (bypasses third-party cookie blocking)
-  - Database-backed sessions and cache for autoscale compatibility
-  - Added missing columns to applications, document_versions, print_logs, audit_flags, audit_logs tables for Director dashboard
-  - Health check router.php for non-browser requests
-  - Deployment target: autoscale with build: bash build.sh, run: php public/router.php
-
-- January 05, 2026: Green theme implementation
-  - Updated color theme from black to dark green (#1a3a1a) across all pages
-  - Landing page: Dark green gradient background with visible white text
-  - Portal sidebars: Green theme (#1a3a1a to #0d2810 gradient)
-  - Dashboard topbars: Green header with white icons
-  - Login/Register pages: Light green background (#f0f7f0)
-  - Staff portal: Green header and navigation
-  - Golden/olive accent buttons (#c9a227) matching ZMC branding
-  - Card preview now displays uploaded passport photos
-
-- January 04, 2026: Paynow payment integration
-  - Installed paynow/php-sdk for payment processing
-  - PaynowController handles web and mobile money payments (EcoCash/OneMoney)
-  - "Pay Now" button on dashboards for applications awaiting payment (accounts_review status)
-  - Secure payment flow with callback verification and status polling
-  - Fee calculation: Local journalist $50 new/$30 renewal, Foreign $150/$100, Media house $500/$300
-  - Payment credentials stored in environment variables (PAYNOW_INTEGRATION_ID, PAYNOW_INTEGRATION_KEY)
-  - Notices and events pages now display database-driven content from admin uploads
-  - Notice/Event models provide dynamic content instead of static demo data
-
-- January 04, 2026: UI and feature enhancements
-  - Changed sidebar color from dark blue to black (#1a1a1a/#111111)
-  - Enhanced chatbot knowledge base with comprehensive ZMC information
-    - FAQs for eligibility, changes/amendments, processing times
-    - Paynow payment guide, replacement card process
-    - Additional office locations (Gweru, Chinhoyi)
-    - Fallback to info@zmc.org.zw for unanswered questions
-  - Updated card templates to match official ZMC design
-    - Media card with passport photo area, wave background
-    - Scope banner (LOCAL/FOREIGN media) with color coding
-    - Back side with QR verification code
-  - Updated certificate template with pinkish/cream color scheme
-    - Decorative ornaments and proper layout
-    - Signature blocks for Chairperson and CEO
-    - Zimbabwe flag and ZMC logo footer
-
-- December 29, 2025: Fixed document upload pipeline
-  - Documents now upload with applications using FormData (multipart/form-data)
-  - Files stored in storage/app/public/documents/{application_id}/
-  - Review modal shows uploaded documents before submission with file names and sizes
-  - Accreditation Officer dashboard displays all uploaded documents with file-type icons
-  - View Details modal shows complete application info: applicant data, form fields, and documents
-  - ApplicationDocument model with document_type accessor for friendly names
-  - Supports: id_scan, passport_photo, employment_letter document types
-
-- December 29, 2025: Staff portal enhancements and audit trail
-  - Staff landing page updated with dropdown role selector (replaces card-based UI)
-  - Complete role list: Accreditation Officer, Accounts/Payments, Registrar, Production, IT Admin, Oversight/Audit, Director, Super Admin
-  - Immutable AuditTrail model with enforced append-only pattern (throws RuntimeException on update/delete attempts)
-  - IT Admin dashboard with user management UI, role assignment, notices, and audit log display
-  - Workflow: Application → Accreditation Officer → Accounts → Registrar → Production → Issue
-
-- December 29, 2025: Added functional ZMC chatbot assistant
-  - Keyword-based chatbot answering questions about ZMC, accreditation, registration
-  - Knowledge base includes: about ZMC, accreditation process, registration process, required documents, fees, office locations, application tracking, renewals, contact info
-  - Fallback message directs users to info@zmc.org.zw when question is not matched
-  - Modern chat UI with typing indicators and formatted responses
-
-- December 29, 2025: Added draft saving and review before submission
-  - Both AP3 (accreditation) and AP1 (media house registration) forms now support:
-    - Save Draft button to save progress at any step
-    - Review modal showing all form data before final submission
-    - Draft restoration when returning to continue an application
-  - Dashboard statistics now use database queries (not in-memory filters)
-  - Recent applications list shows on both portal dashboards
-  - Regional collection offices: Harare, Bulawayo, Mutare, Masvingo
-
-- December 29, 2025: Imported and configured for Replit environment
-  - Configured Vite to allow all hosts for Replit proxy
-  - Set up Laravel server on port 5000
-  - Created SQLite database and ran migrations
-  - Configured proxy trust for Replit's iframe environment
-  - Fixed session handling for CSRF tokens
-  - Portal selection flow: Home → Login/Signup → Journalist/Media House Portal
-
-## Application Model
+### Application
 - `form_data` (JSON): Stores all form fields as JSON for draft saving
 - `is_draft` (boolean): True if application is a draft, false if submitted
 - `submitted_at` (timestamp): When the application was formally submitted
 - `collection_region`: Regional office where user will collect press card/certificate
+- `payment_stage`: 'application_fee' or 'registration_fee' (media house two-stage)
+- `forward_reason`: Reason for forwarding to registrar
+- `receipt_number`: Physical intake receipt number
+- `paynow_ref_submitted`: PayNow reference number submitted by applicant
+
+### CardTemplate
+- `name`, `type` (card/certificate), `year`, `background_path`
+- `layout_config` (JSON): Field positions/sizes for template designer
+- `is_active` (boolean): Active template for production
+
+### Reminder
+- `target_type`, `target_id`, `message`, `type`, `acknowledged_at`, `created_by`
+- Used by Registrar to send notifications to portal users
+
+## Recent Changes
+- February 26, 2026: Comprehensive workflow enforcement & new features
+  - 15+ new application status constants for granular state tracking
+  - ApplicationWorkflow state machine with enforced transitions
+  - Accreditation Officer: approve → awaiting payment, return to applicant, forward to registrar, physical intake with receipt
+  - Registrar: fix requests to officer, read-only accounts oversight, reminders to portal users, media house letter requirement
+  - Accounts: PayNow reference verification, proof/waiver approve/reject, cash payment recording with audit trail
+  - Portal payment flow: PayNow → reference submission → awaiting accounts verification
+  - Media house two-stage payment: application fee before submission, registration fee after registrar approval
+  - Renewal simplification: number lookup, confirm/change, direct to accounts (bypass officer/registrar)
+  - Production card/certificate designer: drag-and-drop template builder, background upload, field positioning
+  - Previous applications panel in officer/registrar/accounts views
+  - Previous payments panel in accounts/auditor views
+  - Request type badges (New/Renewal/Replacement) across all staff views
+  - CSRF bypass expanded for all new staff action routes
+  - Test data seeder with sample applications at various workflow stages
+  - Default card and certificate templates seeded
+
+- February 23, 2026: Fixed production deployment migration failure
+  - Created SafeMigrate command (db:safe-migrate) to handle existing database tables
+  - Updated build.sh to use db:safe-migrate instead of plain migrate
+  - Deployment target: autoscale with build: bash build.sh, run: php public/router.php
+
+- February 23, 2026: Production deployment preparation
+  - Token-based auth for iframe environments
+  - Database-backed sessions and cache for autoscale compatibility
+  - Health check router.php for non-browser requests
+
+- January 05, 2026: Green theme implementation
+  - Dark green (#1a3a1a) theme with golden/olive accent buttons (#c9a227)
+
+- January 04, 2026: Paynow payment integration
+  - Fee calculation: Local journalist $50 new/$30 renewal, Foreign $150/$100, Media house $500/$300
+
+- December 29, 2025: Initial setup and core features
+  - Document upload pipeline, staff portal, chatbot, draft saving, Replit configuration

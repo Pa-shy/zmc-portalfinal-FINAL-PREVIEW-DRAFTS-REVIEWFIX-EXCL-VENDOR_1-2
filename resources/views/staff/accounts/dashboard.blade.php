@@ -39,16 +39,19 @@
     $summaryTotal = method_exists($applications, 'total') ? $applications->total() : $items->count();
 
     $summaryPending = $items->filter(fn($x) => in_array(strtolower((string)($x->status ?? '')), [
-      'accounts_review','paid_confirmed','returned_to_accounts'
+      'accounts_review','paid_confirmed','returned_to_accounts','awaiting_accounts_verification','pending_accounts_from_registrar'
     ], true))->count();
 
     $summaryPaid = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'paid_confirmed')->count();
     $summaryReturned = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'returned_to_accounts')->count();
+    $summaryAwaitingVerification = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'awaiting_accounts_verification')->count();
+    $summaryFromRegistrar = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'pending_accounts_from_registrar')->count();
 
     $detailsUrlTemplate = route('staff.applications.details', ['application' => '__ID__']);
 
     $paidUrl = fn($id) => route('staff.accounts.applications.paid', $id);
     $returnUrl = fn($id) => route('staff.accounts.applications.return', $id);
+    $rejectPaymentUrl = fn($id) => route('staff.accounts.applications.payment.reject', $id);
   @endphp
 
   {{-- Summary cards --}}
@@ -104,6 +107,46 @@
     </div>
   </div>
 
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-3">
+      <div class="zmc-card h-100">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-muted small fw-bold">Awaiting verification</div>
+            <div class="h3 fw-black mb-0">{{ $summaryAwaitingVerification }}</div>
+          </div>
+          <div class="icon-box text-primary"><i class="ri-shield-check-line"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+      <div class="zmc-card h-100">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-muted small fw-bold">From Registrar (waiver)</div>
+            <div class="h3 fw-black mb-0">{{ $summaryFromRegistrar }}</div>
+          </div>
+          <div class="icon-box" style="color:#7c3aed;"><i class="ri-file-shield-2-line"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+      <a href="{{ route('staff.accounts.cash-payment.create') }}" class="text-decoration-none">
+        <div class="zmc-card h-100">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="text-muted small fw-bold">Record cash payment</div>
+              <div class="small text-primary mt-1"><i class="ri-add-circle-line me-1"></i>New entry</div>
+            </div>
+            <div class="icon-box text-dark"><i class="ri-money-dollar-circle-line"></i></div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
   {{-- Table --}}
   <div class="zmc-card p-0 shadow-sm border-0">
     <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
@@ -122,6 +165,7 @@
             <th style="width:60px;">#</th>
             <th><i class="ri-hashtag me-1"></i> Ref</th>
             <th><i class="ri-user-line me-1"></i> Applicant</th>
+            <th>Type</th>
             <th><i class="ri-map-pin-line me-1"></i> Region</th>
             <th><i class="ri-calendar-line me-1"></i> Date</th>
             <th><i class="ri-flag-line me-1"></i> Status</th>
@@ -136,10 +180,13 @@
             $badge = match($status) {
               'returned_to_accounts' => 'warning',
               'paid_confirmed' => 'success',
+              'awaiting_accounts_verification' => 'primary',
+              'pending_accounts_from_registrar' => 'secondary',
+              'payment_rejected' => 'danger',
               default => 'info',
             };
 
-            $canAct = in_array($status, ['accounts_review','returned_to_accounts'], true);
+            $canAct = in_array($status, ['accounts_review','returned_to_accounts','awaiting_accounts_verification','pending_accounts_from_registrar'], true);
 
             $rowNo = method_exists($applications,'firstItem') && $applications->firstItem()
               ? ($applications->firstItem() + $i)
@@ -152,6 +199,13 @@
             <td class="text-muted small">{{ $rowNo }}</td>
             <td class="fw-bold text-dark">{{ $ref }}</td>
             <td>{{ $app->applicant?->name ?? $app->applicant_name ?? '—' }}</td>
+            <td>
+              @php
+                $reqType = $app->request_type ?? 'new';
+                $reqBadge = match($reqType) { 'renewal' => 'warning', 'replacement' => 'info', default => 'success' };
+              @endphp
+              <span class="badge bg-{{ $reqBadge }}">{{ ucfirst($reqType) }}</span>
+            </td>
             <td class="text-capitalize">{{ $app->collection_region ?? '—' }}</td>
             <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
             <td>
@@ -196,6 +250,18 @@
                   title="Mark paid"
                 >
                   <i class="fa-solid fa-check"></i>
+                </button>
+
+                {{-- Reject Payment --}}
+                <button
+                  type="button"
+                  class="btn btn-sm zmc-icon-btn btn-outline-danger js-open-modal"
+                  data-target="#rejectPaymentModal{{ $app->id }}"
+                  @if(!$canAct) disabled @endif
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Reject payment"
+                >
+                  <i class="fa-solid fa-times"></i>
                 </button>
 
               </div>
@@ -249,7 +315,7 @@
                         Confirm payment
                         <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
                       </div>
-                      <div class="zmc-modal-sub">This will move the application to Registrar review.</div>
+                      <div class="zmc-modal-sub">This will verify payment and send to Production.</div>
                     </div>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
@@ -268,11 +334,44 @@
                 </form>
               </div>
             </div>
+
+            {{-- Reject Payment Modal --}}
+            <div class="modal fade" id="rejectPaymentModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-lg">
+                <form class="modal-content" method="POST" action="{{ $rejectPaymentUrl($app->id) }}">
+                  @csrf
+
+                  <div class="modal-header zmc-modal-header">
+                    <div>
+                      <div class="zmc-modal-title">
+                        <i class="fa-solid fa-times me-2" style="color:#dc3545"></i>
+                        Reject Payment
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                      </div>
+                      <div class="zmc-modal-sub">Applicant will need to resubmit payment.</div>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+
+                  <div class="modal-body">
+                    <label class="form-label zmc-lbl">Reason for rejection <span class="text-danger">*</span></label>
+                    <textarea name="rejection_reason" class="form-control zmc-input" rows="4" required placeholder="Provide a reason for rejecting this payment..."></textarea>
+                  </div>
+
+                  <div class="modal-footer zmc-modal-footer">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger fw-bold">
+                      <i class="fa-solid fa-times me-1"></i>Reject payment
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           @endpush
 
         @empty
           <tr>
-            <td colspan="7" class="text-center py-5 text-muted">No applications found.</td>
+            <td colspan="8" class="text-center py-5 text-muted">No applications found.</td>
           </tr>
         @endforelse
         </tbody>

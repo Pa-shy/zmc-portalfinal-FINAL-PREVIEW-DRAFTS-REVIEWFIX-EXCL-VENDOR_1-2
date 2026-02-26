@@ -58,9 +58,13 @@ class MediaHousePortalController extends Controller
             'pending' => (clone $baseQuery)->where('is_draft', false)
                 ->whereIn('status', [
                     Application::SUBMITTED,
+                    Application::SUBMITTED_WITH_APP_FEE,
                     Application::OFFICER_REVIEW,
                     Application::REGISTRAR_REVIEW,
                     Application::ACCOUNTS_REVIEW,
+                    Application::APPROVED_AWAITING_PAYMENT,
+                    Application::AWAITING_ACCOUNTS_VERIFICATION,
+                    Application::REGISTRAR_APPROVED_PENDING_REG_FEE,
                 ])
                 ->count(),
             'renewals_due' => 0,
@@ -83,7 +87,18 @@ class MediaHousePortalController extends Controller
             ->limit(5)
             ->get();
 
-        return view('portal.mediahouse.dashboard', compact('stats', 'recentApplications', 'notices', 'events'));
+        $latestRecord = \App\Models\RegistrationRecord::where('contact_user_id', $user->id)
+            ->orderByDesc('issued_at')
+            ->first();
+
+        $levyReminders = \App\Models\Reminder::where('target_type', 'media_house')
+            ->where('target_id', $user->id)
+            ->whereNull('acknowledged_at')
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        return view('portal.mediahouse.dashboard', compact('stats', 'recentApplications', 'notices', 'events', 'latestRecord', 'levyReminders'));
     }
 
     public function newRegistration()
@@ -262,6 +277,14 @@ class MediaHousePortalController extends Controller
             'form_data' => 'required',
             'documents' => 'sometimes|array',
             'documents.*' => 'file|max:10240|mimes:pdf,jpg,jpeg,png,zip',
+            'app_fee_type' => 'nullable|in:paynow_ref,proof',
+            'app_fee_paynow_ref' => 'nullable|string|max:100',
+            'app_fee_first_name' => 'nullable|string|max:100',
+            'app_fee_last_name' => 'nullable|string|max:100',
+            'app_fee_payment_date' => 'nullable|date',
+            'app_fee_amount_paid' => 'nullable|numeric|min:0',
+            'app_fee_bank_name' => 'nullable|string|max:120',
+            'app_fee_proof_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $formDataRaw = $validated['form_data'];
@@ -271,6 +294,14 @@ class MediaHousePortalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid form data payload.',
+            ], 422);
+        }
+
+        $appFeeType = $validated['app_fee_type'] ?? null;
+        if (!$appFeeType) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Application fee is required. Please provide a PayNow reference or upload proof of payment.',
             ], 422);
         }
 
@@ -287,33 +318,49 @@ class MediaHousePortalController extends Controller
             ->where('is_draft', true)
             ->first();
 
-        // scope and draft handling
         $scope = $formData['registration_scope'] ?? 'local';
 
+        $appFeeFields = ['payment_stage' => 'application_fee'];
+
+        if ($appFeeType === 'paynow_ref') {
+            $appFeeFields['paynow_ref_submitted'] = $validated['app_fee_paynow_ref'] ?? null;
+        } elseif ($appFeeType === 'proof') {
+            $appFeeFields['proof_payer_first_name'] = $validated['app_fee_first_name'] ?? null;
+            $appFeeFields['proof_payer_last_name'] = $validated['app_fee_last_name'] ?? null;
+            $appFeeFields['proof_payment_date'] = $validated['app_fee_payment_date'] ?? null;
+            $appFeeFields['proof_amount_paid'] = $validated['app_fee_amount_paid'] ?? null;
+            $appFeeFields['proof_bank_name'] = $validated['app_fee_bank_name'] ?? null;
+
+            if ($request->hasFile('app_fee_proof_file')) {
+                $proofFile = $request->file('app_fee_proof_file');
+                $proofPath = $proofFile->store('payment_proofs', 'public');
+                $appFeeFields['payment_proof_path'] = $proofPath;
+                $appFeeFields['payment_proof_uploaded_at'] = now();
+                $appFeeFields['proof_status'] = 'submitted';
+                $appFeeFields['proof_original_name'] = $proofFile->getClientOriginalName();
+                $appFeeFields['proof_mime'] = $proofFile->getMimeType();
+            }
+        }
+
+        $baseFields = array_merge([
+            'reference' => $reference,
+            'collection_region' => $validated['collection_region'],
+            'form_data' => $formData,
+            'journalist_scope' => $scope,
+            'is_draft' => false,
+            'status' => Application::SUBMITTED_WITH_APP_FEE,
+            'submitted_at' => now(),
+        ], $appFeeFields);
+
         if ($existingDraft) {
-            $existingDraft->update([
-                'reference' => $reference,
-                'collection_region' => $validated['collection_region'],
-                'form_data' => $formData,
-                'journalist_scope' => $scope,
-                'is_draft' => false,
-                'status' => Application::SUBMITTED,
-                'submitted_at' => now(),
-            ]);
+            $existingDraft->update($baseFields);
             $application = $existingDraft;
         } else {
-            $application = Application::create([
-                'reference' => $reference,
+            $application = Application::create(array_merge([
                 'applicant_user_id' => $user->id,
                 'application_type' => 'registration',
                 'request_type' => 'new',
-                'journalist_scope' => $scope,
-                'collection_region' => $validated['collection_region'],
-                'form_data' => $formData,
-                'is_draft' => false,
-                'status' => Application::SUBMITTED,
-                'submitted_at' => now(),
-            ]);
+            ], $baseFields));
         }
 
         $this->storeUploadedDocuments($application, $request);
@@ -327,7 +374,7 @@ class MediaHousePortalController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Application submitted successfully',
+            'message' => 'Application submitted successfully with application fee.',
             'reference' => $application->reference,
         ]);
     }
@@ -344,27 +391,23 @@ class MediaHousePortalController extends Controller
         $validated = $request->validate([
             'request_type' => 'required|in:renewal,replacement',
             'draft_reference' => 'nullable|string|max:64',
-            'current_step' => 'nullable|integer|min:1|max:5',
-            'declaration_confirmed' => 'required|in:1',
-            'current_step' => 'nullable|integer|min:1|max:5',
-            // optional for draft
-            'previous_reference' => 'nullable|string|max:150',
+            'current_step' => 'nullable|integer|min:1|max:4',
+            'registration_number' => 'nullable|string|max:200',
             'collection_region' => 'nullable|string|max:150',
 
-            'proof_of_payment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'current_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'supporting_docs' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'previous_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'official_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'affidavit' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'police_report' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'payment_proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $year = now()->format('Y');
         $reference = 'DRAFT-AP5-' . $year . '-' . Str::upper(Str::random(6));
 
-        // Carry local/foreign scope from previous reference if available
         $prevScope = null;
-        if (!empty($validated['previous_reference'])) {
-            $prevScope = Application::where('reference', $validated['previous_reference'])
+        if (!empty($validated['registration_number'])) {
+            $prevScope = Application::where('reference', $validated['registration_number'])
                 ->where('application_type', 'registration')
                 ->value('journalist_scope');
         }
@@ -376,20 +419,20 @@ class MediaHousePortalController extends Controller
             'request_type' => $validated['request_type'],
             'journalist_scope' => $prevScope ?? 'local',
             'collection_region' => $validated['collection_region'] ?? 'harare',
-            'form_data' => $request->except(['_token']),
+            'form_data' => $request->except(['_token', 'previous_certificate', 'official_letter', 'affidavit', 'police_report', 'payment_proof']),
             'is_draft' => true,
             'status' => Application::DRAFT,
         ]);
 
-        // Store docs if any were uploaded
-        $docMap = ['proof_of_payment' => 'proof_of_payment'];
+        $docMap = [];
         if ($validated['request_type'] === 'renewal') {
-            if ($request->hasFile('current_certificate')) $docMap['current_certificate'] = 'current_certificate';
-            if ($request->hasFile('supporting_docs')) $docMap['supporting_docs'] = 'supporting_docs';
+            if ($request->hasFile('previous_certificate')) $docMap['previous_certificate'] = 'previous_certificate';
+            if ($request->hasFile('official_letter')) $docMap['official_letter'] = 'official_letter';
         } else {
             if ($request->hasFile('affidavit')) $docMap['affidavit'] = 'affidavit';
             if ($request->hasFile('police_report')) $docMap['police_report'] = 'police_report';
         }
+        if ($request->hasFile('payment_proof')) $docMap['payment_proof'] = 'payment_proof';
 
         foreach ($docMap as $field => $docType) {
             if (!$request->hasFile($field)) continue;
@@ -434,36 +477,35 @@ class MediaHousePortalController extends Controller
 
         $validated = $request->validate([
             'request_type' => 'required|in:renewal,replacement',
-            'current_step' => 'nullable|integer|min:1|max:5',
+            'current_step' => 'nullable|integer|min:1|max:4',
 
-            'contact_name' => 'required|string|max:150',
-            'contact_phone' => 'required|string|max:50',
-            'contact_address' => 'required|string|max:500',
-            'contact_email' => 'required|email|max:150',
-
-            'entity_name' => 'required|string|max:200',
-            'previous_reference' => 'required|string|max:120',
-            'head_office' => 'required|string|max:500',
-            'postal_address' => 'required|string|max:500',
-            'changes' => 'required|in:no,yes',
-            'changes_details' => 'nullable|string|max:2000',
-            'collection_region' => 'required|in:harare,bulawayo,mutare,masvingo',
+            'registration_number' => 'required|string|max:200',
+            'has_changes' => 'nullable|in:yes,no',
+            'changes_data' => 'nullable',
+            'collection_region' => 'nullable|in:harare,bulawayo,mutare,masvingo',
 
             'replacement_reason' => 'required_if:request_type,replacement|in:lost,damaged,stolen',
 
-            'proof_of_payment' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-
-            'current_certificate' => 'required_if:request_type,renewal|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'supporting_docs' => 'nullable|file|mimes:pdf,jpg,jpeg,png,zip|max:10240',
+            'previous_certificate' => 'required_if:request_type,renewal|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'official_letter' => 'required_if:request_type,renewal|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
             'affidavit' => 'required_if:request_type,replacement|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'police_report' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+
+            'payment_method' => 'nullable|in:paynow,proof_upload',
+            'paynow_reference' => 'nullable|string|max:120',
+            'payment_proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         if (($validated['request_type'] ?? '') === 'replacement' && ($validated['replacement_reason'] ?? '') === 'stolen') {
             if (!$request->hasFile('police_report')) {
                 return response()->json(['success' => false, 'message' => 'Police report is required for stolen certificates.'], 422);
             }
+        }
+
+        $changesData = $request->input('changes_data');
+        if (is_string($changesData)) {
+            $changesData = json_decode($changesData, true);
         }
 
         $year = now()->format('Y');
@@ -477,10 +519,16 @@ class MediaHousePortalController extends Controller
         $nextNum = $lastRef ? ((int) substr($lastRef, -4) + 1) : 1;
         $reference = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
 
-        // Carry local/foreign scope from the previous registration reference (for consistent filtering/reporting)
-        $prevScope = Application::where('reference', $validated['previous_reference'] ?? '')
+        $prevScope = Application::where('reference', $validated['registration_number'] ?? '')
             ->where('application_type', 'registration')
             ->value('journalist_scope');
+
+        $status = ($validated['request_type'] === 'renewal')
+            ? Application::AWAITING_ACCOUNTS_VERIFICATION
+            : Application::SUBMITTED;
+
+        $formPayload = $request->except(['_token', 'previous_certificate', 'official_letter', 'affidavit', 'police_report', 'payment_proof']);
+        $formPayload['changes_data'] = $changesData;
 
         $application = Application::create([
             'reference' => $reference,
@@ -488,24 +536,24 @@ class MediaHousePortalController extends Controller
             'application_type' => 'registration',
             'request_type' => $validated['request_type'],
             'journalist_scope' => $prevScope ?? 'local',
-            'collection_region' => $validated['collection_region'],
-            'form_data' => $request->except(['_token']),
+            'collection_region' => $validated['collection_region'] ?? 'harare',
+            'form_data' => $formPayload,
             'is_draft' => false,
-            'status' => Application::SUBMITTED,
+            'status' => $status,
             'submitted_at' => now(),
         ]);
 
-        $docMap = [
-            'proof_of_payment' => 'proof_of_payment',
-        ];
+        $docMap = [];
 
         if ($validated['request_type'] === 'renewal') {
-            $docMap['current_certificate'] = 'current_certificate';
-            if ($request->hasFile('supporting_docs')) $docMap['supporting_docs'] = 'supporting_docs';
+            if ($request->hasFile('previous_certificate')) $docMap['previous_certificate'] = 'previous_certificate';
+            if ($request->hasFile('official_letter')) $docMap['official_letter'] = 'official_letter';
         } else {
-            $docMap['affidavit'] = 'affidavit';
+            if ($request->hasFile('affidavit')) $docMap['affidavit'] = 'affidavit';
             if ($request->hasFile('police_report')) $docMap['police_report'] = 'police_report';
         }
+
+        if ($request->hasFile('payment_proof')) $docMap['payment_proof'] = 'payment_proof';
 
         foreach ($docMap as $field => $docType) {
             if (!$request->hasFile($field)) continue;
@@ -534,11 +582,9 @@ class MediaHousePortalController extends Controller
             );
         }
 
-        $this->mergeIntoProfile([
-            'organization_name' => $validated['entity_name'] ?? null,
-            'head_office_address' => $validated['head_office'] ?? null,
-            'website' => $validated['website'] ?? null,
-        ]);
+        if (!empty($validated['paynow_reference'])) {
+            $application->update(['paynow_ref_submitted' => $validated['paynow_reference']]);
+        }
 
         return response()->json([
             'success' => true,
@@ -595,6 +641,47 @@ class MediaHousePortalController extends Controller
         return view('portal.mediahouse.renewals', compact('drafts', 'draft'));
     }
 
+    public function lookupRegistrationNumber(string $number)
+    {
+        $application = Application::where('reference', $number)
+            ->where('application_type', 'registration')
+            ->where('is_draft', false)
+            ->first();
+
+        if (!$application) {
+            $record = \App\Models\AccreditationRecord::where('record_number', $number)
+                ->orWhere('certificate_no', $number)
+                ->first();
+            if ($record) {
+                $application = $record->application;
+            }
+        }
+
+        if (!$application) {
+            return response()->json(['success' => false, 'message' => 'No record found for this registration number.'], 404);
+        }
+
+        $formData = $application->form_data ?? [];
+
+        return response()->json([
+            'success' => true,
+            'record' => [
+                'reference' => $application->reference,
+                'entity_name' => $formData['org_name'] ?? $formData['entity_name'] ?? $formData['rep_office_name'] ?? '',
+                'head_office' => $formData['org_head_office'] ?? $formData['head_office'] ?? $formData['rep_office_address'] ?? '',
+                'postal_address' => $formData['postal_address'] ?? $formData['org_postal_address'] ?? '',
+                'contact_name' => $formData['contact_name'] ?? '',
+                'contact_phone' => $formData['contact_phone'] ?? '',
+                'contact_email' => $formData['contact_email'] ?? '',
+                'contact_address' => $formData['contact_address'] ?? '',
+                'collection_region' => $application->collection_region ?? '',
+                'journalist_scope' => $application->journalist_scope ?? '',
+                'application_type' => $application->application_type ?? '',
+                'status' => $application->status ?? '',
+            ],
+        ]);
+    }
+
     public function payments()
     {
         return view('portal.mediahouse.payments');
@@ -622,9 +709,63 @@ class MediaHousePortalController extends Controller
         return view('portal.mediahouse.howto');
     }
 
+    public function requirements()
+    {
+        return view('portal.mediahouse.requirements');
+    }
+
     public function profile()
     {
         return view('portal.mediahouse.profile');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user, 403);
+
+        $payload = $request->validate([
+            'organization_name' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone_number' => ['required', 'string', 'max:20'],
+            'phone2' => ['required', 'string', 'max:20'],
+            'head_office_address' => ['nullable', 'string', 'max:500'],
+            'mass_media_activities' => ['nullable', 'string', 'max:500'],
+            'social_media' => ['nullable', 'array'],
+            'social_media.facebook' => ['nullable', 'url', 'max:255'],
+            'social_media.twitter' => ['nullable', 'url', 'max:255'],
+            'social_media.instagram' => ['nullable', 'url', 'max:255'],
+            'social_media.youtube' => ['nullable', 'url', 'max:255'],
+            'social_media.tiktok' => ['nullable', 'url', 'max:255'],
+            'social_media.website' => ['nullable', 'url', 'max:255'],
+        ]);
+
+        $updateData = [
+            'phone_number' => $payload['phone_number'],
+            'phone2' => $payload['phone2'],
+            'social_media' => $payload['social_media'] ?? [],
+        ];
+
+        if (!empty($payload['email']) && $payload['email'] !== $user->email) {
+            $request->validate(['email' => 'unique:users,email']);
+            $updateData['email'] = $payload['email'];
+        }
+
+        $user->update($updateData);
+
+        $profile = $user->profile_data ?? [];
+        if (!empty($payload['organization_name'])) {
+            $profile['organization_name'] = $payload['organization_name'];
+        }
+        if (!empty($payload['head_office_address'])) {
+            $profile['head_office_address'] = $payload['head_office_address'];
+        }
+        if (!empty($payload['mass_media_activities'])) {
+            $profile['mass_media_activities'] = $payload['mass_media_activities'];
+        }
+        $user->update(['profile_data' => $profile]);
+
+        return back()->with('success', 'Organization profile updated successfully.');
     }
 
     public function settings()

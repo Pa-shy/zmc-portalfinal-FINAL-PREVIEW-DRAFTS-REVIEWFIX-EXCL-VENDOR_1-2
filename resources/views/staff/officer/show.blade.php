@@ -83,18 +83,71 @@
     </div>
   </div>
 
+  @if($previousApplications->count())
+  <div class="col-12">
+    <div class="card mt-3">
+      <div class="card-header fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#prevAppsPanel" role="button" aria-expanded="false">
+        <span><i class="ri-history-line me-1"></i> Previous Applications by This Applicant ({{ $previousApplications->count() }})</span>
+        <i class="ri-arrow-down-s-line"></i>
+      </div>
+      <div class="collapse" id="prevAppsPanel">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th>Reference</th>
+                  <th>Type</th>
+                  <th>Request</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($previousApplications as $prevApp)
+                  <tr>
+                    <td class="small fw-bold">{{ $prevApp->reference }}</td>
+                    <td class="small text-capitalize">{{ $prevApp->application_type ?? '—' }}</td>
+                    <td>
+                      @php
+                        $pReqType = $prevApp->request_type ?? 'new';
+                        $pReqBadge = match($pReqType) { 'renewal' => 'warning', 'replacement' => 'info', default => 'success' };
+                      @endphp
+                      <span class="badge bg-{{ $pReqBadge }}">{{ ucfirst($pReqType) }}</span>
+                    </td>
+                    <td><span class="badge bg-secondary">{{ ucwords(str_replace('_', ' ', $prevApp->status)) }}</span></td>
+                    <td class="small text-muted">{{ $prevApp->created_at?->format('d M Y') ?? '—' }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endif
+
   <div class="col-md-5">
     <div class="card">
       <div class="card-header fw-bold">Actions</div>
       <div class="card-body">
 
-        @if(in_array($application->status, ['submitted','needs_correction','returned_from_payments','returned_from_registrar']))
+        @php
+          $actionableStatuses = [
+            'submitted', 'submitted_with_app_fee', 'officer_review',
+            'needs_correction', 'returned_from_payments', 'returned_from_registrar',
+            'returned_to_officer', 'registrar_fix_request', 'correction_requested',
+          ];
+        @endphp
+        @if(in_array($application->status, $actionableStatuses))
           <form method="POST" action="{{ route('staff.officer.applications.approve', $application) }}" class="mb-3">
             @csrf
             @php
               $isRegistration = ($application->application_type ?? '') === 'registration';
               $cats = $isRegistration ? \App\Models\Application::massMediaCategories() : \App\Models\Application::accreditationCategories();
               $label = $isRegistration ? 'Mass Media Category' : 'Accreditation Category';
+              $approveLabel = $isRegistration ? 'Verify & Send to Registrar' : 'Approve (Prompt Payment)';
             @endphp
 
             <label class="form-label fw-semibold">{{ $label }} (required)</label>
@@ -107,14 +160,21 @@
 
             <label class="form-label fw-semibold">Approve notes (optional)</label>
             <textarea class="form-control mb-2" name="decision_notes" rows="3"></textarea>
-            <button class="btn btn-success w-100">Approve & Send to Registrar</button>
+            <button class="btn btn-success w-100">{{ $approveLabel }}</button>
           </form>
 
           <form method="POST" action="{{ route('staff.officer.applications.requestCorrection', $application) }}" class="mb-3">
             @csrf
-            <label class="form-label fw-semibold">Request correction (required)</label>
+            <label class="form-label fw-semibold">Return to applicant — reason (required)</label>
             <textarea class="form-control mb-2" name="notes" rows="3" required></textarea>
-            <button class="btn btn-warning w-100">Request Correction</button>
+            <button class="btn btn-warning w-100">Return to Applicant</button>
+          </form>
+
+          <form method="POST" action="{{ route('staff.officer.applications.forward-to-registrar', $application) }}" class="mb-3">
+            @csrf
+            <label class="form-label fw-semibold">Forward to Registrar — reason (required)</label>
+            <textarea class="form-control mb-2" name="forward_reason" rows="3" required placeholder="Waiver, special case, etc."></textarea>
+            <button class="btn btn-outline-primary w-100">Forward to Registrar (No Approval)</button>
           </form>
         @else
           <div class="alert alert-light border">No actions available for this status.</div>

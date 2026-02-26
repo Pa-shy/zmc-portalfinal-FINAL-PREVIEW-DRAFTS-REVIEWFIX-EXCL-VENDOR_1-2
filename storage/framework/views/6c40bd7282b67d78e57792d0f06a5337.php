@@ -56,9 +56,21 @@
         </a>
       </li>
 
+      <li class="<?php echo e(request()->routeIs('accreditation.requirements') ? 'active' : ''); ?>">
+        <a href="<?php echo e(route('accreditation.requirements')); ?>">
+          <i class="ri-list-check-2"></i><span>Requirements</span>
+        </a>
+      </li>
+
       <li class="<?php echo e(request()->routeIs('accreditation.howto') ? 'active' : ''); ?>">
         <a href="<?php echo e(route('accreditation.howto')); ?>">
           <i class="ri-information-line"></i><span>How it Works</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="#" target="_blank">
+          <i class="ri-global-line"></i><span>Media Hub</span>
         </a>
       </li>
 
@@ -112,21 +124,27 @@
         </a>
       </li>
 
+      <li class="<?php echo e(request()->routeIs('mediahouse.requirements') ? 'active' : ''); ?>">
+        <a href="<?php echo e(route('mediahouse.requirements')); ?>">
+          <i class="ri-list-check-2"></i><span>Requirements</span>
+        </a>
+      </li>
+
       <li class="<?php echo e(request()->routeIs('mediahouse.howto') ? 'active' : ''); ?>">
         <a href="<?php echo e(route('mediahouse.howto')); ?>">
           <i class="ri-information-line"></i><span>How it Works</span>
         </a>
       </li>
 
-      <li class="<?php echo e(request()->routeIs('mediahouse.profile') ? 'active' : ''); ?>">
-        <a href="<?php echo e(route('mediahouse.profile')); ?>">
-          <i class="ri-building-2-line"></i><span>Organization Profile</span>
+      <li>
+        <a href="#" target="_blank">
+          <i class="ri-global-line"></i><span>Media Hub</span>
         </a>
       </li>
 
-      <li class="<?php echo e(request()->routeIs('mediahouse.staff.index') ? 'active' : ''); ?>">
-        <a href="<?php echo e(route('mediahouse.staff.index')); ?>">
-          <i class="ri-group-line"></i><span>Staff Management</span>
+      <li class="<?php echo e(request()->routeIs('mediahouse.profile') ? 'active' : ''); ?>">
+        <a href="<?php echo e(route('mediahouse.profile')); ?>">
+          <i class="ri-building-2-line"></i><span>Organization Profile</span>
         </a>
       </li>
 

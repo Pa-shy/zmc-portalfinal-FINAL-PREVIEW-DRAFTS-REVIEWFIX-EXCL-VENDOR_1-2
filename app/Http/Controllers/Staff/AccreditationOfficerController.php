@@ -20,12 +20,13 @@ class AccreditationOfficerController extends Controller
     {
         $user = Auth::user();
 
-        // KPI counts (Step 1: dashboard summary)
         $pendingStatuses = [
             Application::SUBMITTED,
+            Application::SUBMITTED_WITH_APP_FEE,
             Application::OFFICER_REVIEW,
             Application::CORRECTION_REQUESTED,
             Application::RETURNED_TO_OFFICER,
+            Application::REGISTRAR_FIX_REQUEST,
         ];
 
         $kpis = [
@@ -35,20 +36,23 @@ class AccreditationOfficerController extends Controller
                     $q->whereNull('assigned_officer_id')
                       ->orWhere('assigned_officer_id', $user->id);
                 })->count(),
-            'approved_applications' => Application::whereIn('status', [Application::OFFICER_APPROVED, Application::REGISTRAR_APPROVED, Application::ISSUED])->count(),
+            'approved_applications' => Application::whereIn('status', [Application::OFFICER_APPROVED, Application::APPROVED_AWAITING_PAYMENT, Application::VERIFIED_BY_OFFICER, Application::REGISTRAR_APPROVED, Application::ISSUED])->count(),
             'rejected_applications' => Application::whereIn('status', [Application::OFFICER_REJECTED, Application::REGISTRAR_REJECTED])->count(),
             'new_this_week' => Application::where('created_at', '>=', now()->startOfWeek())->count(),
         ];
 
         $statuses = [
-            'approved_pending_payment',
-            'needs_correction',
-            'returned_from_payments',
-            'returned_from_registrar',
-            'under_officer_review',
-            'corrections_requested',
-            'officer_approved_pending_registrar',
-            'submitted',
+            Application::SUBMITTED,
+            Application::SUBMITTED_WITH_APP_FEE,
+            Application::OFFICER_REVIEW,
+            Application::CORRECTION_REQUESTED,
+            Application::RETURNED_TO_APPLICANT,
+            Application::RETURNED_TO_OFFICER,
+            Application::REGISTRAR_FIX_REQUEST,
+            Application::APPROVED_AWAITING_PAYMENT,
+            Application::FORWARDED_TO_REGISTRAR,
+            Application::VERIFIED_BY_OFFICER,
+            Application::OFFICER_APPROVED,
         ];
 
         $applications = Application::query()
@@ -134,7 +138,15 @@ class AccreditationOfficerController extends Controller
         'lockedBy',
     ]);
 
-    return view('staff.officer.show', compact('application'));
+    $previousApplications = collect();
+    if ($application->applicant_user_id) {
+        $previousApplications = Application::where('applicant_user_id', $application->applicant_user_id)
+            ->where('id', '!=', $application->id)
+            ->latest()
+            ->get();
+    }
+
+    return view('staff.officer.show', compact('application', 'previousApplications'));
 }
 
 public function unlock(Application $application)
@@ -172,12 +184,10 @@ public function approve(Request $request, Application $application)
 
     $from = $application->status;
 
-    // Ensure review state first
-    if ($application->status === Application::SUBMITTED) {
+    if (in_array($application->status, [Application::SUBMITTED, Application::SUBMITTED_WITH_APP_FEE], true)) {
         ApplicationWorkflow::transition($application, Application::OFFICER_REVIEW, 'officer_open_review');
     }
 
-    // Persist category selection
     if ($application->application_type === 'registration') {
         $allowed = array_keys(Application::massMediaCategories());
         abort_unless(in_array($data['category_code'], $allowed, true), 422, 'Invalid media house category.');
@@ -193,15 +203,25 @@ public function approve(Request $request, Application $application)
     }
     $application->save();
 
-    // Officer approves then pushes directly to Registrar review
-    ApplicationWorkflow::transition($application, Application::OFFICER_APPROVED, 'officer_approve', [
-        'decision_notes' => $data['decision_notes'] ?? null,
-        'category_code' => $data['category_code'],
-    ]);
+    if ($application->application_type === 'registration') {
+        ApplicationWorkflow::transition($application, Application::VERIFIED_BY_OFFICER, 'officer_verify_media_house', [
+            'decision_notes' => $data['decision_notes'] ?? null,
+            'category_code' => $data['category_code'],
+        ]);
 
-    ApplicationWorkflow::transition($application, Application::REGISTRAR_REVIEW, 'system_send_to_registrar', [
-        'category_code' => $data['category_code'],
-    ]);
+        ApplicationWorkflow::transition($application, Application::REGISTRAR_REVIEW, 'system_send_to_registrar', [
+            'category_code' => $data['category_code'],
+        ]);
+
+        $successMessage = 'Media house verified and forwarded to Registrar for review.';
+    } else {
+        ApplicationWorkflow::transition($application, Application::APPROVED_AWAITING_PAYMENT, 'officer_approve', [
+            'decision_notes' => $data['decision_notes'] ?? null,
+            'category_code' => $data['category_code'],
+        ]);
+
+        $successMessage = 'Approved — applicant will be prompted for payment.';
+    }
 
     if (!empty($data['decision_notes']) && Schema::hasColumn('applications','decision_notes')) {
         $application->decision_notes = $data['decision_notes'];
@@ -213,7 +233,7 @@ public function approve(Request $request, Application $application)
         'category_code' => $data['category_code'],
     ]);
 
-    return back()->with('success', 'Approved and sent to Registrar for review.');
+    return back()->with('success', $successMessage);
 }
 
 
@@ -230,8 +250,7 @@ public function approve(Request $request, Application $application)
 
         $from = $application->status;
 
-        // First move to review if needed
-        if ($application->status === Application::SUBMITTED) {
+        if (in_array($application->status, [Application::SUBMITTED, Application::SUBMITTED_WITH_APP_FEE], true)) {
             ApplicationWorkflow::transition($application, Application::OFFICER_REVIEW, 'officer_open_review');
         }
 
@@ -240,19 +259,103 @@ public function approve(Request $request, Application $application)
             'decision_notes' => $data['notes'],
         ]);
 
-        ApplicationWorkflow::transition($application, Application::CORRECTION_REQUESTED, 'officer_request_correction', [
+        ApplicationWorkflow::transition($application, Application::RETURNED_TO_APPLICANT, 'officer_return_to_applicant', [
             'notes' => $data['notes'],
         ]);
 
         $application->refresh();
 
-        $this->audit('officer_request_correction', $application, $from, $application->status, [
+        $this->audit('officer_return_to_applicant', $application, $from, $application->status, [
             'notes' => $data['notes'],
         ]);
 
         $this->persistMessageIfAvailable($application, $data['notes']);
 
-        return back()->with('success', 'Correction requested.');
+        return back()->with('success', 'Application returned to applicant with correction notes.');
+    }
+
+    public function forwardToRegistrar(Request $request, Application $application)
+    {
+        $data = $request->validate([
+            'forward_reason' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $from = $application->status;
+
+        if (in_array($application->status, [Application::SUBMITTED, Application::SUBMITTED_WITH_APP_FEE], true)) {
+            ApplicationWorkflow::transition($application, Application::OFFICER_REVIEW, 'officer_open_review');
+        }
+
+        $this->safeSet($application, [
+            'forward_reason' => $data['forward_reason'],
+        ]);
+
+        ApplicationWorkflow::transition($application, Application::FORWARDED_TO_REGISTRAR, 'officer_forward_to_registrar', [
+            'forward_reason' => $data['forward_reason'],
+        ]);
+
+        $application->refresh();
+
+        $this->audit('officer_forward_to_registrar', $application, $from, $application->status, [
+            'forward_reason' => $data['forward_reason'],
+        ]);
+
+        return back()->with('success', 'Application forwarded to Registrar (without approval).');
+    }
+
+    public function physicalIntake()
+    {
+        return view('staff.officer.physical_intake');
+    }
+
+    public function processPhysicalIntake(Request $request)
+    {
+        $data = $request->validate([
+            'lookup_number'   => ['required', 'string', 'max:100'],
+            'receipt_number'  => ['required', 'string', 'max:100'],
+            'request_type'    => ['required', 'in:new,renewal,replacement'],
+            'application_type'=> ['required', 'in:accreditation,registration'],
+            'applicant_name'  => ['nullable', 'string', 'max:255'],
+            'notes'           => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $application = Application::create([
+            'reference'          => 'PHY-' . strtoupper(Str::random(8)),
+            'application_type'   => $data['application_type'],
+            'request_type'       => $data['request_type'],
+            'receipt_number'     => $data['receipt_number'],
+            'status'             => Application::PRODUCTION_QUEUE,
+            'current_stage'      => Application::stageForStatus(Application::PRODUCTION_QUEUE),
+            'submitted_at'       => now(),
+            'last_action_at'     => now(),
+            'last_action_by'     => Auth::id(),
+            'decision_notes'     => $data['notes'] ?? null,
+        ]);
+
+        $this->audit('officer_physical_intake', $application, null, Application::PRODUCTION_QUEUE, [
+            'lookup_number'  => $data['lookup_number'],
+            'receipt_number' => $data['receipt_number'],
+            'applicant_name' => $data['applicant_name'] ?? null,
+        ]);
+
+        ActivityLogger::log('officer_physical_intake', $application, null, Application::PRODUCTION_QUEUE, [
+            'lookup_number'  => $data['lookup_number'],
+            'receipt_number' => $data['receipt_number'],
+        ]);
+
+        return redirect()->route('staff.officer.physical-intake')
+            ->with('success', "Physical intake recorded. Reference: {$application->reference}. Added to production queue.");
+    }
+
+    public function productionQueue()
+    {
+        $applications = Application::query()
+            ->with(['applicant'])
+            ->where('status', Application::PAYMENT_VERIFIED)
+            ->latest()
+            ->paginate(20);
+
+        return view('staff.officer.production_queue', compact('applications'));
     }
 
     /**

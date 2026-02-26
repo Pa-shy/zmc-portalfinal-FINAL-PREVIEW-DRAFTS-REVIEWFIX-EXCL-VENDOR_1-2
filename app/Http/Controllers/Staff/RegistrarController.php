@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\ActivityLog;
+use App\Models\Payment;
 use App\Models\PrintLog;
 use App\Models\DocumentVersion;
 use App\Models\Notice;
 use App\Models\Event;
 use App\Models\News;
+use App\Models\Reminder;
 use App\Services\ApplicationWorkflow;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
@@ -25,9 +27,12 @@ class RegistrarController extends Controller
         $today = now()->startOfDay();
         $thisWeek = now()->startOfWeek();
 
-        // KPIs
         $kpis = [
-            'awaiting_registrar' => Application::where('status', Application::REGISTRAR_REVIEW) // Now it comes from AO
+            'awaiting_registrar' => Application::whereIn('status', [
+                    Application::REGISTRAR_REVIEW,
+                    Application::APPROVED_AWAITING_PAYMENT,
+                    Application::FORWARDED_TO_REGISTRAR,
+                ])
                 ->where(function($q) use ($user) {
                     $q->whereNull('assigned_officer_id')
                       ->orWhere('assigned_officer_id', $user->id);
@@ -35,33 +40,24 @@ class RegistrarController extends Controller
             'approved_today' => Application::where('status', Application::ACCOUNTS_REVIEW)->where('last_action_at', '>=', $today)->count(),
             'approved_this_week' => Application::where('status', Application::ACCOUNTS_REVIEW)->where('last_action_at', '>=', $thisWeek)->count(),
             'returned_to_officer' => Application::where('status', Application::RETURNED_TO_OFFICER)->count(),
-
-            // Category mismatches: items where registrar changed the category
             'category_mismatches' => ActivityLog::where('action', 'registrar_reassign_category')->where('created_at', '>=', $thisWeek)->count(),
-
             'certificates_generated_today' => DocumentVersion::where('document_type', 'certificate')->where('created_at', '>=', $today)->count(),
             'prints_today' => PrintLog::where('created_at', '>=', $today)->count(),
-
-            // Reprints flagged: prints > 1
             'flagged_reprints' => Application::where('print_count', '>', 1)->count(),
-
-            // New: Applications awaiting Registrar to approve for payment
-            'awaiting_payment_approval' => Application::where('status', Application::REGISTRAR_REVIEW)
-                ->whereNull('registrar_reviewed_at')
-                ->where('payment_status', '!=', 'paid')
+            'awaiting_payment_approval' => Application::where('status', Application::APPROVED_AWAITING_PAYMENT)
                 ->where(function($q) use ($user) {
                     $q->whereNull('assigned_officer_id')
                       ->orWhere('assigned_officer_id', $user->id);
                 })
                 ->count(),
+            'forwarded_to_registrar' => Application::where('status', Application::FORWARDED_TO_REGISTRAR)->count(),
+            'fix_requests' => Application::where('status', Application::REGISTRAR_FIX_REQUEST)->count(),
         ];
 
-        // Global Filters logic for the main dashboard list
         $query = Application::query()
             ->with(['applicant', 'lastActionBy'])
             ->withCount('printLogs');
 
-        // Concurrency visibility logic
         $query->where(function($q) use ($user) {
             $q->whereNull('assigned_officer_id')
               ->orWhere('assigned_officer_id', $user->id);
@@ -101,7 +97,6 @@ class RegistrarController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        // By default show items needing attention or recently approved
         if (!$request->filled('status')) {
             $query->whereIn('status', [
                 Application::PAID_CONFIRMED,
@@ -109,12 +104,14 @@ class RegistrarController extends Controller
                 Application::REGISTRAR_APPROVED,
                 Application::RETURNED_TO_OFFICER,
                 Application::ACCOUNTS_REVIEW,
+                Application::APPROVED_AWAITING_PAYMENT,
+                Application::FORWARDED_TO_REGISTRAR,
+                Application::REGISTRAR_FIX_REQUEST,
             ]);
         }
 
         $applications = $query->latest()->paginate(20)->withQueryString();
 
-        // Activity feed - recent registrar-related actions
         $activity = ActivityLog::query()
             ->whereIn('action', [
                 'registrar_approve',
@@ -122,6 +119,8 @@ class RegistrarController extends Controller
                 'registrar_return_to_accounts',
                 'registrar_reassign_category',
                 'registrar_approve_for_payment',
+                'registrar_fix_request',
+                'registrar_push_to_accounts',
                 'accounts_confirm_paid',
                 'officer_approve',
                 'application_submitted',
@@ -134,17 +133,16 @@ class RegistrarController extends Controller
         return view('staff.registrar.dashboard', compact('applications', 'kpis', 'activity'));
     }
 
-    /**
-     * 2) Incoming Queue: “Confirmed by Accreditation Officer”
-     * Driven by workflow: confirmed items that cleared accounts.
-     */
     public function incomingQueue(Request $request)
     {
         $query = Application::query()
             ->with(['applicant', 'assignedOfficer', 'payments'])
-            ->where('status', Application::REGISTRAR_REVIEW);
+            ->whereIn('status', [
+                Application::REGISTRAR_REVIEW,
+                Application::APPROVED_AWAITING_PAYMENT,
+                Application::FORWARDED_TO_REGISTRAR,
+            ]);
 
-        // Apply filters
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function($q) use ($s) {
@@ -160,9 +158,6 @@ class RegistrarController extends Controller
         return view('staff.registrar.incoming_queue', compact('applications'));
     }
 
-    /**
-     * Registrar approves for payment.
-     */
     public function approveForPayment(Request $request, Application $application)
     {
         $data = $request->validate([
@@ -171,7 +166,6 @@ class RegistrarController extends Controller
 
         $from = $application->status;
 
-        // Transitions to accounts_review so they can handle payment
         ApplicationWorkflow::transition($application, Application::ACCOUNTS_REVIEW, 'registrar_approve_for_payment', [
             'notes' => $data['decision_notes'] ?? null,
         ]);
@@ -180,6 +174,10 @@ class RegistrarController extends Controller
             'registrar_reviewed_at' => now(),
             'registrar_reviewed_by' => Auth::id(),
             'decision_notes' => $data['decision_notes'] ?? $application->decision_notes,
+        ]);
+
+        $this->audit('registrar_approve_for_payment', $application, $from, $application->status, [
+            'notes' => $data['decision_notes'] ?? null,
         ]);
 
         return back()->with('success', 'Application approved for payment and forwarded to Accounts.');
@@ -253,7 +251,6 @@ class RegistrarController extends Controller
 
     public function show(Application $application)
     {
-        // Try to claim the application (concurrency lock)
         if (!$application->claim(auth()->user())) {
             $lockerName = $application->lockedBy ? $application->lockedBy->name : 'another official';
             return redirect()->back()->with('error', "This application is currently being worked on by {$lockerName}.");
@@ -261,19 +258,23 @@ class RegistrarController extends Controller
 
         $application->load(['applicant', 'documents', 'messages', 'workflowLogs', 'payments', 'printLogs', 'documentVersions', 'lockedBy']);
 
-        // Audit trail from ActivityLog
         $auditTrail = ActivityLog::where('entity_type', get_class($application))
             ->where('entity_id', $application->id)
             ->with('user')
             ->latest()
             ->get();
 
-        return view('staff.registrar.show', compact('application', 'auditTrail'));
+        $previousApplications = collect();
+        if ($application->applicant_user_id) {
+            $previousApplications = Application::where('applicant_user_id', $application->applicant_user_id)
+                ->where('id', '!=', $application->id)
+                ->latest()
+                ->get();
+        }
+
+        return view('staff.registrar.show', compact('application', 'auditTrail', 'previousApplications'));
     }
 
-    /**
-     * Registrar reassigns category.
-     */
     public function reassignCategory(Request $request, Application $application)
     {
         $data = $request->validate([
@@ -300,56 +301,70 @@ class RegistrarController extends Controller
         return back()->with('success', 'Category reassigned successfully.');
     }
 
-    /**
-     * Registrar approves -> moves to Accounts for payment
-     */
-        public function approve(Request $request, Application $application)
+    public function approve(Request $request, Application $application)
     {
-        // Actually, the issue says Registrar pushes to Accounts.
-        // If Registrar is doing "Approval", it's likely "Approval for Payment".
-
         $data = $request->validate([
             'decision_notes' => ['nullable', 'string', 'max:5000'],
             'category_code'  => ['required', 'string', 'max:10'],
+            'registrar_letter' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ]);
 
         $from = $application->status;
 
-        // Persist category selection
         if ($application->application_type === 'registration') {
             $allowed = array_keys(Application::massMediaCategories());
             abort_unless(in_array($data['category_code'], $allowed, true), 422, 'Invalid media house category.');
             $application->media_house_category_code = $data['category_code'];
+
+            if ($request->hasFile('registrar_letter')) {
+                $path = $request->file('registrar_letter')->store('documents/registrar_letters', 'public');
+                $application->registrar_letter_path = $path;
+            }
+
+            if (empty($application->registrar_letter_path)) {
+                return back()->withErrors(['registrar_letter' => 'Official registrar letter must be uploaded for media house registration approval.']);
+            }
+
+            if (!empty($data['decision_notes'])) {
+                $application->decision_notes = $data['decision_notes'];
+            }
+            $application->save();
+
+            ApplicationWorkflow::transition($application, Application::REGISTRAR_APPROVED_PENDING_REG_FEE, 'registrar_approve_pending_reg_fee', [
+                'decision_notes' => $data['decision_notes'] ?? null,
+                'category_code'  => $data['category_code'],
+            ]);
         } else {
             $allowed = array_keys(Application::accreditationCategories());
             abort_unless(in_array($data['category_code'], $allowed, true), 422, 'Invalid accreditation category.');
             $application->accreditation_category_code = $data['category_code'];
-        }
 
-        if (!empty($data['decision_notes'])) {
-            $application->decision_notes = $data['decision_notes'];
-        }
-        $application->save();
+            if (!empty($data['decision_notes'])) {
+                $application->decision_notes = $data['decision_notes'];
+            }
+            $application->save();
 
-        // Registrar approves moves it to ACCOUNTS_REVIEW as per requested workflow
-        ApplicationWorkflow::transition($application, Application::ACCOUNTS_REVIEW, 'registrar_approve_for_payment', [
-            'decision_notes' => $data['decision_notes'] ?? null,
-            'category_code'  => $data['category_code'],
-        ]);
+            ApplicationWorkflow::transition($application, Application::ACCOUNTS_REVIEW, 'registrar_approve_for_payment', [
+                'decision_notes' => $data['decision_notes'] ?? null,
+                'category_code'  => $data['category_code'],
+            ]);
+        }
 
         $this->safeSet($application, [
             'registrar_reviewed_at' => now(),
             'registrar_reviewed_by' => Auth::id(),
         ]);
 
-        ActivityLogger::log('registrar_approve', $application, $from, $application->status, [
-            'actor_role' => session('active_staff_role'),
+        $this->audit('registrar_approve', $application, $from, $application->status, [
             'category_code' => $data['category_code'],
         ]);
 
-        return back()->with('success', 'Approved and sent to Accounts for payment.');
-    }
+        $successMsg = $application->application_type === 'registration'
+            ? 'Approved. Pending registration fee payment.'
+            : 'Approved and sent to Accounts for payment.';
 
+        return back()->with('success', $successMsg);
+    }
 
     public function reject(Request $request, Application $application)
     {
@@ -398,6 +413,137 @@ class RegistrarController extends Controller
         ]);
 
         return back()->with('success', 'Returned to Accounts/Payments.');
+    }
+
+    public function raiseFixRequest(Request $request, Application $application)
+    {
+        $data = $request->validate([
+            'message' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $from = $application->status;
+
+        ApplicationWorkflow::transition($application, Application::REGISTRAR_FIX_REQUEST, 'registrar_fix_request', [
+            'message' => $data['message'],
+        ]);
+
+        $this->safeSet($application, [
+            'correction_notes' => $data['message'],
+        ]);
+
+        $this->audit('registrar_fix_request', $application, $from, Application::REGISTRAR_FIX_REQUEST, [
+            'message' => $data['message'],
+        ]);
+
+        return back()->with('success', 'Fix request sent to Accreditation Officer.');
+    }
+
+    public function pushToAccounts(Request $request, Application $application)
+    {
+        $data = $request->validate([
+            'notes' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        abort_unless($application->status === Application::FORWARDED_TO_REGISTRAR, 422, 'Application must be in forwarded_to_registrar status.');
+
+        $from = $application->status;
+
+        ApplicationWorkflow::transition($application, Application::PENDING_ACCOUNTS_FROM_REGISTRAR, 'registrar_push_to_accounts', [
+            'notes' => $data['notes'] ?? null,
+        ]);
+
+        $this->audit('registrar_push_to_accounts', $application, $from, Application::PENDING_ACCOUNTS_FROM_REGISTRAR, [
+            'notes' => $data['notes'] ?? null,
+        ]);
+
+        return back()->with('success', 'Application pushed to Accounts for processing.');
+    }
+
+    public function accountsOversight(Request $request)
+    {
+        $paymentsQueue = Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW,
+                Application::AWAITING_ACCOUNTS_VERIFICATION,
+                Application::PENDING_ACCOUNTS_FROM_REGISTRAR,
+            ])
+            ->with(['applicant', 'payments'])
+            ->latest('last_action_at')
+            ->paginate(20, ['*'], 'queue_page');
+
+        $recentPayments = Payment::with(['application.applicant'])
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        $paymentStats = [
+            'total_payments' => Payment::count(),
+            'confirmed' => Payment::where('status', 'paid')->count(),
+            'pending' => Payment::where('status', 'pending')->count(),
+            'rejected' => Payment::where('status', 'rejected')->count(),
+        ];
+
+        $paymentLogs = ActivityLog::whereIn('action', [
+                'accounts_confirm_paid',
+                'accounts_reject_payment',
+                'proof_approved',
+                'proof_rejected',
+                'waiver_approved',
+                'waiver_rejected',
+                'payment_verified',
+            ])
+            ->with(['user', 'entity'])
+            ->latest()
+            ->limit(30)
+            ->get();
+
+        $waiverApplications = Application::whereNotNull('waiver_path')
+            ->with('applicant')
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return view('staff.registrar.accounts_oversight', compact(
+            'paymentsQueue',
+            'recentPayments',
+            'paymentStats',
+            'paymentLogs',
+            'waiverApplications'
+        ));
+    }
+
+    public function remindersIndex(Request $request)
+    {
+        $reminders = Reminder::with('creator')
+            ->latest()
+            ->paginate(20);
+
+        return view('staff.registrar.reminders', compact('reminders'));
+    }
+
+    public function createReminder(Request $request)
+    {
+        $data = $request->validate([
+            'target_type' => ['required', 'in:user,media_house'],
+            'target_id' => ['required', 'integer'],
+            'message' => ['required', 'string', 'max:5000'],
+            'reminder_type' => ['required', 'string', 'max:100'],
+        ]);
+
+        $reminder = Reminder::create([
+            'target_type' => $data['target_type'],
+            'target_id' => $data['target_id'],
+            'message' => $data['message'],
+            'reminder_type' => $data['reminder_type'],
+            'created_by' => Auth::id(),
+        ]);
+
+        ActivityLogger::log('registrar_create_reminder', $reminder, null, null, [
+            'target_type' => $data['target_type'],
+            'target_id' => $data['target_id'],
+            'reminder_type' => $data['reminder_type'],
+        ]);
+
+        return back()->with('success', 'Reminder created successfully.');
     }
 
     public function sendRenewalReminders(Request $request)
@@ -459,7 +605,6 @@ class RegistrarController extends Controller
         return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'journalists' : 'media houses') . ".");
     }
 
-    /* helpers */
     private function audit(string $action, Application $application, ?string $from, ?string $to, array $meta = []): void
     {
         $payload = array_merge([
@@ -536,9 +681,6 @@ class RegistrarController extends Controller
         catch (\Throwable $e) { return false; }
     }
 
-    /**
-     * View Notices & Events (Read-only)
-     */
     public function noticesEvents(Request $request)
     {
         $notices = Notice::query()
@@ -554,9 +696,6 @@ class RegistrarController extends Controller
         return view('staff.registrar.notices_events', compact('notices', 'events'));
     }
 
-    /**
-     * View News / Press Statements (Read-only)
-     */
     public function news(Request $request)
     {
         $news = News::query()

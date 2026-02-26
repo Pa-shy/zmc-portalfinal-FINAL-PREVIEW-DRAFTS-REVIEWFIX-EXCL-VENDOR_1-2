@@ -680,6 +680,60 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" id="ap1ReviewContent"></div>
+        <div class="modal-body border-top pt-3" id="ap1AppFeeSection">
+          <div class="alert alert-warning mb-3">
+            <div class="fw-bold mb-1"><i class="ri-money-dollar-circle-line me-1"></i> Application Fee Required</div>
+            <div class="small">An application fee must be paid before submission. Please provide your PayNow reference or upload proof of payment.</div>
+          </div>
+          <ul class="nav nav-pills mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="appfee-tab-ref" data-bs-toggle="pill" data-bs-target="#appfee-pane-ref" type="button" role="tab">
+                <i class="ri-flashlight-line me-1"></i> PayNow Reference
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="appfee-tab-proof" data-bs-toggle="pill" data-bs-target="#appfee-pane-proof" type="button" role="tab">
+                <i class="ri-file-upload-line me-1"></i> Upload Proof
+              </button>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="appfee-pane-ref" role="tabpanel">
+              <div class="mb-3">
+                <label class="form-label small fw-bold">PayNow Reference Number</label>
+                <input type="text" class="form-control" id="appfee_paynow_ref" placeholder="e.g. PN1234567890">
+              </div>
+            </div>
+            <div class="tab-pane fade" id="appfee-pane-proof" role="tabpanel">
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Name</label>
+                  <input type="text" class="form-control" id="appfee_first_name">
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Surname</label>
+                  <input type="text" class="form-control" id="appfee_last_name">
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Payment date</label>
+                  <input type="date" class="form-control" id="appfee_payment_date">
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label small">Amount paid</label>
+                  <input type="number" step="0.01" min="0" class="form-control" id="appfee_amount_paid">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small">Bank used</label>
+                  <input type="text" class="form-control" id="appfee_bank_name" placeholder="e.g. CBZ / Steward / Stanbic">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small">Upload proof (PDF/JPG/PNG)</label>
+                  <input type="file" class="form-control" id="appfee_proof_file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Edit Application</button>
           <button type="button" class="btn btn-primary" id="ap1ConfirmSubmitBtn">
@@ -1447,11 +1501,48 @@
     }
   }
 
-  // ===== Submit (multipart + files) =====
+  function getAppFeeData() {
+    const refTab = document.getElementById('appfee-pane-ref');
+    const isRefActive = refTab && refTab.classList.contains('show');
+
+    if (isRefActive) {
+      const ref = document.getElementById('appfee_paynow_ref')?.value?.trim();
+      if (!ref) return null;
+      return { type: 'paynow_ref', paynow_reference: ref };
+    } else {
+      const firstName = document.getElementById('appfee_first_name')?.value?.trim();
+      const lastName = document.getElementById('appfee_last_name')?.value?.trim();
+      const paymentDate = document.getElementById('appfee_payment_date')?.value?.trim();
+      const amountPaid = document.getElementById('appfee_amount_paid')?.value?.trim();
+      const bankName = document.getElementById('appfee_bank_name')?.value?.trim();
+      const proofFile = document.getElementById('appfee_proof_file')?.files?.[0];
+
+      if (!firstName || !lastName || !paymentDate || !amountPaid || !bankName || !proofFile) return null;
+
+      return {
+        type: 'proof',
+        first_name: firstName,
+        last_name: lastName,
+        payment_date: paymentDate,
+        amount_paid: amountPaid,
+        bank_name: bankName,
+        proof_file: proofFile,
+      };
+    }
+  }
+
   async function submitApplication() {
     const data = getFormData();
     const region = document.querySelector('select[name="collection_region"]')?.value || '';
     const btn = document.getElementById('ap1ConfirmSubmitBtn');
+
+    const isCorrection = @json(isset($draft) && !$draft->is_draft && ($draft->status ?? null) === \App\Models\Application::CORRECTION_REQUESTED);
+
+    const appFeeData = getAppFeeData();
+    if (!isCorrection && !appFeeData) {
+      alert('Application fee is required. Please provide a PayNow reference or upload proof of payment.');
+      return;
+    }
 
     try {
       btn.disabled = true;
@@ -1461,13 +1552,27 @@
       fd.append('collection_region', region);
       fd.append('form_data', JSON.stringify(data));
 
+      if (!isCorrection && appFeeData) {
+        fd.append('app_fee_type', appFeeData.type);
+        if (appFeeData.type === 'paynow_ref') {
+          fd.append('app_fee_paynow_ref', appFeeData.paynow_reference);
+        } else {
+          fd.append('app_fee_first_name', appFeeData.first_name);
+          fd.append('app_fee_last_name', appFeeData.last_name);
+          fd.append('app_fee_payment_date', appFeeData.payment_date);
+          fd.append('app_fee_amount_paid', appFeeData.amount_paid);
+          fd.append('app_fee_bank_name', appFeeData.bank_name);
+          fd.append('app_fee_proof_file', appFeeData.proof_file);
+        }
+      }
+
       document.querySelectorAll('#ap1Form input[type="file"][name^="documents"]').forEach(input => {
         if (input.files && input.files[0]) fd.append(input.name, input.files[0]);
       });
 
-      const submitUrl = @json(isset($draft) && !$draft->is_draft && ($draft->status ?? null) === \App\Models\Application::CORRECTION_REQUESTED
-        ? route('mediahouse.applications.resubmit', $draft)
-        : route('mediahouse.submit'));
+      const submitUrl = isCorrection
+        ? @json(isset($draft) && !$draft->is_draft ? route('mediahouse.applications.resubmit', $draft ?? 0) : route('mediahouse.submit'))
+        : @json(route('mediahouse.submit'));
 
       const res = await fetch(submitUrl, {
         method: 'POST',

@@ -29,15 +29,17 @@
       <div class="form-row">
         <div class="form-field">
           <label class="form-label">Phone Number</label>
-          <input type="text" class="form-control" value="+263 77 123 4567">
+          <input type="text" class="form-control" value="{{ Auth::user()->phone_number ?? '' }}">
         </div>
         <div class="form-field">
-          <label class="form-label">Language Preference</label>
-          <select class="form-control">
-            <option>English</option>
-            <option>Shona</option>
-            <option>Ndebele</option>
-          </select>
+          <label class="form-label">Theme</label>
+          <div class="d-flex align-items-center gap-3">
+            <select class="form-control" id="themeSelect" style="max-width:200px;">
+              <option value="light" @selected((Auth::user()->theme ?? 'light') === 'light')>Light</option>
+              <option value="dark" @selected((Auth::user()->theme ?? 'light') === 'dark')>Dark</option>
+            </select>
+            <span class="text-muted small" id="themeSaveStatus"></span>
+          </div>
         </div>
       </div>
 
@@ -48,3 +50,32 @@
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+  document.getElementById('themeSelect')?.addEventListener('change', function(){
+    const theme = this.value;
+    const status = document.getElementById('themeSaveStatus');
+    fetch('{{ route("settings.theme.ajax") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ theme: theme })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if(data.success){
+        document.body.className = 'theme-' + theme;
+        if(status) status.textContent = 'Saved!';
+        setTimeout(() => { if(status) status.textContent = ''; }, 2000);
+      }
+    })
+    .catch(() => {
+      if(status) status.textContent = 'Error saving';
+    });
+  });
+</script>
+@endpush

@@ -132,6 +132,95 @@
     </div>
   </div>
 
+  @if(isset($previousApplications) && $previousApplications->count())
+  <div class="col-12">
+    <div class="card mt-3">
+      <div class="card-header fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#prevAppsPanel" role="button" aria-expanded="false">
+        <span><i class="ri-history-line me-1"></i> Previous Applications by This Applicant ({{ $previousApplications->count() }})</span>
+        <i class="ri-arrow-down-s-line"></i>
+      </div>
+      <div class="collapse" id="prevAppsPanel">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th>Reference</th>
+                  <th>Type</th>
+                  <th>Request</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($previousApplications as $prevApp)
+                  <tr>
+                    <td class="small fw-bold">{{ $prevApp->reference }}</td>
+                    <td class="small text-capitalize">{{ $prevApp->application_type ?? '—' }}</td>
+                    <td>
+                      @php
+                        $pReqType = $prevApp->request_type ?? 'new';
+                        $pReqBadge = match($pReqType) { 'renewal' => 'warning', 'replacement' => 'info', default => 'success' };
+                      @endphp
+                      <span class="badge bg-{{ $pReqBadge }}">{{ ucfirst($pReqType) }}</span>
+                    </td>
+                    <td><span class="badge bg-secondary">{{ ucwords(str_replace('_', ' ', $prevApp->status)) }}</span></td>
+                    <td class="small text-muted">{{ $prevApp->created_at?->format('d M Y') ?? '—' }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endif
+
+  @if(isset($previousPayments) && $previousPayments->count())
+  <div class="col-12">
+    <div class="card mt-3">
+      <div class="card-header fw-bold d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#prevPaymentsPanel" role="button" aria-expanded="false">
+        <span><i class="ri-bank-card-line me-1"></i> Previous Payments by This Applicant ({{ $previousPayments->count() }})</span>
+        <i class="ri-arrow-down-s-line"></i>
+      </div>
+      <div class="collapse" id="prevPaymentsPanel">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th>Reference</th>
+                  <th>Method</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($previousPayments as $prevPayment)
+                  <tr>
+                    <td class="small fw-bold">{{ $prevPayment->reference }}</td>
+                    <td class="small text-uppercase">{{ $prevPayment->method ?? '—' }}</td>
+                    <td class="small">{{ $prevPayment->amount ?? '—' }} {{ $prevPayment->currency ?? 'USD' }}</td>
+                    <td>
+                      @php
+                        $payBadge = match($prevPayment->status) { 'paid' => 'success', 'pending' => 'warning', 'rejected','reversed','voided' => 'danger', default => 'secondary' };
+                      @endphp
+                      <span class="badge bg-{{ $payBadge }}">{{ ucfirst($prevPayment->status) }}</span>
+                    </td>
+                    <td class="small text-muted">{{ $prevPayment->created_at?->format('d M Y') ?? '—' }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endif
+
   <div class="col-lg-5">
     <div class="card">
       <div class="card-header fw-bold">Payments Actions</div>

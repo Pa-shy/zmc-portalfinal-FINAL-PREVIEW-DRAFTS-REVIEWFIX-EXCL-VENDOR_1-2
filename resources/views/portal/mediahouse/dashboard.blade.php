@@ -90,6 +90,97 @@
   <div class="row g-3 mb-4">
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold m-0"><i class="ri-shield-check-line me-2" style="color:var(--zmc-accent)"></i>License Status</h6>
+        </div>
+        @php
+          $record = $latestRecord ?? null;
+          $isActive = false;
+          $daysRemaining = 0;
+          if ($record && $record->expires_at) {
+            $now = now();
+            $isActive = $record->expires_at->isFuture();
+            $daysRemaining = $isActive ? $now->diffInDays($record->expires_at) : 0;
+          }
+        @endphp
+
+        @if($record)
+          <div class="d-flex align-items-center gap-3 mb-3">
+            @if($isActive)
+              <span class="badge bg-success px-3 py-2" style="font-size:13px;">
+                <i class="ri-checkbox-circle-line me-1"></i> Active
+              </span>
+            @else
+              <span class="badge bg-danger px-3 py-2" style="font-size:13px;">
+                <i class="ri-close-circle-line me-1"></i> Expired
+              </span>
+            @endif
+          </div>
+
+          <div class="small">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted fw-bold">Registration No:</span>
+              <span class="fw-bold">{{ $record->registration_no ?? $record->record_number ?? '—' }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted fw-bold">Issued:</span>
+              <span>{{ $record->issued_at ? $record->issued_at->format('d M Y') : '—' }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted fw-bold">Expires:</span>
+              <span>{{ $record->expires_at ? $record->expires_at->format('d M Y') : '—' }}</span>
+            </div>
+            @if($isActive)
+              <div class="d-flex justify-content-between">
+                <span class="text-muted fw-bold">Time Remaining:</span>
+                <span class="fw-bold {{ $daysRemaining <= 60 ? 'text-warning' : 'text-success' }}">
+                  {{ $daysRemaining }} days
+                </span>
+              </div>
+              @if($daysRemaining <= 60)
+                <div class="alert alert-warning mt-2 mb-0 py-2 px-3" style="font-size:12px;">
+                  <i class="ri-error-warning-line me-1"></i> Your license expires soon. Consider submitting a renewal (AP5).
+                </div>
+              @endif
+            @else
+              <div class="alert alert-danger mt-2 mb-0 py-2 px-3" style="font-size:12px;">
+                <i class="ri-error-warning-line me-1"></i> Your license has expired. Please submit a renewal application.
+              </div>
+            @endif
+          </div>
+        @else
+          <div class="text-muted small">No license record found. Submit a registration application to get started.</div>
+        @endif
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="zmc-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold m-0"><i class="ri-alarm-warning-line me-2" style="color:var(--zmc-accent)"></i>Levy Reminders</h6>
+        </div>
+
+        <div class="small">
+          @forelse(($levyReminders ?? collect()) as $reminder)
+            <div class="d-flex gap-2 mb-2 p-2 border rounded" style="font-size:12px;">
+              <i class="ri-error-warning-fill text-warning" style="font-size:16px; margin-top:2px;"></i>
+              <div>
+                <div class="fw-bold">{{ $reminder->reminder_type ?? 'Levy Reminder' }}</div>
+                <div class="text-muted">{{ $reminder->message }}</div>
+                <div class="text-muted" style="font-size:10px;">{{ $reminder->created_at?->diffForHumans() }}</div>
+              </div>
+            </div>
+          @empty
+            <div class="text-muted">No outstanding levy reminders.</div>
+          @endforelse
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-6">
+      <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h6 class="fw-bold m-0"><i class="ri-megaphone-line me-2" style="color:var(--zmc-accent)"></i>Notices</h6>
           <a href="{{ url('/portal/notices-events') }}" class="btn btn-sm btn-outline-dark">View all</a>
@@ -159,7 +250,11 @@
               $status = strtolower((string)($app->status ?? ''));
               $badge = match(true) {
                 (bool)($app->is_draft) => 'secondary',
+                in_array($status, ['payment_rejected'], true) => 'danger',
                 str_contains($status, 'rejected') => 'danger',
+                in_array($status, ['approved_awaiting_payment','registrar_approved_pending_reg_fee'], true) => 'warning',
+                in_array($status, ['awaiting_accounts_verification'], true) => 'info',
+                in_array($status, ['payment_verified','submitted_with_app_fee'], true) => 'success',
                 str_contains($status, 'approved') || $status === 'issued' => 'success',
                 in_array($status, ['needs_correction','correction_requested'], true) => 'warning',
                 in_array($status, ['submitted','officer_review','registrar_review','accounts_review'], true) => 'info',
@@ -197,15 +292,28 @@
                     <button type="button" class="btn btn-sm zmc-icon-btn btn-outline-primary js-view-more" data-app-id="{{ $app->id }}" title="View">
                       <i class="fa-regular fa-eye"></i>
                     </button>
-                    @if($status === 'accounts_review')
+                    @if(in_array($status, ['accounts_review','approved_awaiting_payment','registrar_approved_pending_reg_fee']))
                       <button type="button" class="btn btn-sm btn-success fw-bold js-pay-now" 
                               data-app-id="{{ $app->id }}" 
                               data-app-ref="{{ $app->reference }}"
+                              data-payment-stage="{{ $status === 'registrar_approved_pending_reg_fee' ? 'registration_fee' : 'application_fee' }}"
                               title="Pay Now">
                         <i class="ri-bank-card-line me-1"></i> Pay
                       </button>
                     @endif
-                    @if(in_array($status, ['submitted','officer_review','registrar_review','accounts_review']))
+                    @if($status === 'payment_rejected')
+                      <button type="button" class="btn btn-sm btn-danger fw-bold js-pay-now" 
+                              data-app-id="{{ $app->id }}" 
+                              data-app-ref="{{ $app->reference }}"
+                              data-rejection-reason="{{ $app->proof_review_notes ?? $app->rejection_reason ?? '' }}"
+                              title="Resubmit Payment">
+                        <i class="ri-error-warning-line me-1"></i> Resubmit Payment
+                      </button>
+                    @endif
+                    @if($status === 'awaiting_accounts_verification')
+                      <span class="badge bg-info px-2"><i class="ri-time-line me-1"></i>Verifying Payment</span>
+                    @endif
+                    @if(in_array($status, ['submitted','submitted_with_app_fee','officer_review','registrar_review','accounts_review']))
                       <button type="button" class="btn btn-sm zmc-icon-btn btn-outline-danger js-withdraw-app" data-app-id="{{ $app->id }}" title="Withdraw Application">
                         <i class="ri-arrow-go-back-line"></i>
                       </button>

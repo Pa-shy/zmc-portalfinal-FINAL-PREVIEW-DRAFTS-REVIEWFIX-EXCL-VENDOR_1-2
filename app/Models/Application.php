@@ -30,20 +30,34 @@ class Application extends Model
     public const OFFICER_APPROVED     = 'officer_approved';
     public const OFFICER_REJECTED     = 'officer_rejected';
     public const CORRECTION_REQUESTED = 'correction_requested';
+    public const RETURNED_TO_APPLICANT = 'returned_to_applicant';
+    public const APPROVED_AWAITING_PAYMENT = 'approved_awaiting_payment';
+    public const FORWARDED_TO_REGISTRAR = 'forwarded_to_registrar';
+    public const REGISTRAR_FIX_REQUEST = 'registrar_fix_request';
 
     // Registrar
     public const REGISTRAR_REVIEW     = 'registrar_review';
     public const REGISTRAR_APPROVED   = 'registrar_approved';
     public const REGISTRAR_REJECTED   = 'registrar_rejected';
     public const RETURNED_TO_OFFICER  = 'returned_to_officer';
+    public const PENDING_ACCOUNTS_FROM_REGISTRAR = 'pending_accounts_from_registrar';
+    public const REGISTRAR_APPROVED_PENDING_REG_FEE = 'registrar_approved_pending_reg_fee';
 
     // Accounts / Payments
     public const ACCOUNTS_REVIEW        = 'accounts_review';
+    public const AWAITING_ACCOUNTS_VERIFICATION = 'awaiting_accounts_verification';
+    public const PAYMENT_VERIFIED       = 'payment_verified';
+    public const PAYMENT_REJECTED       = 'payment_rejected';
     public const PAID_CONFIRMED         = 'paid_confirmed';
     public const RETURNED_TO_ACCOUNTS   = 'returned_to_accounts';
 
+    // Media House specific
+    public const SUBMITTED_WITH_APP_FEE = 'submitted_with_app_fee';
+    public const VERIFIED_BY_OFFICER    = 'verified_by_officer';
+
     // Production
     public const PRODUCTION_QUEUE     = 'production_queue';
+    public const PRODUCED_READY       = 'produced_ready';
     public const CARD_GENERATED       = 'card_generated';
     public const CERT_GENERATED       = 'certificate_generated';
     public const PRINTED              = 'printed';
@@ -126,6 +140,12 @@ class Application extends Model
         'printed_at',
         'issued_by',
         'issued_at',
+
+        'payment_stage',
+        'forward_reason',
+        'registrar_letter_path',
+        'receipt_number',
+        'paynow_ref_submitted',
     ];
 
     protected $casts = [
@@ -282,27 +302,38 @@ class Application extends Model
         return $this->belongsTo(User::class, 'last_action_by');
     }
 
-    // Optional: map status -> which staff stage "owns" it
     public static function stageForStatus(string $status): ?string
     {
-        // Workflow: Officer → Accounts → Registrar → Production
         return match ($status) {
             self::SUBMITTED,
+            self::SUBMITTED_WITH_APP_FEE,
             self::OFFICER_REVIEW,
             self::OFFICER_APPROVED,
             self::OFFICER_REJECTED,
             self::CORRECTION_REQUESTED,
-            self::RETURNED_TO_OFFICER => 'accreditation_officer',
+            self::RETURNED_TO_APPLICANT,
+            self::RETURNED_TO_OFFICER,
+            self::REGISTRAR_FIX_REQUEST,
+            self::VERIFIED_BY_OFFICER => 'accreditation_officer',
+
+            self::APPROVED_AWAITING_PAYMENT,
+            self::PAYMENT_REJECTED => 'applicant',
+
+            self::FORWARDED_TO_REGISTRAR,
+            self::REGISTRAR_REVIEW,
+            self::REGISTRAR_APPROVED,
+            self::REGISTRAR_REJECTED,
+            self::REGISTRAR_APPROVED_PENDING_REG_FEE => 'registrar',
 
             self::ACCOUNTS_REVIEW,
+            self::AWAITING_ACCOUNTS_VERIFICATION,
+            self::PENDING_ACCOUNTS_FROM_REGISTRAR,
+            self::PAYMENT_VERIFIED,
             self::PAID_CONFIRMED,
             self::RETURNED_TO_ACCOUNTS => 'accounts_payments',
 
-            self::REGISTRAR_REVIEW,
-            self::REGISTRAR_APPROVED,
-            self::REGISTRAR_REJECTED => 'registrar',
-
             self::PRODUCTION_QUEUE,
+            self::PRODUCED_READY,
             self::CARD_GENERATED,
             self::CERT_GENERATED,
             self::PRINTED,

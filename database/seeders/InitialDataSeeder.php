@@ -10,6 +10,8 @@ use App\Models\Notice;
 use App\Models\Event;
 use App\Models\News;
 use App\Models\SystemConfig;
+use App\Models\Application;
+use App\Models\CardTemplate;
 use Spatie\Permission\Models\Role;
 
 class InitialDataSeeder extends Seeder
@@ -22,6 +24,8 @@ class InitialDataSeeder extends Seeder
         $this->seedEvents();
         $this->seedNews();
         $this->seedSystemConfigs();
+        $this->seedTestApplications();
+        $this->seedCardTemplates();
     }
 
     private function seedStaffUsers(): void
@@ -243,6 +247,196 @@ class InitialDataSeeder extends Seeder
                 array_merge($article, ['created_by' => $adminId])
             );
         }
+    }
+
+    private function seedTestApplications(): void
+    {
+        $testApplicants = [
+            [
+                'name' => 'John Moyo',
+                'email' => 'john.moyo@example.com',
+                'portal_type' => 'journalist',
+            ],
+            [
+                'name' => 'Mary Ndlovu',
+                'email' => 'mary.ndlovu@example.com',
+                'portal_type' => 'journalist',
+            ],
+            [
+                'name' => 'Tatenda Chirwa',
+                'email' => 'tatenda.chirwa@example.com',
+                'portal_type' => 'journalist',
+            ],
+            [
+                'name' => 'Daily Herald Media',
+                'email' => 'admin@dailyherald.co.zw',
+                'portal_type' => 'mediahouse',
+            ],
+            [
+                'name' => 'Renewal Applicant',
+                'email' => 'renew@example.com',
+                'portal_type' => 'journalist',
+            ],
+        ];
+
+        foreach ($testApplicants as $ta) {
+            User::updateOrCreate(
+                ['email' => $ta['email']],
+                [
+                    'name' => $ta['name'],
+                    'password' => Hash::make('Test@12345'),
+                    'account_status' => 'active',
+                    'account_type' => $ta['portal_type'],
+                ]
+            );
+        }
+
+        $john = User::where('email', 'john.moyo@example.com')->first();
+        $mary = User::where('email', 'mary.ndlovu@example.com')->first();
+        $tatenda = User::where('email', 'tatenda.chirwa@example.com')->first();
+        $herald = User::where('email', 'admin@dailyherald.co.zw')->first();
+        $renewUser = User::where('email', 'renew@example.com')->first();
+
+        if ($john && Application::where('reference', 'ZMC-ACC-2026-0001')->doesntExist()) {
+            Application::create([
+                'reference' => 'ZMC-ACC-2026-0001',
+                'applicant_user_id' => $john->id,
+                'application_type' => 'accreditation',
+                'request_type' => 'new',
+                'status' => Application::SUBMITTED,
+                'form_data' => [
+                    'first_name' => 'John', 'last_name' => 'Moyo',
+                    'id_number' => '63-123456-A-78',
+                    'category' => 'print', 'scope' => 'local',
+                    'employer' => 'The Herald', 'designation' => 'Reporter',
+                ],
+                'is_draft' => false,
+                'submitted_at' => now()->subDays(3),
+                'collection_region' => 'Harare',
+            ]);
+        }
+
+        if ($mary && Application::where('reference', 'ZMC-ACC-2026-0002')->doesntExist()) {
+            Application::create([
+                'reference' => 'ZMC-ACC-2026-0002',
+                'applicant_user_id' => $mary->id,
+                'application_type' => 'accreditation',
+                'request_type' => 'new',
+                'status' => Application::APPROVED_AWAITING_PAYMENT,
+                'form_data' => [
+                    'first_name' => 'Mary', 'last_name' => 'Ndlovu',
+                    'id_number' => '29-654321-B-42',
+                    'category' => 'broadcast', 'scope' => 'local',
+                    'employer' => 'ZBC', 'designation' => 'News Anchor',
+                ],
+                'is_draft' => false,
+                'submitted_at' => now()->subDays(5),
+                'collection_region' => 'Bulawayo',
+            ]);
+        }
+
+        if ($tatenda && Application::where('reference', 'ZMC-ACC-2026-0003')->doesntExist()) {
+            Application::create([
+                'reference' => 'ZMC-ACC-2026-0003',
+                'applicant_user_id' => $tatenda->id,
+                'application_type' => 'accreditation',
+                'request_type' => 'new',
+                'status' => Application::PAYMENT_VERIFIED,
+                'form_data' => [
+                    'first_name' => 'Tatenda', 'last_name' => 'Chirwa',
+                    'id_number' => '42-789012-C-15',
+                    'category' => 'online', 'scope' => 'local',
+                    'employer' => 'Freelance', 'designation' => 'Journalist',
+                ],
+                'is_draft' => false,
+                'submitted_at' => now()->subDays(10),
+                'collection_region' => 'Mutare',
+            ]);
+        }
+
+        if ($herald && Application::where('reference', 'ZMC-REG-2026-0001')->doesntExist()) {
+            Application::create([
+                'reference' => 'ZMC-REG-2026-0001',
+                'applicant_user_id' => $herald->id,
+                'application_type' => 'media_house',
+                'request_type' => 'new',
+                'status' => Application::SUBMITTED_WITH_APP_FEE,
+                'payment_stage' => 'application_fee',
+                'form_data' => [
+                    'media_house_name' => 'Daily Herald Media',
+                    'registration_number' => 'REG/2026/001',
+                    'media_type' => 'print',
+                    'address' => '123 Samora Machel Ave, Harare',
+                    'contact_phone' => '+263 242 700 000',
+                ],
+                'is_draft' => false,
+                'submitted_at' => now()->subDays(2),
+                'collection_region' => 'Harare',
+            ]);
+        }
+
+        if ($renewUser && Application::where('reference', 'ZMC-ACC-2026-0004')->doesntExist()) {
+            Application::create([
+                'reference' => 'ZMC-ACC-2026-0004',
+                'applicant_user_id' => $renewUser->id,
+                'application_type' => 'accreditation',
+                'request_type' => 'renewal',
+                'status' => Application::AWAITING_ACCOUNTS_VERIFICATION,
+                'form_data' => [
+                    'first_name' => 'Renewal', 'last_name' => 'Applicant',
+                    'accreditation_number' => 'ZMC/ACC/2025/1234',
+                    'category' => 'print', 'scope' => 'local',
+                ],
+                'is_draft' => false,
+                'submitted_at' => now()->subDay(),
+                'collection_region' => 'Harare',
+            ]);
+        }
+    }
+
+    private function seedCardTemplates(): void
+    {
+        $productionUser = User::where('email', 'production@zmc.org.zw')->first();
+        $createdBy = $productionUser ? $productionUser->id : 1;
+
+        CardTemplate::updateOrCreate(
+            ['name' => 'Standard Press Card 2026'],
+            [
+                'type' => 'card',
+                'year' => 2026,
+                'layout_config' => [
+                    'fields' => [
+                        ['name' => 'full_name', 'label' => 'Name', 'x' => 200, 'y' => 180, 'width' => 400, 'height' => 40, 'fontSize' => 22, 'color' => '#000000'],
+                        ['name' => 'accreditation_number', 'label' => 'Accred No.', 'x' => 200, 'y' => 230, 'width' => 300, 'height' => 30, 'fontSize' => 16, 'color' => '#333333'],
+                        ['name' => 'category', 'label' => 'Category', 'x' => 200, 'y' => 270, 'width' => 200, 'height' => 30, 'fontSize' => 14, 'color' => '#555555'],
+                        ['name' => 'expiry_date', 'label' => 'Expiry', 'x' => 200, 'y' => 310, 'width' => 200, 'height' => 30, 'fontSize' => 14, 'color' => '#555555'],
+                        ['name' => 'photo', 'label' => 'Photo', 'x' => 30, 'y' => 150, 'width' => 150, 'height' => 180],
+                        ['name' => 'qr_code', 'label' => 'QR Code', 'x' => 680, 'y' => 350, 'width' => 120, 'height' => 120],
+                    ],
+                ],
+                'is_active' => true,
+                'created_by' => $createdBy,
+            ]
+        );
+
+        CardTemplate::updateOrCreate(
+            ['name' => 'Standard Certificate 2026'],
+            [
+                'type' => 'certificate',
+                'year' => 2026,
+                'layout_config' => [
+                    'fields' => [
+                        ['name' => 'media_house_name', 'label' => 'Media House', 'x' => 150, 'y' => 200, 'width' => 550, 'height' => 50, 'fontSize' => 28, 'color' => '#1a3a1a'],
+                        ['name' => 'registration_number', 'label' => 'Reg No.', 'x' => 150, 'y' => 260, 'width' => 400, 'height' => 30, 'fontSize' => 16, 'color' => '#333333'],
+                        ['name' => 'category', 'label' => 'Category', 'x' => 150, 'y' => 300, 'width' => 300, 'height' => 30, 'fontSize' => 14, 'color' => '#555555'],
+                        ['name' => 'expiry_date', 'label' => 'Valid Until', 'x' => 150, 'y' => 340, 'width' => 300, 'height' => 30, 'fontSize' => 14, 'color' => '#555555'],
+                        ['name' => 'qr_code', 'label' => 'QR Code', 'x' => 680, 'y' => 400, 'width' => 100, 'height' => 100],
+                    ],
+                ],
+                'is_active' => true,
+                'created_by' => $createdBy,
+            ]
+        );
     }
 
     private function seedSystemConfigs(): void

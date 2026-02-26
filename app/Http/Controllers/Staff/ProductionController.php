@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use App\Models\AccreditationRecord;
 use App\Models\RegistrationRecord;
+use App\Models\CardTemplate;
+use App\Models\PrintLog;
+use Illuminate\Support\Facades\Storage;
 
 class ProductionController extends Controller
 {
@@ -55,6 +58,7 @@ class ProductionController extends Controller
     public function dashboard()
     {
         $applications = $this->baseQuery([
+            Application::PAYMENT_VERIFIED,
             Application::PRODUCTION_QUEUE,
             Application::CARD_GENERATED,
             Application::CERT_GENERATED,
@@ -63,7 +67,7 @@ class ProductionController extends Controller
         ])->paginate(20);
 
         // KPI counters (region scoped)
-        $kpiQueue       = (clone $this->baseQuery([Application::PRODUCTION_QUEUE]))->count();
+        $kpiQueue       = (clone $this->baseQuery([Application::PAYMENT_VERIFIED, Application::PRODUCTION_QUEUE]))->count();
         $kpiToPrint     = (clone $this->baseQuery([Application::CARD_GENERATED, Application::CERT_GENERATED]))->count();
         $kpiPrinted     = (clone $this->baseQuery([Application::PRINTED]))->count();
         $kpiIssued      = (clone $this->baseQuery([Application::ISSUED]))->count();
@@ -92,7 +96,7 @@ class ProductionController extends Controller
      */
     public function queue()
     {
-        $applications = $this->baseQuery([Application::PRODUCTION_QUEUE])->paginate(20);
+        $applications = $this->baseQuery([Application::PAYMENT_VERIFIED, Application::PRODUCTION_QUEUE])->paginate(20);
         return view('staff.production.list', [
             'pageTitle' => 'Production Queue',
             'pageNote'  => 'Items approved by the Registrar and awaiting production actions.',
@@ -541,6 +545,100 @@ class ProductionController extends Controller
         $this->audit('production_issue', $application, $from, $application->status);
 
         return back()->with('success', 'Marked as issued.');
+    }
+
+    public function designer(Request $request)
+    {
+        $template = null;
+        if ($request->has('template')) {
+            $template = CardTemplate::findOrFail($request->template);
+        }
+        return view('staff.production.designer', compact('template'));
+    }
+
+    public function templates()
+    {
+        $templates = CardTemplate::with('creator')->orderByDesc('created_at')->get();
+        return view('staff.production.templates', compact('templates'));
+    }
+
+    public function storeTemplate(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:card,certificate'],
+            'year' => ['required', 'string', 'max:4'],
+            'background' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'layout_config' => ['nullable', 'string'],
+        ]);
+
+        $bgPath = null;
+        if ($request->hasFile('background')) {
+            $bgPath = $request->file('background')->store('card_templates', 'public');
+        }
+
+        $layoutConfig = [];
+        if (!empty($data['layout_config'])) {
+            $layoutConfig = json_decode($data['layout_config'], true) ?: [];
+        }
+
+        CardTemplate::create([
+            'name' => $data['name'],
+            'type' => $data['type'],
+            'year' => $data['year'],
+            'background_path' => $bgPath,
+            'layout_config' => $layoutConfig,
+            'is_active' => false,
+            'created_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('staff.production.templates')->with('success', 'Template created successfully.');
+    }
+
+    public function updateTemplate(Request $request, CardTemplate $template)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:card,certificate'],
+            'year' => ['required', 'string', 'max:4'],
+            'background' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'layout_config' => ['nullable', 'string'],
+        ]);
+
+        if ($request->hasFile('background')) {
+            if ($template->background_path) {
+                Storage::disk('public')->delete($template->background_path);
+            }
+            $data['background_path'] = $request->file('background')->store('card_templates', 'public');
+        }
+
+        $layoutConfig = [];
+        if (!empty($data['layout_config'])) {
+            $layoutConfig = json_decode($data['layout_config'], true) ?: [];
+        }
+
+        $template->update([
+            'name' => $data['name'],
+            'type' => $data['type'],
+            'year' => $data['year'],
+            'background_path' => $data['background_path'] ?? $template->background_path,
+            'layout_config' => $layoutConfig,
+        ]);
+
+        return redirect()->route('staff.production.templates')->with('success', 'Template updated successfully.');
+    }
+
+    public function activateTemplate(CardTemplate $template)
+    {
+        if ($template->is_active) {
+            $template->update(['is_active' => false]);
+            return back()->with('success', "Template \"{$template->name}\" deactivated.");
+        }
+
+        CardTemplate::where('type', $template->type)->where('is_active', true)->update(['is_active' => false]);
+        $template->update(['is_active' => true]);
+
+        return back()->with('success', "Template \"{$template->name}\" is now active for {$template->type} production.");
     }
 
     /* helpers */

@@ -128,6 +128,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/profile', [\App\Http\Controllers\SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::post('/settings/password', [\App\Http\Controllers\SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/theme', [\App\Http\Controllers\SettingsController::class, 'updateTheme'])->name('settings.theme');
+    Route::post('/settings/theme/ajax', [\App\Http\Controllers\SettingsController::class, 'updateThemeAjax'])->name('settings.theme.ajax');
     Route::post('/settings/security', [\App\Http\Controllers\SettingsController::class, 'updateSecurity'])->name('settings.security');
     Route::post('/settings/notifications', [\App\Http\Controllers\SettingsController::class, 'updateNotifications'])->name('settings.notifications');
 
@@ -180,13 +181,13 @@ Route::middleware('auth')->group(function () {
             Route::post('/renewals/save-draft', [AccreditationPortalController::class, 'saveDraftAp5'])->name('renewals.saveDraft');
             Route::post('/renewals/submit',  [AccreditationPortalController::class, 'submitAp5'])->name('submitAp5');
 
-            // Lookup by accreditation number for renewals/replacements
-            Route::get('/lookup/{accreditationNumber}', [AccreditationPortalController::class, 'lookupAccreditation'])
-                ->name('lookup');
+            Route::get('/lookup-number/{number}', [AccreditationPortalController::class, 'lookupAccreditationNumber'])
+                ->name('lookupNumber');
 
             Route::get('/payments',  [AccreditationPortalController::class, 'payments'])->name('payments');
             Route::get('/notices',   [AccreditationPortalController::class, 'notices'])->name('notices');
             Route::get('/howto',     [AccreditationPortalController::class, 'howto'])->name('howto');
+            Route::get('/requirements', [AccreditationPortalController::class, 'requirements'])->name('requirements');
             Route::get('/profile',   [AccreditationPortalController::class, 'profile'])->name('profile');
             Route::post('/profile',  [AccreditationPortalController::class, 'updateProfile'])->name('profile.update');
             Route::get('/settings',  [AccreditationPortalController::class, 'settings'])->name('settings');
@@ -225,14 +226,16 @@ Route::middleware('auth')->group(function () {
             Route::delete('/staff-members/{staff}', [\App\Http\Controllers\MediaHouseStaffController::class, 'unlink'])->name('staff.unlink');
 
             Route::get('/renewals',    [MediaHousePortalController::class, 'renewals'])->name('renewals');
-            // AP5 (Media House renewals / replacement submit)
             Route::post('/renewals/save-draft', [MediaHousePortalController::class, 'saveDraftAp5'])->name('ap5.saveDraft');
             Route::post('/renewals/submit', [MediaHousePortalController::class, 'submitAp5'])
                 ->name('ap5.submit');
+            Route::get('/lookup-number/{number}', [MediaHousePortalController::class, 'lookupRegistrationNumber'])
+                ->name('lookupNumber');
 
             Route::get('/payments',    [MediaHousePortalController::class, 'payments'])->name('payments');
             Route::get('/notices',     [MediaHousePortalController::class, 'notices'])->name('notices');
             Route::get('/howto',       [MediaHousePortalController::class, 'howto'])->name('howto');
+            Route::get('/requirements', [MediaHousePortalController::class, 'requirements'])->name('requirements');
             Route::get('/profile',     [MediaHousePortalController::class, 'profile'])->name('profile');
             Route::post('/profile',    [MediaHousePortalController::class, 'updateProfile'])->name('profile.update');
             Route::get('/settings',    [MediaHousePortalController::class, 'settings'])->name('settings');
@@ -292,6 +295,8 @@ Route::middleware('auth')->group(function () {
         ->name('payments.upload_proof');
     Route::post('/payments/{application}/upload-waiver', [\App\Http\Controllers\Portal\ManualPaymentController::class, 'uploadWaiver'])
         ->name('payments.upload_waiver');
+    Route::post('/payments/{application}/submit-reference', [\App\Http\Controllers\Portal\ManualPaymentController::class, 'submitReference'])
+        ->name('payments.submit_reference');
 
     /*
     |--------------------------------------------------------------------------
@@ -540,6 +545,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/request-correction', [AccreditationOfficerController::class, 'requestCorrection'])->name('applications.requestCorrection');
             Route::post('/applications/{application}/message', [AccreditationOfficerController::class, 'sendMessage'])->name('applications.message');
             Route::post('/applications/{application}/unlock', [AccreditationOfficerController::class, 'unlock'])->name('applications.unlock');
+            Route::post('/applications/{application}/forward-to-registrar', [AccreditationOfficerController::class, 'forwardToRegistrar'])->name('applications.forward-to-registrar');
+
+            Route::get('/physical-intake', [AccreditationOfficerController::class, 'physicalIntake'])->name('physical-intake');
+            Route::post('/physical-intake', [AccreditationOfficerController::class, 'processPhysicalIntake'])->name('physical-intake.process');
+
+            Route::get('/production-queue', [AccreditationOfficerController::class, 'productionQueue'])->name('production-queue');
 
             // Applications (list views)
             Route::get('/applications', [AccreditationOfficerController::class, 'applicationsIndex'])->name('applications.index');
@@ -641,7 +652,15 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/reject', [RegistrarController::class, 'reject'])->name('applications.reject');
             Route::post('/applications/{application}/return', [RegistrarController::class, 'returnToAccounts'])->name('applications.return');
             Route::post('/renewals/send-reminders', [RegistrarController::class, 'sendRenewalReminders'])->name('renewals.send-reminders');
-            
+
+            Route::post('/applications/{application}/fix-request', [RegistrarController::class, 'raiseFixRequest'])->name('applications.fix-request');
+            Route::post('/applications/{application}/push-to-accounts', [RegistrarController::class, 'pushToAccounts'])->name('applications.push-to-accounts');
+
+            Route::get('/accounts-oversight', [RegistrarController::class, 'accountsOversight'])->name('accounts-oversight');
+
+            Route::get('/reminders', [RegistrarController::class, 'remindersIndex'])->name('reminders.index');
+            Route::post('/reminders', [RegistrarController::class, 'createReminder'])->name('reminders.store');
+
             // Notices & Events (Read-only access)
             Route::get('/notices-events', [RegistrarController::class, 'noticesEvents'])->name('notices-events');
             
@@ -682,6 +701,18 @@ Route::middleware('auth')->group(function () {
             Route::post('/payment-proofs/bulk-download', [AccountsPaymentsController::class, 'bulkDownloadProofs'])->name('proofs.bulk-download');
             Route::post('/applications/{application}/proof/approve', [AccountsPaymentsController::class, 'approveProof'])->name('proofs.approve');
             Route::post('/applications/{application}/proof/reject', [AccountsPaymentsController::class, 'rejectProof'])->name('proofs.reject');
+
+            // Payment rejection
+            Route::post('/applications/{application}/payment/reject', [AccountsPaymentsController::class, 'rejectPayment'])->name('applications.payment.reject');
+
+            // Cash payments
+            Route::get('/cash-payment/create', [AccountsPaymentsController::class, 'createCashPayment'])->name('cash-payment.create');
+            Route::post('/cash-payment', [AccountsPaymentsController::class, 'storeCashPayment'])->name('cash-payment.store');
+            Route::post('/cash-payment/{payment}/void', [AccountsPaymentsController::class, 'voidCashPayment'])->name('cash-payment.void');
+
+            // Waiver verification (from Registrar)
+            Route::post('/applications/{application}/waiver-verification/approve', [AccountsPaymentsController::class, 'approveWaiverVerification'])->name('waiver-verification.approve');
+            Route::post('/applications/{application}/waiver-verification/reject', [AccountsPaymentsController::class, 'rejectWaiverVerification'])->name('waiver-verification.reject');
 
             // Receipting
             Route::get('/applications/{application}/receipt', [AccountsPaymentsController::class, 'generateReceipt'])->name('applications.receipt');
@@ -759,6 +790,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/batch/print', [ProductionController::class, 'printBatch'])->name('batch.print');
             Route::post('/applications/{application}/issue', [ProductionController::class, 'markIssued'])->name('applications.issue');
             Route::post('/applications/{application}/unlock', [ProductionController::class, 'unlock'])->name('applications.unlock');
+
+            Route::get('/designer', [ProductionController::class, 'designer'])->name('designer');
+            Route::get('/templates', [ProductionController::class, 'templates'])->name('templates');
+            Route::post('/templates', [ProductionController::class, 'storeTemplate'])->name('templates.store');
+            Route::put('/templates/{template}', [ProductionController::class, 'updateTemplate'])->name('templates.update');
+            Route::post('/templates/{template}/activate', [ProductionController::class, 'activateTemplate'])->name('templates.activate');
         });
 
     /*

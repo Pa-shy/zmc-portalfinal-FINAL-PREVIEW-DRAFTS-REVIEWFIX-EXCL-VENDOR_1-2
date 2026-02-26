@@ -62,6 +62,8 @@ class AccreditationPortalController extends Controller
                     Application::OFFICER_REVIEW,
                     Application::REGISTRAR_REVIEW,
                     Application::ACCOUNTS_REVIEW,
+                    Application::APPROVED_AWAITING_PAYMENT,
+                    Application::AWAITING_ACCOUNTS_VERIFICATION,
                 ])
                 ->count(),
             'renewals_due' => 0,
@@ -182,13 +184,34 @@ class AccreditationPortalController extends Controller
         abort_unless($user, 403);
 
         $payload = $request->validate([
-            'profile' => ['required', 'array'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone_number' => ['required', 'string', 'max:20'],
+            'phone2' => ['required', 'string', 'max:20'],
+            'id_number' => ['nullable', 'string', 'max:50'],
+            'passport_number' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $profile = $user->profile_data ?? [];
-        $profile = array_merge($profile, $payload['profile']);
+        if (empty($payload['id_number']) && empty($payload['passport_number'])) {
+            return back()->withErrors(['id_number' => 'Either ID Number or Passport Number is required.'])->withInput();
+        }
 
-        $user->update(['profile_data' => $profile]);
+        $updateData = [
+            'phone_number' => $payload['phone_number'],
+            'phone2' => $payload['phone2'],
+            'id_number' => $payload['id_number'],
+            'passport_number' => $payload['passport_number'],
+        ];
+
+        if (!empty($payload['name'])) {
+            $updateData['name'] = $payload['name'];
+        }
+        if (!empty($payload['email']) && $payload['email'] !== $user->email) {
+            $request->validate(['email' => 'unique:users,email']);
+            $updateData['email'] = $payload['email'];
+        }
+
+        $user->update($updateData);
 
         return back()->with('success', 'Profile updated successfully.');
     }
@@ -616,6 +639,45 @@ class AccreditationPortalController extends Controller
         return view('portal.accreditation.renewals', compact('drafts', 'draft'));
     }
 
+    public function lookupAccreditationNumber(string $number)
+    {
+        $record = \App\Models\AccreditationRecord::where('record_number', $number)
+            ->orWhere('certificate_no', $number)
+            ->first();
+
+        if (!$record) {
+            return response()->json(['success' => false, 'message' => 'No record found for this accreditation number.'], 404);
+        }
+
+        $application = $record->application;
+        $formData = $application ? ($application->form_data ?? []) : [];
+        $holder = $record->holder;
+
+        return response()->json([
+            'success' => true,
+            'record' => [
+                'record_number' => $record->record_number,
+                'certificate_no' => $record->certificate_no,
+                'status' => $record->status,
+                'issued_at' => $record->issued_at?->format('Y-m-d'),
+                'expires_at' => $record->expires_at?->format('Y-m-d'),
+                'holder_name' => $holder ? trim(($holder->profile_data['first_name'] ?? '') . ' ' . ($holder->profile_data['surname'] ?? '')) : ($formData['first_name'] ?? '') . ' ' . ($formData['surname'] ?? ''),
+                'surname' => $holder->profile_data['surname'] ?? $formData['surname'] ?? '',
+                'first_name' => $holder->profile_data['first_name'] ?? $formData['first_name'] ?? '',
+                'other_names' => $holder->profile_data['other_names'] ?? $formData['other_names'] ?? '',
+                'gender' => $holder->profile_data['sex'] ?? $formData['gender'] ?? '',
+                'dob' => $holder->profile_data['date_of_birth'] ?? $formData['dob'] ?? '',
+                'nationality' => $holder->profile_data['nationality'] ?? $formData['nationality'] ?? '',
+                'id_or_passport' => $holder->profile_data['national_reg_no'] ?? $holder->profile_data['passport_no'] ?? $formData['id_or_passport'] ?? '',
+                'employment_type' => $holder->profile_data['employment_type'] ?? $formData['employment_type'] ?? '',
+                'medium_type' => $formData['medium_type'] ?? '',
+                'designation' => $formData['designation'] ?? '',
+                'application_type' => $application->application_type ?? '',
+                'journalist_scope' => $application->journalist_scope ?? '',
+            ],
+        ]);
+    }
+
     /**
      * AP5 Draft: allow multiple drafts per user.
      * Every click creates a new draft record (no overwrite).
@@ -678,6 +740,7 @@ class AccreditationPortalController extends Controller
 
     /**
      * Submit AP5 (Renewal/Replacement) for review.
+     * Renewals route directly to AWAITING_ACCOUNTS_VERIFICATION (skip Officer/Registrar).
      */
     public function submitAp5(Request $request)
     {
@@ -687,25 +750,28 @@ class AccreditationPortalController extends Controller
         $validated = $request->validate([
             'request_type' => 'required|in:renewal,replacement',
             'current_step' => 'nullable|integer|min:1|max:4',
-            'surname' => 'required|string|max:120',
-            'first_name' => 'required|string|max:120',
-            'gender' => 'required|in:male,female',
-            'dob' => 'required|date',
-            'nationality' => 'required|string|max:120',
-            'id_or_passport' => 'required|string|max:120',
             'accreditation_number' => 'required|string|max:120',
+            'has_changes' => 'nullable|in:yes,no',
+            'changes_data' => 'nullable',
+            'employment_status' => 'nullable|in:freelancer,employed',
 
-            // docs required based on type
             'renewal_employer_letter'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'replacement_affidavit'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'replacement_employer_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'replacement_police_report'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'replacement_reason'          => 'nullable|in:lost,damaged,stolen',
+
+            'payment_method' => 'nullable|in:paynow,proof_upload',
+            'paynow_reference' => 'nullable|string|max:120',
+            'payment_proof' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
-        // enforce doc rules
-        if ($validated['request_type'] === 'renewal' && !$request->hasFile('renewal_employer_letter')) {
-            return response()->json(['success' => false, 'message' => 'Employer Letter is required for renewal.'], 422);
+        $employmentStatus = $validated['employment_status'] ?? 'employed';
+
+        if ($validated['request_type'] === 'renewal') {
+            if ($employmentStatus === 'employed' && !$request->hasFile('renewal_employer_letter')) {
+                return response()->json(['success' => false, 'message' => 'Employment Letter is required for employed applicants.'], 422);
+            }
         }
         if ($validated['request_type'] === 'replacement') {
             if (!$request->hasFile('replacement_affidavit') || !$request->hasFile('replacement_employer_letter')) {
@@ -716,13 +782,20 @@ class AccreditationPortalController extends Controller
             }
         }
 
+        $changesData = $request->input('changes_data');
+        if (is_string($changesData)) {
+            $changesData = json_decode($changesData, true);
+        }
+
         $formData = $request->except([
             '_token',
             'renewal_employer_letter',
             'replacement_affidavit',
             'replacement_employer_letter',
             'replacement_police_report',
+            'payment_proof',
         ]);
+        $formData['changes_data'] = $changesData;
 
         $draftRef = $request->input('draft_reference');
         $draft = null;
@@ -737,16 +810,18 @@ class AccreditationPortalController extends Controller
 
         $reference = 'AP5-' . now()->format('Y') . '-' . Str::upper(Str::random(6));
 
+        $status = ($validated['request_type'] === 'renewal')
+            ? Application::AWAITING_ACCOUNTS_VERIFICATION
+            : Application::SUBMITTED;
+
         if ($draft) {
-            // Convert draft into a submitted application (removes it from draft lists)
             $draft->reference = $reference;
             $draft->request_type = $validated['request_type'];
             $draft->journalist_scope = $user->profile_data['journalist_scope'] ?? ($draft->journalist_scope ?? 'local');
             $draft->collection_region = $formData['collection_region'] ?? ($draft->collection_region ?? 'harare');
             $draft->form_data = $formData;
             $draft->is_draft = false;
-            $draft->status = Application::SUBMITTED;
-            $draft->current_stage = Application::OFFICER_REVIEW;
+            $draft->status = $status;
             $draft->submitted_at = now();
             $draft->save();
 
@@ -761,8 +836,7 @@ class AccreditationPortalController extends Controller
                 'collection_region' => $formData['collection_region'] ?? 'harare',
                 'form_data'         => $formData,
                 'is_draft'          => false,
-                'status'            => Application::SUBMITTED,
-                'current_stage'     => Application::OFFICER_REVIEW,
+                'status'            => $status,
                 'submitted_at'      => now(),
             ]);
         }
@@ -773,6 +847,14 @@ class AccreditationPortalController extends Controller
             'replacement_employer_letter',
             'replacement_police_report',
         ]);
+
+        if ($request->hasFile('payment_proof')) {
+            $this->saveDraftDocuments($request, $app, ['payment_proof']);
+        }
+
+        if (!empty($validated['paynow_reference'])) {
+            $app->update(['paynow_ref_submitted' => $validated['paynow_reference']]);
+        }
 
         return response()->json([
             'success' => true,
@@ -806,6 +888,11 @@ class AccreditationPortalController extends Controller
     public function howto()
     {
         return view('portal.accreditation.howto');
+    }
+
+    public function requirements()
+    {
+        return view('portal.accreditation.requirements');
     }
 
     public function profile()

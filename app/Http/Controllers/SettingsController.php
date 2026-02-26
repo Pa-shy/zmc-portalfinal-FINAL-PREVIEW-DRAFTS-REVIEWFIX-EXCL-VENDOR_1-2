@@ -132,4 +132,18 @@ class SettingsController extends Controller
 
         return back()->with('success', 'Theme updated.');
     }
+
+    public function updateThemeAjax(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user, 403);
+
+        $data = $request->validate([
+            'theme' => ['required', 'in:light,dark'],
+        ]);
+
+        $user->update(['theme' => $data['theme']]);
+
+        return response()->json(['success' => true, 'theme' => $data['theme']]);
+    }
 }

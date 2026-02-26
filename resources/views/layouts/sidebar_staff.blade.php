@@ -47,6 +47,20 @@
       </li>
 
       <li class="menu-title" style="padding:10px 18px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
+        Production
+      </li>
+      <li class="{{ request()->routeIs('staff.officer.production-queue') ? 'active' : '' }}">
+        <a href="{{ route('staff.officer.production-queue') }}"><i class="ri-printer-line"></i> <span>Production Queue</span></a>
+      </li>
+
+      <li class="menu-title" style="padding:10px 18px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
+        Physical Intake
+      </li>
+      <li class="{{ request()->routeIs('staff.officer.physical-intake') ? 'active' : '' }}">
+        <a href="{{ route('staff.officer.physical-intake') }}"><i class="ri-walk-line"></i> <span>Walk-in Intake</span></a>
+      </li>
+
+      <li class="menu-title" style="padding:10px 18px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
         Records
       </li>
       <li class="{{ request()->routeIs('staff.officer.records.journalists') ? 'active' : '' }}">
@@ -359,6 +373,19 @@
       <li class="{{ request()->routeIs('staff.production.reports') ? 'active' : '' }}">
         <a href="{{ route('staff.production.reports') }}">
           <i class="ri-file-chart-line"></i> <span>Reports</span>
+        </a>
+      </li>
+      <li class="menu-title" style="padding:10px 18px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
+        Template Design
+      </li>
+      <li class="{{ request()->routeIs('staff.production.designer') ? 'active' : '' }}">
+        <a href="{{ route('staff.production.designer') }}">
+          <i class="ri-palette-line"></i> <span>Designer</span>
+        </a>
+      </li>
+      <li class="{{ request()->routeIs('staff.production.templates') ? 'active' : '' }}">
+        <a href="{{ route('staff.production.templates') }}">
+          <i class="ri-layout-masonry-line"></i> <span>Templates</span>
         </a>
       </li>
     @endif

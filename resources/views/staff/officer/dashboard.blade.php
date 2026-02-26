@@ -350,6 +350,7 @@
             <th style="width:60px;">#</th>
             <th><i class="ri-hashtag me-1"></i> Ref</th>
             <th><i class="ri-user-line me-1"></i> Applicant</th>
+            <th>Type</th>
             <th><i class="ri-map-pin-line me-1"></i> Region</th>
             <th><i class="ri-calendar-line me-1"></i> Date</th>
             <th><i class="ri-flag-line me-1"></i> Status</th>
@@ -369,7 +370,7 @@
               default => 'info',
             };
 
-            $canDecide = in_array($status, ['submitted','officer_review','under_officer_review','returned_from_payments','returned_from_registrar'], true);
+            $canDecide = in_array($status, ['submitted','submitted_with_app_fee','officer_review','under_officer_review','returned_from_payments','returned_from_registrar','returned_to_officer','registrar_fix_request','correction_requested','needs_correction'], true);
 
             $rowNo = method_exists($applications,'firstItem') && $applications->firstItem() ? ($applications->firstItem() + $i) : ($i + 1);
             $ref = $app->reference ?? ('APP-' . str_pad((int)$app->id, 5, '0', STR_PAD_LEFT));
@@ -379,6 +380,17 @@
             <td class="text-muted small">{{ $rowNo }}</td>
             <td class="fw-bold text-dark">{{ $ref }}</td>
             <td>{{ $app->applicant?->name ?? '—' }}</td>
+            <td>
+              @php
+                $reqType = $app->request_type ?? 'new';
+                $reqBadge = match($reqType) {
+                  'renewal' => 'warning',
+                  'replacement' => 'info',
+                  default => 'success',
+                };
+              @endphp
+              <span class="badge bg-{{ $reqBadge }}">{{ ucfirst($reqType) }}</span>
+            </td>
             <td class="text-capitalize">{{ $app->collection_region ?? '—' }}</td>
             <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
             <td>
@@ -504,7 +516,7 @@
           @endpush
 
         @empty
-          <tr><td colspan="7" class="text-center py-5 text-muted">No applications found.</td></tr>
+          <tr><td colspan="8" class="text-center py-5 text-muted">No applications found.</td></tr>
         @endforelse
         </tbody>
       </table>

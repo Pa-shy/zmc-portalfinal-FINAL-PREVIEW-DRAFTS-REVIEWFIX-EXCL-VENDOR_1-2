@@ -34,7 +34,12 @@
             <tbody>
             @foreach($notices as $n)
               <tr>
-                <td class="fw-bold">{{ $n->title }}</td>
+                <td class="fw-bold">
+                  @if($n->image_path)
+                    <img src="{{ asset('storage/' . $n->image_path) }}" alt="" class="rounded me-2" style="width:32px;height:32px;object-fit:cover;vertical-align:middle;">
+                  @endif
+                  {{ $n->title }}
+                </td>
                 <td class="small text-muted text-uppercase">{{ $n->target_portal }}</td>
                 <td>
                   <span class="badge rounded-pill bg-{{ $n->is_published ? 'success' : 'secondary' }} px-3">{{ $n->is_published ? 'Published' : 'Draft' }}</span>
@@ -73,7 +78,12 @@
             <tbody>
             @foreach($events as $e)
               <tr>
-                <td class="fw-bold">{{ $e->title }}</td>
+                <td class="fw-bold">
+                  @if($e->image_path)
+                    <img src="{{ asset('storage/' . $e->image_path) }}" alt="" class="rounded me-2" style="width:32px;height:32px;object-fit:cover;vertical-align:middle;">
+                  @endif
+                  {{ $e->title }}
+                </td>
                 <td class="small">{{ optional($e->starts_at)->format('d M Y') ?? '—' }}</td>
                 <td>
                   <span class="badge rounded-pill bg-{{ $e->is_published ? 'success' : 'secondary' }} px-3">{{ $e->is_published ? 'Published' : 'Draft' }}</span>

@@ -16,12 +16,17 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'region', // if you use region
+        'region',
         'account_type',
         'designation',
         'locale',
         'phone_country_code',
         'phone_number',
+        'phone2',
+        'id_number',
+        'passport_number',
+        'social_media',
+        'theme',
         'profile_data',
     ];
 
@@ -36,6 +41,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'profile_data' => 'array',
+            'social_media' => 'array',
         ];
     }
 

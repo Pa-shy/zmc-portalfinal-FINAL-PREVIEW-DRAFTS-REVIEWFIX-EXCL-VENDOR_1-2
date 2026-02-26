@@ -33,7 +33,13 @@ class Payment extends Model
         'reconciled_by',
         'applicant_category',
         'residency',
-        'service_type'
+        'service_type',
+        'receipt_number',
+        'payment_date',
+        'voided_at',
+        'voided_by',
+        'void_reason',
+        'recorded_by',
     ];
 
     protected $casts = [
@@ -43,6 +49,8 @@ class Payment extends Model
         'last_checked_at' => 'datetime',
         'reconciled_at' => 'datetime',
         'reconciled' => 'boolean',
+        'payment_date' => 'date',
+        'voided_at' => 'datetime',
     ];
 
     public function application(): BelongsTo
