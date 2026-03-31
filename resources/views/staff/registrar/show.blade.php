@@ -2,7 +2,7 @@
 @section('title', 'Registrar Review - ' . $application->reference)
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold m-0">{{ $application->reference }}</h4>
@@ -30,40 +30,7 @@
         {{-- Left Column: Applicant Details & Workspace --}}
         <div class="col-lg-8">
             {{-- A) Applicant Details Panel --}}
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white fw-bold d-flex justify-content-between">
-                    <span><i class="ri-user-line me-1"></i> Applicant Details</span>
-                    <span class="small text-muted">ID: {{ $application->id }}</span>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="small text-muted d-block">Full Name</label>
-                            <span class="fw-bold">{{ $application->applicant?->name ?? '—' }}</span>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted d-block">ID/Passport</label>
-                            <span class="fw-bold">{{ $application->form_data['id_passport_number'] ?? '—' }}</span>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted d-block">Nationality</label>
-                            <span class="fw-bold">{{ $application->form_data['nationality'] ?? '—' }}</span>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted d-block">Residency</label>
-                            <span class="fw-bold text-uppercase">{{ $application->residency_type ?? 'local' }}</span>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted d-block">Contact</label>
-                            <span class="fw-bold">{{ $application->applicant?->email }}</span>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="small text-muted d-block">Media House</label>
-                            <span class="fw-bold">{{ $application->form_data['employer_name'] ?? '—' }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @include('staff.partials.application_details_card', ['application' => $application])
 
             {{-- B) Category Validation Panel --}}
             <div class="card border-0 shadow-sm mb-4">
@@ -280,6 +247,122 @@
                     <i class="ri-settings-3-line me-1"></i> Registrar Actions
                 </div>
                 <div class="card-body">
+                    {{-- Special Case: Forwarded Without Approval --}}
+                    @if($application->status === 'forwarded_to_registrar_no_approval')
+                        <div class="alert" style="background: rgba(250, 204, 21, 0.1); border: 2px solid #facc15; color: #000;">
+                            <div class="d-flex align-items-start">
+                                <i class="ri-alert-line me-2" style="font-size: 1.5rem; color: #facc15;"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-2" style="color: #000;">Special Case - No Officer Approval</h6>
+                                    <p class="mb-2 small">This application was forwarded by the Accreditation Officer WITHOUT approval for special handling.</p>
+                                    @if($application->forward_no_approval_reason)
+                                        <div class="p-2 rounded mb-2" style="background: #fff; border: 1px solid #facc15;">
+                                            <strong style="color: #000;">Officer's Reason:</strong>
+                                            <div class="mt-1" style="color: #334155;">{{ $application->forward_no_approval_reason }}</div>
+                                        </div>
+                                    @endif
+                                    <small class="text-muted">
+                                        <i class="ri-user-line me-1"></i>
+                                        Forwarded by: {{ $application->assignedOfficer?->name ?? 'Officer' }} on {{ $application->last_action_at?->format('d M Y H:i') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ route('staff.registrar.applications.approve-special-case', $application) }}" class="mb-3">
+                            @csrf
+                            <label class="form-label small fw-bold">Review Notes (Optional)</label>
+                            <textarea class="form-control mb-3" name="decision_notes" rows="3" placeholder="Add your review notes..."></textarea>
+                            <button class="btn w-100 shadow-sm" style="background: #facc15; color: #000; font-weight: 600;">
+                                <i class="ri-check-line me-1"></i> Approve Special Case & Send to Accounts
+                            </button>
+                            <div class="form-text smaller mt-2">
+                                This will route the application to Accounts for payment verification.
+                            </div>
+                        </form>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-primary w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#fixRequestModal">
+                                    <i class="ri-tools-line"></i> Request Fix
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-danger w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                    <i class="ri-close-line"></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                    @endif
+
+                    {{-- Media House Two-Stage Payment: Official Letter Upload --}}
+                    @if($application->status === 'verified_by_officer_pending_registrar' && $application->application_type === 'registration')
+                        <div class="alert" style="background: rgba(250, 204, 21, 0.1); border: 2px solid #facc15; color: #000;">
+                            <div class="d-flex align-items-start">
+                                <i class="ri-file-text-line me-2" style="font-size: 1.5rem; color: #facc15;"></i>
+                                <div>
+                                    <h6 class="fw-bold mb-2" style="color: #000;">Media House Registration - Official Letter Required</h6>
+                                    <p class="mb-0 small">This media house application requires an official approval letter to be uploaded before approval.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ route('staff.registrar.applications.approve-with-letter', $application) }}" enctype="multipart/form-data" class="mb-3">
+                            @csrf
+                            
+                            {{-- Category Selection --}}
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Media House Category <span class="text-danger">*</span></label>
+                                <select name="category_code" class="form-select" required>
+                                    <option value="">Select Category...</option>
+                                    @foreach(\App\Models\Application::massMediaCategories() as $code => $name)
+                                        <option value="{{ $code }}" {{ ($application->media_house_category_code ?? '') == $code ? 'selected' : '' }}>
+                                            {{ $code }} - {{ $name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Official Letter Upload --}}
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Official Approval Letter <span class="text-danger">*</span></label>
+                                <input type="file" name="official_letter" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                <div class="form-text smaller">
+                                    <i class="ri-information-line me-1"></i>
+                                    Upload the official approval letter (PDF or image, max 5MB). This letter will be sent to the applicant.
+                                </div>
+                            </div>
+
+                            {{-- Decision Notes --}}
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Decision Notes (Optional)</label>
+                                <textarea class="form-control" name="decision_notes" rows="3" placeholder="Add any internal notes about this approval..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn w-100 shadow-sm" style="background: #facc15; color: #000; font-weight: 600;">
+                                <i class="ri-check-line me-1"></i> Approve & Upload Official Letter
+                            </button>
+                            <div class="form-text smaller mt-2">
+                                After approval, the applicant will be prompted to pay the registration fee.
+                            </div>
+                        </form>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-primary w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#fixRequestModal">
+                                    <i class="ri-tools-line"></i> Request Fix
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-danger w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                    <i class="ri-close-line"></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                    @endif
+
                     @if(in_array($application->status, ['registrar_review']))
                         @if($application->payment_status !== 'paid' && !$application->registrar_reviewed_at)
                             <div class="mb-4">
@@ -308,12 +391,17 @@
                         </form>
 
                         <div class="row g-2">
-                            <div class="col-6">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#fixRequestModal">
+                                    <i class="ri-tools-line"></i> Fix Request
+                                </button>
+                            </div>
+                            <div class="col-4">
                                 <button type="button" class="btn btn-outline-warning w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#returnModal">
                                     <i class="ri-arrow-go-back-line"></i> Return
                                 </button>
                             </div>
-                            <div class="col-6">
+                            <div class="col-4">
                                 <button type="button" class="btn btn-outline-danger w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
                                     <i class="ri-close-line"></i> Reject
                                 </button>
@@ -435,6 +523,47 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-danger">Confirm Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Fix Request Modal --}}
+<div class="modal fade" id="fixRequestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="POST" action="{{ route('staff.registrar.applications.send-fix-request', $application) }}">
+            @csrf
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="ri-tools-line me-2"></i>Send Fix Request to Accreditation Officer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small">
+                    <i class="ri-information-line me-1"></i>
+                    Use this to request the Accreditation Officer to correct application data. You cannot edit applicant data directly.
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Request Type</label>
+                    <select name="request_type" class="form-select" required>
+                        <option value="">Select type...</option>
+                        <option value="data_correction">Data Correction</option>
+                        <option value="category_change">Category Change</option>
+                        <option value="document_issue">Document Issue</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Description</label>
+                    <textarea name="description" class="form-control" rows="5" required placeholder="Describe what needs to be fixed and why..."></textarea>
+                    <div class="form-text">Be specific about what needs correction.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-send-plane-line me-1"></i>Send Fix Request
+                </button>
             </div>
         </form>
     </div>

@@ -1,48 +1,47 @@
 <?php $__env->startSection('title', 'Auditor Dashboard'); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Auditor Dashboard</h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color: var(--zmc-text-dark);">Auditor Dashboard</h4>
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
         Read-only oversight across applications, payments, logs, and reports. Auditors can <b>flag anomalies</b> but cannot approve/reject.
       </div>
     </div>
 
-    <form class="d-flex flex-wrap gap-2" method="GET">
-      <input type="date" class="form-control form-control-sm" name="from" value="<?php echo e(optional($from)->format('Y-m-d')); ?>">
-      <input type="date" class="form-control form-control-sm" name="to" value="<?php echo e(optional($to)->format('Y-m-d')); ?>">
-      <button class="btn btn-dark btn-sm" type="submit"><i class="ri-filter-3-line me-1"></i>Apply</button>
-      <a class="btn btn-white border btn-sm" href="<?php echo e(route('staff.auditor.dashboard')); ?>">Reset</a>
-    </form>
+    <div class="d-flex align-items-center gap-2">
+      <a href="<?php echo e(url()->current()); ?>" class="btn btn-white border shadow-sm btn-sm px-3" title="Refresh">
+        <i class="ri-refresh-line me-1"></i> Refresh
+      </a>
+    </div>
   </div>
 
   <div class="row g-3 mb-4">
     <div class="col-md-3">
       <div class="zmc-card shadow-sm border-0 p-3">
         <div class="text-muted small">Total Applications</div>
-        <div class="fw-bold" style="font-size:26px;"><?php echo e(number_format($totalApplications)); ?></div>
+        <div class="fw-bold" style="font-size: var(--font-size-3xl);"><?php echo e(number_format($totalApplications)); ?></div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="zmc-card shadow-sm border-0 p-3">
         <div class="text-muted small">Approved (all stages)</div>
-        <div class="fw-bold" style="font-size:26px;"><?php echo e(number_format($approvedCount)); ?></div>
+        <div class="fw-bold" style="font-size: var(--font-size-3xl);"><?php echo e(number_format($approvedCount)); ?></div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="zmc-card shadow-sm border-0 p-3">
         <div class="text-muted small">Rejected</div>
-        <div class="fw-bold" style="font-size:26px;"><?php echo e(number_format($rejectedCount)); ?></div>
+        <div class="fw-bold" style="font-size: var(--font-size-3xl);"><?php echo e(number_format($rejectedCount)); ?></div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="zmc-card shadow-sm border-0 p-3">
         <div class="text-muted small">Irregular: Approved w/o Pay/Proof/Waiver</div>
-        <div class="fw-bold" style="font-size:26px; color:#dc2626;"><?php echo e(number_format($irregularApprovedWithoutPayment)); ?></div>
+        <div class="fw-bold" style="font-size: var(--font-size-3xl); color:#dc2626;"><?php echo e(number_format($irregularApprovedWithoutPayment)); ?></div>
       </div>
     </div>
   </div>
@@ -51,7 +50,7 @@
     <div class="col-md-4">
       <div class="zmc-card shadow-sm border-0 p-3">
         <div class="text-muted small">PayNow Confirmed</div>
-        <div class="fw-bold" style="font-size:22px;"><?php echo e(number_format($paynowConfirmed)); ?></div>
+        <div class="fw-bold" style="font-size: var(--font-size-2xl);"><?php echo e(number_format($paynowConfirmed)); ?></div>
         <div class="mt-2">
           <a class="btn btn-sm btn-white border" href="<?php echo e(route('staff.auditor.paynow')); ?>"><i class="ri-eye-line me-1"></i>View PayNow Audit</a>
         </div>
@@ -60,7 +59,7 @@
     <div class="col-md-4">
       <div class="zmc-card shadow-sm border-0 p-3">
         <div class="text-muted small">Payment Proofs Approved</div>
-        <div class="fw-bold" style="font-size:22px;"><?php echo e(number_format($proofsApproved)); ?></div>
+        <div class="fw-bold" style="font-size: var(--font-size-2xl);"><?php echo e(number_format($proofsApproved)); ?></div>
         <div class="mt-2">
           <a class="btn btn-sm btn-white border" href="<?php echo e(route('staff.auditor.proofs')); ?>"><i class="ri-file-search-line me-1"></i>View Proofs</a>
         </div>
@@ -69,7 +68,7 @@
     <div class="col-md-4">
       <div class="zmc-card shadow-sm border-0 p-3">
         <div class="text-muted small">Waivers Approved</div>
-        <div class="fw-bold" style="font-size:22px;"><?php echo e(number_format($waiversApproved)); ?></div>
+        <div class="fw-bold" style="font-size: var(--font-size-2xl);"><?php echo e(number_format($waiversApproved)); ?></div>
         <div class="mt-2">
           <a class="btn btn-sm btn-white border" href="<?php echo e(route('staff.auditor.waivers')); ?>"><i class="ri-file-shield-2-line me-1"></i>View Waivers</a>
         </div>

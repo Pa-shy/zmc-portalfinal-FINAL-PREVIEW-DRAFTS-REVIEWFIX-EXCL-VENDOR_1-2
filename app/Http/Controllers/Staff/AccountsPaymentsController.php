@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Services\ApplicationWorkflow;
+use App\Services\ApplicationWorkflowService;
+use App\Services\PaymentWorkflowService;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -312,17 +314,17 @@ class AccountsPaymentsController extends Controller
     /**
      * Main landing dashboard for Accounts/Payments
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = Auth::user();
-        $applications = Application::query()
-            ->with('applicant')
+        
+        $query = Application::query()
+            ->with('applicant', 'paymentSubmissions')
             ->whereIn('status', [
                 Application::ACCOUNTS_REVIEW,
                 Application::RETURNED_TO_ACCOUNTS,
-                Application::AWAITING_ACCOUNTS_VERIFICATION,
-                Application::PENDING_ACCOUNTS_FROM_REGISTRAR,
-                Application::PAID_CONFIRMED,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR, // Special cases
+                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION, // Two-stage payment
             ])
             ->where(function($q) use ($user) {
                 $q->whereNull('assigned_officer_id')
@@ -332,11 +334,48 @@ class AccountsPaymentsController extends Controller
                 $q->whereNull('locked_at')
                   ->orWhere('locked_at', '<=', now()->subHours(2))
                   ->orWhere('locked_by', $user->id);
-            })
-            ->latest()
-            ->paginate(20);
+            });
 
-        return view('staff.accounts.dashboard', compact('applications'));
+        // Filter by payment submission method
+        if (request()->filled('submission_method')) {
+            $query->where('payment_submission_method', request('submission_method'));
+        }
+
+        $applications = $query->latest()->paginate(20)->withQueryString();
+
+        // KPIs by submission method
+        $kpis = [
+            'total_pending' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR,
+                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION,
+            ])->count(),
+            'special_cases' => Application::where('status', Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR)->count(),
+            'two_stage_pending' => Application::where('status', Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION)->count(),
+            'paynow_submissions' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->where('payment_submission_method', 'paynow_reference')->count(),
+            'proof_submissions' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->where('payment_submission_method', 'proof_upload')->count(),
+            'waiver_submissions' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->where('payment_submission_method', 'waiver')->count(),
+            'no_submission' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->whereNull('payment_submission_method')->count(),
+        ];
+
+        return view('staff.accounts.dashboard', compact('applications', 'kpis'));
     }
 
     /**
@@ -500,12 +539,8 @@ class AccountsPaymentsController extends Controller
 
             $this->logPaymentAction($payment, 'approved_proof', null, 'paid', $data['proof_review_notes'] ?? 'Payment proof approved.');
 
-            ApplicationWorkflow::transition($application, Application::PAYMENT_VERIFIED, 'accounts_approve_proof', [
+            ApplicationWorkflow::transition($application, Application::PAID_CONFIRMED, 'accounts_approve_proof', [
                 'notes' => $data['proof_review_notes'] ?? null,
-            ]);
-
-            ApplicationWorkflow::transition($application, Application::PRODUCTION_QUEUE, 'system_send_to_production', [
-                'region' => $application->collection_region ?? null,
             ]);
         });
 
@@ -513,7 +548,7 @@ class AccountsPaymentsController extends Controller
             'notes' => $data['proof_review_notes'] ?? null,
         ]);
 
-        return back()->with('success', 'Payment proof approved and sent to Production.');
+        return back()->with('success', 'Payment proof approved and application confirmed.');
     }
 
     /** Reject a payment proof */
@@ -895,22 +930,13 @@ class AccountsPaymentsController extends Controller
             return redirect()->back()->with('error', "This application is currently being worked on by {$lockerName}.");
         }
 
-        $application->load(['applicant', 'documents', 'messages', 'workflowLogs', 'payments', 'lockedBy']);
+        $application->load(['applicant', 'documents', 'messages', 'workflowLogs', 'lockedBy']);
 
-        $previousApplications = collect();
-        $previousPayments = collect();
-        if ($application->applicant_user_id) {
-            $previousApplications = Application::where('applicant_user_id', $application->applicant_user_id)
-                ->where('id', '!=', $application->id)
-                ->latest()
-                ->get();
+        $userPayments = Payment::where('payer_user_id', $application->user_id)
+            ->latest()
+            ->get();
 
-            $previousPayments = Payment::whereHas('application', function ($q) use ($application) {
-                $q->where('applicant_user_id', $application->applicant_user_id);
-            })->latest()->get();
-        }
-
-        return view('staff.accounts.show', compact('application', 'previousApplications', 'previousPayments'));
+        return view('staff.accounts.show', compact('application', 'userPayments'));
     }
 
     public function unlock(Application $application)
@@ -1011,199 +1037,48 @@ class AccountsPaymentsController extends Controller
         return back()->with('success', 'Returned to Accreditation Officer.');
     }
 
-    public function rejectPayment(Request $request, Application $application)
+    /**
+     * Verify payment submission (including waivers from special cases)
+     */
+    public function verifyPaymentSubmission(Request $request, Application $application)
     {
         $data = $request->validate([
-            'rejection_reason' => ['required', 'string', 'max:5000'],
+            'action' => ['required', 'in:verify,reject'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+            'payment_submission_id' => ['nullable', 'exists:payment_submissions,id'],
         ]);
 
-        $from = $application->status;
-
-        DB::transaction(function() use ($application, $data) {
-            ApplicationWorkflow::transition($application, Application::PAYMENT_REJECTED, 'accounts_reject_payment', [
-                'reason' => $data['rejection_reason'],
-            ]);
-
-            $this->safeSet($application, [
-                'rejection_reason' => $data['rejection_reason'],
-            ]);
-        });
-
-        $this->audit('accounts_payment_rejected', $application, $from, $application->status, [
-            'reason' => $data['rejection_reason'],
-        ]);
-
-        return back()->with('success', 'Payment rejected. Applicant must resubmit.');
-    }
-
-    public function createCashPayment()
-    {
-        $applications = Application::query()
-            ->with('applicant')
-            ->whereIn('status', [
-                Application::AWAITING_ACCOUNTS_VERIFICATION,
-                Application::ACCOUNTS_REVIEW,
-                Application::PENDING_ACCOUNTS_FROM_REGISTRAR,
-                Application::RETURNED_TO_ACCOUNTS,
-            ])
-            ->latest()
-            ->get();
-
-        return view('staff.accounts.cash_payment_create', compact('applications'));
-    }
-
-    public function storeCashPayment(Request $request)
-    {
-        $validated = $request->validate([
-            'application_id' => 'required|exists:applications,id',
-            'receipt_number' => 'required|string|max:100|unique:payments,receipt_number',
-            'amount' => 'required|numeric|min:0.01',
-            'payment_date' => 'required|date|before_or_equal:today',
-            'notes' => 'nullable|string|max:5000',
-        ]);
-
-        $application = Application::findOrFail($validated['application_id']);
-        $from = $application->status;
-
-        DB::transaction(function() use ($application, $validated, $from) {
-            $payment = Payment::create([
-                'application_id' => $application->id,
-                'payer_user_id' => $application->applicant_user_id,
-                'method' => 'cash',
-                'source' => 'offline',
-                'amount' => $validated['amount'],
-                'currency' => 'USD',
-                'reference' => 'CASH-' . $application->reference . '-' . now()->format('YmdHis'),
-                'receipt_number' => $validated['receipt_number'],
-                'payment_date' => $validated['payment_date'],
-                'status' => 'paid',
-                'confirmed_at' => now(),
-                'recorded_by' => Auth::id(),
-                'applicant_category' => $application->accreditation_category_code ?? $application->media_house_category_code,
-                'service_type' => $application->application_type,
-                'residency' => $application->residency_type ?? 'local',
-            ]);
-
-            $this->logPaymentAction($payment, 'cash_recorded', null, 'paid', $validated['notes'] ?? 'Cash payment recorded.');
-
-            $this->safeSet($application, [
-                'payment_status' => 'paid',
-                'receipt_number' => $validated['receipt_number'],
-            ]);
-
-            ApplicationWorkflow::transition($application, Application::PAYMENT_VERIFIED, 'accounts_cash_payment_recorded', [
-                'receipt_number' => $validated['receipt_number'],
-                'amount' => $validated['amount'],
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            ApplicationWorkflow::transition($application, Application::PRODUCTION_QUEUE, 'system_send_to_production', [
-                'region' => $application->collection_region ?? null,
-            ]);
-
-            $this->audit('accounts_cash_payment', $application, $from, $application->status, [
-                'receipt_number' => $validated['receipt_number'],
-                'amount' => $validated['amount'],
-                'notes' => $validated['notes'] ?? null,
-            ]);
-        });
-
-        return redirect()->route('staff.accounts.dashboard')->with('success', 'Cash payment recorded and application sent to Production.');
-    }
-
-    public function voidCashPayment(Request $request, Payment $payment)
-    {
-        $data = $request->validate([
-            'void_reason' => ['required', 'string', 'max:5000'],
-        ]);
-
-        if ($payment->voided_at) {
-            return back()->with('error', 'This payment has already been voided.');
-        }
-
-        DB::transaction(function() use ($payment, $data) {
-            $oldStatus = $payment->status;
-
-            $payment->update([
-                'status' => 'voided',
-                'voided_at' => now(),
-                'voided_by' => Auth::id(),
-                'void_reason' => $data['void_reason'],
-            ]);
-
-            $this->logPaymentAction($payment, 'voided', $oldStatus, 'voided', $data['void_reason']);
-
-            if ($payment->application) {
-                $this->audit('accounts_receipt_voided', $payment->application, $payment->application->status, $payment->application->status, [
-                    'payment_id' => $payment->id,
-                    'receipt_number' => $payment->receipt_number,
-                    'reason' => $data['void_reason'],
+        // Use new workflow service - enforces strict transitions
+        try {
+            if ($data['action'] === 'verify') {
+                // Verify payment - automatically sends to production
+                $application = PaymentWorkflowService::verifyPayment($application, [
+                    'notes' => $data['notes'] ?? null,
+                    'payment_submission_id' => $data['payment_submission_id'] ?? null,
                 ]);
+
+                $message = 'Payment verified and application sent to Production.';
+                
+                // Check if two-stage payment
+                if ($application->requiresApplicationFee()) {
+                    $bothVerified = PaymentWorkflowService::areBothPaymentStagesVerified($application);
+                    if (!$bothVerified) {
+                        $message = 'Payment stage verified. Waiting for second payment stage.';
+                    }
+                }
+            } else {
+                // Reject payment
+                $application = PaymentWorkflowService::rejectPayment($application, $data['notes'] ?? 'Payment rejected', [
+                    'payment_submission_id' => $data['payment_submission_id'] ?? null,
+                ]);
+
+                $message = 'Payment rejected. Applicant must resubmit payment.';
             }
-        });
 
-        return back()->with('success', 'Receipt voided successfully.');
-    }
-
-    public function approveWaiverVerification(Request $request, Application $application)
-    {
-        $data = $request->validate([
-            'waiver_review_notes' => ['nullable', 'string', 'max:5000'],
-        ]);
-
-        $from = $application->status;
-
-        DB::transaction(function() use ($application, $data) {
-            $this->safeSet($application, [
-                'waiver_status' => 'approved',
-                'waiver_reviewed_by' => Auth::id(),
-                'waiver_reviewed_at' => now(),
-                'waiver_review_notes' => $data['waiver_review_notes'] ?? null,
-                'payment_status' => 'waived',
-            ]);
-
-            ApplicationWorkflow::transition($application, Application::PAYMENT_VERIFIED, 'accounts_waiver_verified', [
-                'notes' => $data['waiver_review_notes'] ?? null,
-            ]);
-
-            ApplicationWorkflow::transition($application, Application::PRODUCTION_QUEUE, 'system_send_to_production', [
-                'region' => $application->collection_region ?? null,
-            ]);
-        });
-
-        $this->audit('accounts_waiver_verified', $application, $from, $application->status, [
-            'notes' => $data['waiver_review_notes'] ?? null,
-        ]);
-
-        return back()->with('success', 'Waiver verified as payment-equivalent and sent to Production.');
-    }
-
-    public function rejectWaiverVerification(Request $request, Application $application)
-    {
-        $data = $request->validate([
-            'waiver_review_notes' => ['required', 'string', 'max:5000'],
-        ]);
-
-        $from = $application->status;
-
-        DB::transaction(function() use ($application, $data) {
-            $this->safeSet($application, [
-                'waiver_status' => 'rejected',
-                'waiver_reviewed_by' => Auth::id(),
-                'waiver_reviewed_at' => now(),
-                'waiver_review_notes' => $data['waiver_review_notes'],
-            ]);
-
-            ApplicationWorkflow::transition($application, Application::PAYMENT_REJECTED, 'accounts_waiver_rejected_verification', [
-                'reason' => $data['waiver_review_notes'],
-            ]);
-        });
-
-        $this->audit('accounts_waiver_verification_rejected', $application, $from, $application->status, [
-            'reason' => $data['waiver_review_notes'],
-        ]);
-
-        return back()->with('success', 'Waiver rejected.');
+            return back()->with('success', $message);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', 'Workflow error: ' . $e->getMessage());
+        }
     }
 
     /* helpers */
@@ -1234,5 +1109,104 @@ class AccountsPaymentsController extends Controller
     {
         try { return Schema::hasColumn($table, $column); }
         catch (\Throwable $e) { return false; }
+    }
+
+    /**
+     * Renewals queue for accounts verification
+     */
+    public function renewalsQueue(Request $request)
+    {
+        $query = \App\Models\RenewalApplication::query()
+            ->with(['applicant', 'originalApplication'])
+            ->awaitingAccountsVerification()
+            ->latest('payment_submitted_at');
+
+        // Filter by payment method
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        // Filter by renewal type
+        if ($request->filled('renewal_type')) {
+            $query->where('renewal_type', $request->renewal_type);
+        }
+
+        $renewals = $query->paginate(20)->withQueryString();
+
+        // KPIs
+        $kpis = [
+            'pending' => \App\Models\RenewalApplication::awaitingAccountsVerification()->count(),
+            'verified_today' => \App\Models\RenewalApplication::where('payment_verified_at', '>=', now()->startOfDay())->count(),
+            'paynow' => \App\Models\RenewalApplication::awaitingAccountsVerification()->where('payment_method', 'PAYNOW')->count(),
+            'proof' => \App\Models\RenewalApplication::awaitingAccountsVerification()->where('payment_method', 'PROOF_UPLOAD')->count(),
+        ];
+
+        return view('staff.accounts.renewals_queue', compact('renewals', 'kpis'));
+    }
+
+    /**
+     * Show renewal details for verification
+     */
+    public function showRenewal(\App\Models\RenewalApplication $renewal)
+    {
+        $renewal->load(['applicant', 'originalApplication', 'changeRequests']);
+
+        return view('staff.accounts.renewal_show', compact('renewal'));
+    }
+
+    /**
+     * Verify renewal payment
+     */
+    public function verifyRenewalPayment(Request $request, \App\Models\RenewalApplication $renewal)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:verify,reject'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $from = $renewal->status;
+
+        DB::transaction(function() use ($renewal, $data, $from) {
+            if ($data['action'] === 'verify') {
+                // Verify payment
+                $renewal->update([
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => Auth::id(),
+                    'status' => \App\Models\RenewalApplication::RENEWAL_PAYMENT_VERIFIED,
+                    'current_stage' => 'production',
+                    'last_action_at' => now(),
+                    'last_action_by' => Auth::id(),
+                ]);
+
+                ActivityLogger::log('renewal_payment_verified', $renewal, $from, $renewal->status, [
+                    'renewal_type' => $renewal->renewal_type,
+                    'payment_method' => $renewal->payment_method,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+
+            } else {
+                // Reject payment
+                $renewal->update([
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => Auth::id(),
+                    'payment_rejection_reason' => $data['notes'],
+                    'status' => \App\Models\RenewalApplication::RENEWAL_PAYMENT_REJECTED,
+                    'last_action_at' => now(),
+                    'last_action_by' => Auth::id(),
+                ]);
+
+                ActivityLogger::log('renewal_payment_rejected', $renewal, $from, $renewal->status, [
+                    'renewal_type' => $renewal->renewal_type,
+                    'payment_method' => $renewal->payment_method,
+                    'reason' => $data['notes'],
+                ]);
+            }
+        });
+
+        $message = $data['action'] === 'verify'
+            ? 'Renewal payment verified. Application sent to Production.'
+            : 'Renewal payment rejected. Applicant must resubmit payment.';
+
+        return back()->with('success', $message);
     }
 }

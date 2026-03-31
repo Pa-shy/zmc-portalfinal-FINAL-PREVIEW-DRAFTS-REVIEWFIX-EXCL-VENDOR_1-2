@@ -601,7 +601,7 @@
                 ['key'=>'memorandum_of_association', 'label'=>'10. Memorandum of Association', 'required'=>true],
                 ['key'=>'market_analysis', 'label'=>'11. Market Analysis', 'required'=>true],
                 ['key'=>'cashflow_projection_3yr', 'label'=>'12. Cashflow Projection for the next 3 years', 'required'=>true],
-                ['key'=>'journalist_list', 'label'=>'13. List of names and addresses of journalist employed in the representative office', 'required'=>false, 'hint'=>'Required for Foreign Media Houses'],
+                ['key'=>'journalist_list', 'label'=>'13. List of names and addresses of media practitioners employed in the representative office', 'required'=>false, 'hint'=>'Required for Foreign Media Houses'],
               ];
             @endphp
 
@@ -680,60 +680,6 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" id="ap1ReviewContent"></div>
-        <div class="modal-body border-top pt-3" id="ap1AppFeeSection">
-          <div class="alert alert-warning mb-3">
-            <div class="fw-bold mb-1"><i class="ri-money-dollar-circle-line me-1"></i> Application Fee Required</div>
-            <div class="small">An application fee must be paid before submission. Please provide your PayNow reference or upload proof of payment.</div>
-          </div>
-          <ul class="nav nav-pills mb-3" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="appfee-tab-ref" data-bs-toggle="pill" data-bs-target="#appfee-pane-ref" type="button" role="tab">
-                <i class="ri-flashlight-line me-1"></i> PayNow Reference
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="appfee-tab-proof" data-bs-toggle="pill" data-bs-target="#appfee-pane-proof" type="button" role="tab">
-                <i class="ri-file-upload-line me-1"></i> Upload Proof
-              </button>
-            </li>
-          </ul>
-          <div class="tab-content">
-            <div class="tab-pane fade show active" id="appfee-pane-ref" role="tabpanel">
-              <div class="mb-3">
-                <label class="form-label small fw-bold">PayNow Reference Number</label>
-                <input type="text" class="form-control" id="appfee_paynow_ref" placeholder="e.g. PN1234567890">
-              </div>
-            </div>
-            <div class="tab-pane fade" id="appfee-pane-proof" role="tabpanel">
-              <div class="row g-2">
-                <div class="col-12 col-md-6">
-                  <label class="form-label small">Name</label>
-                  <input type="text" class="form-control" id="appfee_first_name">
-                </div>
-                <div class="col-12 col-md-6">
-                  <label class="form-label small">Surname</label>
-                  <input type="text" class="form-control" id="appfee_last_name">
-                </div>
-                <div class="col-12 col-md-6">
-                  <label class="form-label small">Payment date</label>
-                  <input type="date" class="form-control" id="appfee_payment_date">
-                </div>
-                <div class="col-12 col-md-6">
-                  <label class="form-label small">Amount paid</label>
-                  <input type="number" step="0.01" min="0" class="form-control" id="appfee_amount_paid">
-                </div>
-                <div class="col-12">
-                  <label class="form-label small">Bank used</label>
-                  <input type="text" class="form-control" id="appfee_bank_name" placeholder="e.g. CBZ / Steward / Stanbic">
-                </div>
-                <div class="col-12">
-                  <label class="form-label small">Upload proof (PDF/JPG/PNG)</label>
-                  <input type="file" class="form-control" id="appfee_proof_file" accept=".pdf,.jpg,.jpeg,.png">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Edit Application</button>
           <button type="button" class="btn btn-primary" id="ap1ConfirmSubmitBtn">
@@ -762,6 +708,23 @@
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#039;');
+  }
+
+  function checkRequestSize(formData) {
+    let totalSize = 0;
+    for (let pair of formData.entries()) {
+      if (pair[1] instanceof File) {
+        totalSize += pair[1].size;
+      } else {
+        totalSize += (pair[1].length || 0);
+      }
+    }
+    const maxPostSize = 8 * 1024 * 1024; // 8MB limit from system check
+    if (totalSize > maxPostSize) {
+      alert(`The total size of your files (${(totalSize / 1024 / 1024).toFixed(2)}MB) exceeds the server limit (approx 8MB). Please reduce file sizes or upload fewer documents at a time.`);
+      return false;
+    }
+    return true;
   }
 
   // ===== Step UI =====
@@ -822,11 +785,11 @@
         if (!f.files || !f.files[0]) { alert('Please upload all required annexures.'); return false; }
       }
       
-      // Media practitioner list is required for Foreign Media
+      // Journalist list is required for Foreign Media
       if (scope === 'foreign') {
         const jList = document.querySelector('input[name="documents[journalist_list]"]');
         if (jList && (!jList.files || !jList.files[0])) {
-          alert('Foreign Media Houses must upload the list of journalists.');
+          alert('Foreign Media Houses must upload the list of media practitioners.');
           return false;
         }
       }
@@ -1474,6 +1437,12 @@
         if (input.files && input.files[0]) fd.append(input.name, input.files[0]);
       });
 
+      if (!checkRequestSize(fd)) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-save-line"></i> Save Draft';
+        return;
+      }
+
       const res = await fetch('{{ route("mediahouse.saveDraft") }}', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
@@ -1481,9 +1450,17 @@
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.error('Draft save failed:', errText);
-        throw new Error('Server returned an error (' + res.status + ').');
+        let errMsg = 'Server returned an error (' + res.status + ').';
+        try {
+          const errJson = await res.json();
+          if (errJson.message) errMsg += '\nDetails: ' + errJson.message;
+        } catch (e) {}
+        
+        if (res.status === 413) {
+          errMsg = 'Payload Too Large (413). Your files are too large for the server to process. Please reduce file sizes.';
+        }
+        
+        throw new Error(errMsg);
       }
 
       const json = await res.json();
@@ -1494,55 +1471,18 @@
       }
     } catch (e) {
       console.error(e);
-      alert('An error occurred while saving draft.');
+      alert('An error occurred while saving draft: ' + e.message);
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="ri-save-line"></i> Save Draft';
     }
   }
 
-  function getAppFeeData() {
-    const refTab = document.getElementById('appfee-pane-ref');
-    const isRefActive = refTab && refTab.classList.contains('show');
-
-    if (isRefActive) {
-      const ref = document.getElementById('appfee_paynow_ref')?.value?.trim();
-      if (!ref) return null;
-      return { type: 'paynow_ref', paynow_reference: ref };
-    } else {
-      const firstName = document.getElementById('appfee_first_name')?.value?.trim();
-      const lastName = document.getElementById('appfee_last_name')?.value?.trim();
-      const paymentDate = document.getElementById('appfee_payment_date')?.value?.trim();
-      const amountPaid = document.getElementById('appfee_amount_paid')?.value?.trim();
-      const bankName = document.getElementById('appfee_bank_name')?.value?.trim();
-      const proofFile = document.getElementById('appfee_proof_file')?.files?.[0];
-
-      if (!firstName || !lastName || !paymentDate || !amountPaid || !bankName || !proofFile) return null;
-
-      return {
-        type: 'proof',
-        first_name: firstName,
-        last_name: lastName,
-        payment_date: paymentDate,
-        amount_paid: amountPaid,
-        bank_name: bankName,
-        proof_file: proofFile,
-      };
-    }
-  }
-
+  // ===== Submit (multipart + files) =====
   async function submitApplication() {
     const data = getFormData();
     const region = document.querySelector('select[name="collection_region"]')?.value || '';
     const btn = document.getElementById('ap1ConfirmSubmitBtn');
-
-    const isCorrection = @json(isset($draft) && !$draft->is_draft && ($draft->status ?? null) === \App\Models\Application::CORRECTION_REQUESTED);
-
-    const appFeeData = getAppFeeData();
-    if (!isCorrection && !appFeeData) {
-      alert('Application fee is required. Please provide a PayNow reference or upload proof of payment.');
-      return;
-    }
 
     try {
       btn.disabled = true;
@@ -1552,27 +1492,19 @@
       fd.append('collection_region', region);
       fd.append('form_data', JSON.stringify(data));
 
-      if (!isCorrection && appFeeData) {
-        fd.append('app_fee_type', appFeeData.type);
-        if (appFeeData.type === 'paynow_ref') {
-          fd.append('app_fee_paynow_ref', appFeeData.paynow_reference);
-        } else {
-          fd.append('app_fee_first_name', appFeeData.first_name);
-          fd.append('app_fee_last_name', appFeeData.last_name);
-          fd.append('app_fee_payment_date', appFeeData.payment_date);
-          fd.append('app_fee_amount_paid', appFeeData.amount_paid);
-          fd.append('app_fee_bank_name', appFeeData.bank_name);
-          fd.append('app_fee_proof_file', appFeeData.proof_file);
-        }
-      }
-
       document.querySelectorAll('#ap1Form input[type="file"][name^="documents"]').forEach(input => {
         if (input.files && input.files[0]) fd.append(input.name, input.files[0]);
       });
 
-      const submitUrl = isCorrection
-        ? @json(isset($draft) && !$draft->is_draft ? route('mediahouse.applications.resubmit', $draft ?? 0) : route('mediahouse.submit'))
-        : @json(route('mediahouse.submit'));
+      if (!checkRequestSize(fd)) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-send-plane-line me-2"></i>Confirm & Submit';
+        return;
+      }
+
+      const submitUrl = @json(isset($draft) && !$draft->is_draft && ($draft->status ?? null) === \App\Models\Application::CORRECTION_REQUESTED
+        ? route('mediahouse.applications.resubmit', $draft)
+        : route('mediahouse.submit'));
 
       const res = await fetch(submitUrl, {
         method: 'POST',
@@ -1581,9 +1513,17 @@
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.error('Submission failed:', errText);
-        throw new Error('Server returned an error (' + res.status + ').');
+        let errMsg = 'Server returned an error (' + res.status + ').';
+        try {
+          const errJson = await res.json();
+          if (errJson.message) errMsg += '\nDetails: ' + errJson.message;
+        } catch (e) {}
+
+        if (res.status === 413) {
+          errMsg = 'Payload Too Large (413). Your files are too large for the server to process. Please reduce file sizes.';
+        }
+
+        throw new Error(errMsg);
       }
 
       const json = await res.json();

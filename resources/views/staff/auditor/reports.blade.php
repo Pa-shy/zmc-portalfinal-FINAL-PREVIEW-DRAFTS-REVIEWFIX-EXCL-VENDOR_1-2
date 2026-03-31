@@ -2,12 +2,12 @@
 @section('title', 'Audit Reports')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Audit Reports</h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color:#1e293b;">Audit Reports</h4>
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
         Generate time-based audit summaries with visual analytics. Export to CSV or print to PDF.
       </div>
@@ -78,7 +78,7 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+      <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #facc15 0%, #eab308 100%); color: #000;">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-start">
             <div class="flex-grow-1">
@@ -163,7 +163,7 @@
         <div class="d-flex justify-content-between align-items-start mb-3">
           <div class="flex-grow-1">
             <div class="text-muted small fw-bold text-uppercase mb-2">Proofs Approved</div>
-            <div class="fw-black" style="font-size:32px; color:#10b981;">{{ number_format($stats['proofs_approved'] ?? 0) }}</div>
+            <div class="fw-black" style="font-size:32px; color:#ffffff;">{{ number_format($stats['proofs_approved'] ?? 0) }}</div>
           </div>
           <div class="bg-success bg-opacity-10 p-3 rounded-3">
             <i class="ri-file-check-line text-success" style="font-size: 32px;"></i>
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
         animations: { enabled: true, easing: 'easeinout', speed: 800 }
       },
       labels: ['Approved', 'Rejected', 'In Progress'],
-      colors: ['#10b981', '#ef4444', '#f59e0b'],
+      colors: ['#facc15', '#ef4444', '#000000'],
       legend: { position: 'bottom', fontSize: '13px' },
       stroke: { width: 0 },
       plotOptions: {
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
         offsetY: -20,
         style: { fontSize: '14px', fontWeight: 'bold', colors: ['#334155'] }
       },
-      colors: ['#10b981', '#ef4444'],
+      colors: ['#facc15', '#ef4444'],
       xaxis: {
         categories: ['Approved', 'Rejected'],
         labels: { style: { fontSize: '13px', fontWeight: 600 } }
@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         offsetX: 30,
         style: { fontSize: '13px', fontWeight: 'bold', colors: ['#334155'] }
       },
-      colors: ['#3b82f6', '#10b981', '#f59e0b'],
+      colors: ['#000000', '#facc15', '#eab308'],
       xaxis: {
         categories: ['PayNow Confirmed', 'Proofs Approved', 'Waivers Approved'],
         labels: {
@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function() {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
 .bg-gradient-success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
 }
 .bg-gradient-danger {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);

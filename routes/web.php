@@ -7,7 +7,6 @@ Route::get('/health', \App\Http\Controllers\HealthController::class)->name('syst
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\MiscRoutesController;
 use App\Http\Controllers\PortalController;
 
 use App\Http\Controllers\Auth\LoginController;
@@ -61,7 +60,16 @@ Route::get('/', [HomeController::class, 'index'])->name('public.home');
 |--------------------------------------------------------------------------
 | Stores public portal choice then routes user to login/signup.
 */
-Route::post('/choose-portal', [MiscRoutesController::class, 'choosePortal'])->name('public.choose_portal');
+Route::post('/choose-portal', function (Request $request) {
+    $data = $request->validate([
+        'portal' => ['required', 'in:journalist,mass_media'],
+    ]);
+
+    $request->session()->put('public_selected_portal', $data['portal']);
+
+    // Force public auth (login/signup)
+    return redirect()->route('login');
+})->name('public.choose_portal');
 
 /*
 |--------------------------------------------------------------------------
@@ -97,8 +105,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 });
 
-// Language switcher
-Route::get('/lang/{locale}', [MiscRoutesController::class, 'switchLang'])->name('lang.switch');
 
 /*
 |--------------------------------------------------------------------------
@@ -128,7 +134,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/profile', [\App\Http\Controllers\SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::post('/settings/password', [\App\Http\Controllers\SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/theme', [\App\Http\Controllers\SettingsController::class, 'updateTheme'])->name('settings.theme');
-    Route::post('/settings/theme/ajax', [\App\Http\Controllers\SettingsController::class, 'updateThemeAjax'])->name('settings.theme.ajax');
     Route::post('/settings/security', [\App\Http\Controllers\SettingsController::class, 'updateSecurity'])->name('settings.security');
     Route::post('/settings/notifications', [\App\Http\Controllers\SettingsController::class, 'updateNotifications'])->name('settings.notifications');
 
@@ -140,7 +145,24 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     | routes user into portal chosen on public landing page
     */
-    Route::get('/home', [MiscRoutesController::class, 'home'])->name('home');
+    Route::get('/home', function (Request $request) {
+
+        $selected = $request->session()->get('public_selected_portal');
+
+        if ($selected === 'journalist') {
+            $request->session()->forget('public_selected_portal');
+            return redirect()->route('accreditation.home');
+        }
+
+        if ($selected === 'mass_media') {
+            $request->session()->forget('public_selected_portal');
+            return redirect()->route('mediahouse.portal');
+        }
+
+        // fallback if user didn't choose (or direct login)
+        return redirect()->route('portal');
+
+    })->name('home');
 
     /*
     |--------------------------------------------------------------------------
@@ -148,6 +170,8 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/portal', [PortalController::class, 'index'])->name('portal');
+    Route::post('/notifications/mark-read', [PortalController::class, 'markNotificationsRead'])->name('notifications.markRead');
+    Route::post('/notifications/{id}/mark-read', [PortalController::class, 'markNotificationRead'])->name('notifications.markOne');
 
     /*
     |--------------------------------------------------------------------------
@@ -181,13 +205,13 @@ Route::middleware('auth')->group(function () {
             Route::post('/renewals/save-draft', [AccreditationPortalController::class, 'saveDraftAp5'])->name('renewals.saveDraft');
             Route::post('/renewals/submit',  [AccreditationPortalController::class, 'submitAp5'])->name('submitAp5');
 
-            Route::get('/lookup-number/{number}', [AccreditationPortalController::class, 'lookupAccreditationNumber'])
-                ->name('lookupNumber');
+            // Lookup by accreditation number for renewals/replacements
+            Route::get('/lookup/{accreditationNumber}', [AccreditationPortalController::class, 'lookupAccreditation'])
+                ->name('lookup');
 
             Route::get('/payments',  [AccreditationPortalController::class, 'payments'])->name('payments');
             Route::get('/notices',   [AccreditationPortalController::class, 'notices'])->name('notices');
             Route::get('/howto',     [AccreditationPortalController::class, 'howto'])->name('howto');
-            Route::get('/requirements', [AccreditationPortalController::class, 'requirements'])->name('requirements');
             Route::get('/profile',   [AccreditationPortalController::class, 'profile'])->name('profile');
             Route::post('/profile',  [AccreditationPortalController::class, 'updateProfile'])->name('profile.update');
             Route::get('/settings',  [AccreditationPortalController::class, 'settings'])->name('settings');
@@ -197,6 +221,32 @@ Route::middleware('auth')->group(function () {
                 ->name('downloads');
             Route::get('/downloads/file/{doc}', [\App\Http\Controllers\Portal\DownloadsController::class, 'download'])
                 ->name('downloads.file');
+            
+            // Renewals (Journalist)
+            Route::get('/renewals', [\App\Http\Controllers\Portal\RenewalController::class, 'index'])
+                ->name('renewals.index');
+            Route::get('/renewals/select-type', [\App\Http\Controllers\Portal\RenewalController::class, 'selectType'])
+                ->name('renewals.select-type');
+            Route::post('/renewals/select-type', [\App\Http\Controllers\Portal\RenewalController::class, 'storeType'])
+                ->name('renewals.store-type');
+            Route::get('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\RenewalController::class, 'lookup'])
+                ->name('renewals.lookup');
+            Route::post('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\RenewalController::class, 'performLookup'])
+                ->name('renewals.perform-lookup');
+            Route::get('/renewals/{renewal}/confirm', [\App\Http\Controllers\Portal\RenewalController::class, 'confirm'])
+                ->name('renewals.confirm');
+            Route::post('/renewals/{renewal}/confirm-no-changes', [\App\Http\Controllers\Portal\RenewalController::class, 'confirmNoChanges'])
+                ->name('renewals.confirm-no-changes');
+            Route::post('/renewals/{renewal}/submit-changes', [\App\Http\Controllers\Portal\RenewalController::class, 'submitChanges'])
+                ->name('renewals.submit-changes');
+            Route::get('/renewals/{renewal}/payment', [\App\Http\Controllers\Portal\RenewalController::class, 'payment'])
+                ->name('renewals.payment');
+            Route::post('/renewals/{renewal}/payment/paynow', [\App\Http\Controllers\Portal\RenewalController::class, 'submitPaynow'])
+                ->name('renewals.payment.paynow');
+            Route::post('/renewals/{renewal}/payment/proof', [\App\Http\Controllers\Portal\RenewalController::class, 'submitProof'])
+                ->name('renewals.payment.proof');
+            Route::get('/renewals/{renewal}', [\App\Http\Controllers\Portal\RenewalController::class, 'show'])
+                ->name('renewals.show');
         });
 
     /*
@@ -225,17 +275,35 @@ Route::middleware('auth')->group(function () {
             Route::post('/staff-members/link', [\App\Http\Controllers\MediaHouseStaffController::class, 'link'])->name('staff.link');
             Route::delete('/staff-members/{staff}', [\App\Http\Controllers\MediaHouseStaffController::class, 'unlink'])->name('staff.unlink');
 
-            Route::get('/renewals',    [MediaHousePortalController::class, 'renewals'])->name('renewals');
-            Route::post('/renewals/save-draft', [MediaHousePortalController::class, 'saveDraftAp5'])->name('ap5.saveDraft');
-            Route::post('/renewals/submit', [MediaHousePortalController::class, 'submitAp5'])
-                ->name('ap5.submit');
-            Route::get('/lookup-number/{number}', [MediaHousePortalController::class, 'lookupRegistrationNumber'])
-                ->name('lookupNumber');
+            // NEW RENEWAL FLOW (AP5) - Number-Only Lookup
+            Route::get('/renewals', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'index'])
+                ->name('renewals.index');
+            Route::get('/renewals/select-type', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'selectType'])
+                ->name('renewals.select-type');
+            Route::post('/renewals/select-type', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'storeType'])
+                ->name('renewals.store-type');
+            Route::get('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'lookup'])
+                ->name('renewals.lookup');
+            Route::post('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'performLookup'])
+                ->name('renewals.perform-lookup');
+            Route::get('/renewals/{renewal}/confirm', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'confirm'])
+                ->name('renewals.confirm');
+            Route::post('/renewals/{renewal}/confirm-no-changes', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'confirmNoChanges'])
+                ->name('renewals.confirm-no-changes');
+            Route::post('/renewals/{renewal}/submit-changes', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'submitChanges'])
+                ->name('renewals.submit-changes');
+            Route::get('/renewals/{renewal}/payment', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'payment'])
+                ->name('renewals.payment');
+            Route::post('/renewals/{renewal}/payment/paynow', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'submitPaynow'])
+                ->name('renewals.payment.paynow');
+            Route::post('/renewals/{renewal}/payment/proof', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'submitProof'])
+                ->name('renewals.payment.proof');
+            Route::get('/renewals/{renewal}', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'show'])
+                ->name('renewals.show');
 
             Route::get('/payments',    [MediaHousePortalController::class, 'payments'])->name('payments');
             Route::get('/notices',     [MediaHousePortalController::class, 'notices'])->name('notices');
             Route::get('/howto',       [MediaHousePortalController::class, 'howto'])->name('howto');
-            Route::get('/requirements', [MediaHousePortalController::class, 'requirements'])->name('requirements');
             Route::get('/profile',     [MediaHousePortalController::class, 'profile'])->name('profile');
             Route::post('/profile',    [MediaHousePortalController::class, 'updateProfile'])->name('profile.update');
             Route::get('/settings',    [MediaHousePortalController::class, 'settings'])->name('settings');
@@ -247,6 +315,20 @@ Route::middleware('auth')->group(function () {
             Route::get('/downloads/file/{doc}', [\App\Http\Controllers\Portal\DownloadsController::class, 'download'])
                 ->defaults('portal', 'mediahouse')
                 ->name('downloads.file');
+            
+            // Official Letter Download (Two-Stage Payment)
+            Route::get('/applications/{application}/official-letter', [MediaHousePortalController::class, 'downloadOfficialLetter'])
+                ->name('download-official-letter');
+            
+            // Two-Stage Payment Submissions
+            Route::post('/applications/{application}/payment/application-fee/paynow', [MediaHousePortalController::class, 'submitApplicationFeePaynow'])
+                ->name('payment.app-fee.paynow');
+            Route::post('/applications/{application}/payment/application-fee/proof', [MediaHousePortalController::class, 'submitApplicationFeeProof'])
+                ->name('payment.app-fee.proof');
+            Route::post('/applications/{application}/payment/registration-fee/paynow', [MediaHousePortalController::class, 'submitRegistrationFeePaynow'])
+                ->name('payment.reg-fee.paynow');
+            Route::post('/applications/{application}/payment/registration-fee/proof', [MediaHousePortalController::class, 'submitRegistrationFeeProof'])
+                ->name('payment.reg-fee.proof');
         });
 
     /*
@@ -285,6 +367,8 @@ Route::middleware('auth')->group(function () {
         ->name('paynow.initiate.mobile');
     Route::get('/payments/{application}/status', [\App\Http\Controllers\Portal\PaynowController::class, 'checkStatus'])
         ->name('paynow.status');
+    Route::post('/payments/{application}/submit-reference', [\App\Http\Controllers\Portal\PaynowController::class, 'submitReference'])
+        ->name('paynow.submit_reference');
 
     /*
     |--------------------------------------------------------------------------
@@ -295,8 +379,6 @@ Route::middleware('auth')->group(function () {
         ->name('payments.upload_proof');
     Route::post('/payments/{application}/upload-waiver', [\App\Http\Controllers\Portal\ManualPaymentController::class, 'uploadWaiver'])
         ->name('payments.upload_waiver');
-    Route::post('/payments/{application}/submit-reference', [\App\Http\Controllers\Portal\ManualPaymentController::class, 'submitReference'])
-        ->name('payments.submit_reference');
 
     /*
     |--------------------------------------------------------------------------
@@ -331,24 +413,24 @@ Route::middleware('auth')->group(function () {
                 ->middleware('module.enabled:notices')
                 ->name('content.index');
             Route::post('/content/notices', [\App\Http\Controllers\Admin\ContentController::class, 'storeNotice'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
-                        ->name('content.notices.store');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
+	                ->name('content.notices.store');
             Route::put('/content/notices/{notice}', [\App\Http\Controllers\Admin\ContentController::class, 'updateNotice'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
-                        ->name('content.notices.update');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
+	                ->name('content.notices.update');
             Route::delete('/content/notices/{notice}', [\App\Http\Controllers\Admin\ContentController::class, 'destroyNotice'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
-                        ->name('content.notices.destroy');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:notices'])
+	                ->name('content.notices.destroy');
 
             Route::post('/content/events', [\App\Http\Controllers\Admin\ContentController::class, 'storeEvent'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:events'])
-                        ->name('content.events.store');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:events'])
+	                ->name('content.events.store');
             Route::put('/content/events/{event}', [\App\Http\Controllers\Admin\ContentController::class, 'updateEvent'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:events'])
-                        ->name('content.events.update');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:events'])
+	                ->name('content.events.update');
             Route::delete('/content/events/{event}', [\App\Http\Controllers\Admin\ContentController::class, 'destroyEvent'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:events'])
-                        ->name('content.events.destroy');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:events'])
+	                ->name('content.events.destroy');
 
 
             // News (for website)
@@ -356,14 +438,14 @@ Route::middleware('auth')->group(function () {
                 ->middleware('module.enabled:news')
                 ->name('news.index');
             Route::post('/news', [\App\Http\Controllers\Admin\NewsController::class, 'store'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:news'])
-                        ->name('news.store');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:news'])
+	                ->name('news.store');
             Route::put('/news/{news}', [\App\Http\Controllers\Admin\NewsController::class, 'update'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:news'])
-                        ->name('news.update');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:news'])
+	                ->name('news.update');
             Route::delete('/news/{news}', [\App\Http\Controllers\Admin\NewsController::class, 'destroy'])
-                        ->middleware(['role:super_admin|it_admin','module.enabled:news'])
-                        ->name('news.destroy');
+	                ->middleware(['role:super_admin|it_admin','module.enabled:news'])
+	                ->name('news.destroy');
 
             // Complaints & Appeals (from website)
             Route::get('/complaints', [\App\Http\Controllers\Admin\ComplaintsController::class, 'index'])
@@ -545,12 +627,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/request-correction', [AccreditationOfficerController::class, 'requestCorrection'])->name('applications.requestCorrection');
             Route::post('/applications/{application}/message', [AccreditationOfficerController::class, 'sendMessage'])->name('applications.message');
             Route::post('/applications/{application}/unlock', [AccreditationOfficerController::class, 'unlock'])->name('applications.unlock');
-            Route::post('/applications/{application}/forward-to-registrar', [AccreditationOfficerController::class, 'forwardToRegistrar'])->name('applications.forward-to-registrar');
-
-            Route::get('/physical-intake', [AccreditationOfficerController::class, 'physicalIntake'])->name('physical-intake');
-            Route::post('/physical-intake', [AccreditationOfficerController::class, 'processPhysicalIntake'])->name('physical-intake.process');
-
-            Route::get('/production-queue', [AccreditationOfficerController::class, 'productionQueue'])->name('production-queue');
 
             // Applications (list views)
             Route::get('/applications', [AccreditationOfficerController::class, 'applicationsIndex'])->name('applications.index');
@@ -618,6 +694,20 @@ Route::middleware('auth')->group(function () {
             Route::get('/tools/tasks', [AccreditationOfficerController::class, 'toolsTasks'])->name('tools.tasks');
             Route::get('/tools/drafts', [AccreditationOfficerController::class, 'toolsDrafts'])->name('tools.drafts');
             Route::get('/tools/sops', [AccreditationOfficerController::class, 'toolsSops'])->name('tools.sops');
+            
+            // Fix Requests
+            Route::get('/fix-requests', [AccreditationOfficerController::class, 'fixRequests'])->name('fix-requests');
+            Route::post('/fix-requests/{fixRequest}/resolve', [AccreditationOfficerController::class, 'resolveFixRequest'])->name('fix-requests.resolve');
+            
+            // Forward Without Approval (Waiver/Special Cases)
+            Route::post('/applications/{application}/forward-no-approval', [AccreditationOfficerController::class, 'forwardWithoutApproval'])->name('applications.forward-no-approval');
+            
+            // Renewals Production
+            Route::get('/renewals-production', [AccreditationOfficerController::class, 'renewalsProductionQueue'])->name('renewals.production');
+            Route::get('/renewals-production/{renewal}', [AccreditationOfficerController::class, 'showRenewalProduction'])->name('renewals.production.show');
+            Route::post('/renewals-production/{renewal}/generate', [AccreditationOfficerController::class, 'generateRenewalDocument'])->name('renewals.production.generate');
+            Route::post('/renewals-production/{renewal}/mark-produced', [AccreditationOfficerController::class, 'markRenewalProduced'])->name('renewals.production.mark-produced');
+            Route::post('/renewals-production/{renewal}/print', [AccreditationOfficerController::class, 'printRenewalDocument'])->name('renewals.production.print');
         });
 
     /*
@@ -652,15 +742,21 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/reject', [RegistrarController::class, 'reject'])->name('applications.reject');
             Route::post('/applications/{application}/return', [RegistrarController::class, 'returnToAccounts'])->name('applications.return');
             Route::post('/renewals/send-reminders', [RegistrarController::class, 'sendRenewalReminders'])->name('renewals.send-reminders');
-
-            Route::post('/applications/{application}/fix-request', [RegistrarController::class, 'raiseFixRequest'])->name('applications.fix-request');
-            Route::post('/applications/{application}/push-to-accounts', [RegistrarController::class, 'pushToAccounts'])->name('applications.push-to-accounts');
-
-            Route::get('/accounts-oversight', [RegistrarController::class, 'accountsOversight'])->name('accounts-oversight');
-
-            Route::get('/reminders', [RegistrarController::class, 'remindersIndex'])->name('reminders.index');
-            Route::post('/reminders', [RegistrarController::class, 'createReminder'])->name('reminders.store');
-
+            
+            // Fix Requests
+            Route::get('/fix-requests', [RegistrarController::class, 'fixRequests'])->name('fix-requests');
+            Route::post('/applications/{application}/send-fix-request', [RegistrarController::class, 'sendFixRequest'])->name('applications.send-fix-request');
+            
+            // Special Cases (Forwarded Without Approval)
+            Route::post('/applications/{application}/approve-special-case', [RegistrarController::class, 'approveSpecialCase'])->name('applications.approve-special-case');
+            
+            // Media House Two-Stage Payment: Official Letter Upload
+            Route::post('/applications/{application}/approve-with-letter', [RegistrarController::class, 'approveWithOfficialLetter'])->name('applications.approve-with-letter');
+            
+            // Payment Oversight (Read-Only)
+            Route::get('/payment-oversight', [RegistrarController::class, 'paymentOversight'])->name('payment-oversight');
+            Route::get('/payment-oversight/{paymentSubmission}', [RegistrarController::class, 'paymentDetail'])->name('payment-detail');
+            
             // Notices & Events (Read-only access)
             Route::get('/notices-events', [RegistrarController::class, 'noticesEvents'])->name('notices-events');
             
@@ -702,18 +798,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/proof/approve', [AccountsPaymentsController::class, 'approveProof'])->name('proofs.approve');
             Route::post('/applications/{application}/proof/reject', [AccountsPaymentsController::class, 'rejectProof'])->name('proofs.reject');
 
-            // Payment rejection
-            Route::post('/applications/{application}/payment/reject', [AccountsPaymentsController::class, 'rejectPayment'])->name('applications.payment.reject');
-
-            // Cash payments
-            Route::get('/cash-payment/create', [AccountsPaymentsController::class, 'createCashPayment'])->name('cash-payment.create');
-            Route::post('/cash-payment', [AccountsPaymentsController::class, 'storeCashPayment'])->name('cash-payment.store');
-            Route::post('/cash-payment/{payment}/void', [AccountsPaymentsController::class, 'voidCashPayment'])->name('cash-payment.void');
-
-            // Waiver verification (from Registrar)
-            Route::post('/applications/{application}/waiver-verification/approve', [AccountsPaymentsController::class, 'approveWaiverVerification'])->name('waiver-verification.approve');
-            Route::post('/applications/{application}/waiver-verification/reject', [AccountsPaymentsController::class, 'rejectWaiverVerification'])->name('waiver-verification.reject');
-
             // Receipting
             Route::get('/applications/{application}/receipt', [AccountsPaymentsController::class, 'generateReceipt'])->name('applications.receipt');
 
@@ -752,6 +836,14 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/paid', [AccountsPaymentsController::class, 'markPaid'])->name('applications.paid');
             Route::post('/applications/{application}/return', [AccountsPaymentsController::class, 'returnToOfficer'])->name('applications.return');
             Route::post('/applications/{application}/unlock', [AccountsPaymentsController::class, 'unlock'])->name('applications.unlock');
+            
+            // Payment Submission Verification (Waivers & Special Cases)
+            Route::post('/applications/{application}/verify-payment', [AccountsPaymentsController::class, 'verifyPaymentSubmission'])->name('applications.verify-payment');
+            
+            // Renewals Queue
+            Route::get('/renewals', [AccountsPaymentsController::class, 'renewalsQueue'])->name('renewals.queue');
+            Route::get('/renewals/{renewal}', [AccountsPaymentsController::class, 'showRenewal'])->name('renewals.show');
+            Route::post('/renewals/{renewal}/verify', [AccountsPaymentsController::class, 'verifyRenewalPayment'])->name('renewals.verify');
         });
 
     /*
@@ -790,12 +882,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/batch/print', [ProductionController::class, 'printBatch'])->name('batch.print');
             Route::post('/applications/{application}/issue', [ProductionController::class, 'markIssued'])->name('applications.issue');
             Route::post('/applications/{application}/unlock', [ProductionController::class, 'unlock'])->name('applications.unlock');
-
-            Route::get('/designer', [ProductionController::class, 'designer'])->name('designer');
-            Route::get('/templates', [ProductionController::class, 'templates'])->name('templates');
-            Route::post('/templates', [ProductionController::class, 'storeTemplate'])->name('templates.store');
-            Route::put('/templates/{template}', [ProductionController::class, 'updateTemplate'])->name('templates.update');
-            Route::post('/templates/{template}/activate', [ProductionController::class, 'activateTemplate'])->name('templates.activate');
         });
 
     /*
@@ -936,7 +1022,7 @@ Route::middleware('auth')->group(function () {
     | STAFF - DIRECTOR (Executive Dashboard)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['staff.portal','role:director'])
+    Route::middleware(['staff.portal','role:director','director.view_only'])
         ->prefix('staff/director')
         ->name('staff.director.')
         ->group(function () {
@@ -963,6 +1049,14 @@ Route::middleware('auth')->group(function () {
     | USER APPROVALS (Director / Super Admin)
     |--------------------------------------------------------------------------
     */
+    Route::middleware(['staff.portal','role:director|super_admin|it_admin'])
+        ->prefix('admin/approvals')
+        ->name('admin.approvals.')
+        ->group(function () {
+            Route::get('/', [UserApprovalController::class, 'index'])->name('index');
+            Route::post('/{user}/approve', [UserApprovalController::class, 'approve'])->name('approve');
+            Route::post('/{user}/reject', [UserApprovalController::class, 'reject'])->name('reject');
+        });
 
     /*
     |--------------------------------------------------------------------------

@@ -68,9 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 height: 350,
                 type: 'area',
                 toolbar: { show: false },
-                fontFamily: 'Roboto, sans-serif'
+                fontFamily: 'Inter, sans-serif'
             },
-            colors: ['#3b82f6', '#10b981', '#ef4444'],
+            colors: ['#000000', '#facc15', '#ef4444'],
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 2 },
             fill: {

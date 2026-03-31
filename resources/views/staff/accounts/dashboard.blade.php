@@ -2,21 +2,30 @@
 @section('title', 'Accounts & Payments Dashboard')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   {{-- Header --}}
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color: var(--zmc-text-dark);">
         Accounts & Payments Dashboard
       </h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
         Confirm payments and pass successful items to <b>Registrar</b>.
       </div>
     </div>
 
     <div class="d-flex align-items-center gap-2">
+      <form action="{{ route('staff.accounts.dashboard') }}" method="GET" id="yearFilterForm" class="me-2">
+        <select name="year" class="form-select border shadow-sm fw-bold bg-white btn-sm" style="height: 31px;" onchange="document.getElementById('yearFilterForm').submit()">
+            @foreach($availableYears ?? [] as $y)
+                <option value="{{ $y }}" {{ (isset($year) && $year == $y) ? 'selected' : '' }}>
+                    Year: {{ $y }}
+                </option>
+            @endforeach
+        </select>
+      </form>
       <span class="zmc-pill zmc-pill-dark">
         <i class="ri-map-pin-user-line"></i>
         <span>Region: {{ auth()->user()->region ?? 'NOT SET' }}</span>
@@ -29,7 +38,7 @@
 
   @if(session('success'))
     <div class="alert alert-success d-flex align-items-start gap-2">
-      <i class="ri-checkbox-circle-line" style="font-size:18px;line-height:1;"></i>
+      <i class="ri-checkbox-circle-line" style="font-size: var(--font-size-lg); line-height: 1;"></i>
       <div>{{ session('success') }}</div>
     </div>
   @endif
@@ -39,24 +48,21 @@
     $summaryTotal = method_exists($applications, 'total') ? $applications->total() : $items->count();
 
     $summaryPending = $items->filter(fn($x) => in_array(strtolower((string)($x->status ?? '')), [
-      'accounts_review','paid_confirmed','returned_to_accounts','awaiting_accounts_verification','pending_accounts_from_registrar'
+      'accounts_review','paid_confirmed','returned_to_accounts'
     ], true))->count();
 
     $summaryPaid = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'paid_confirmed')->count();
     $summaryReturned = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'returned_to_accounts')->count();
-    $summaryAwaitingVerification = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'awaiting_accounts_verification')->count();
-    $summaryFromRegistrar = $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'pending_accounts_from_registrar')->count();
 
     $detailsUrlTemplate = route('staff.applications.details', ['application' => '__ID__']);
 
     $paidUrl = fn($id) => route('staff.accounts.applications.paid', $id);
     $returnUrl = fn($id) => route('staff.accounts.applications.return', $id);
-    $rejectPaymentUrl = fn($id) => route('staff.accounts.applications.payment.reject', $id);
   @endphp
 
   {{-- Summary cards --}}
   <div class="row g-3 mb-4">
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-2">
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -68,7 +74,7 @@
       </div>
     </div>
 
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-2">
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -82,7 +88,23 @@
       </div>
     </div>
 
-    <div class="col-12 col-md-3">
+    @if(isset($kpis) && isset($kpis['special_cases']))
+    <div class="col-12 col-md-2">
+      <div class="zmc-card h-100" style="border-left: 3px solid #facc15;">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-muted small fw-bold">Special Cases</div>
+            <div class="h3 fw-black mb-0" style="color: #ffffff;">{{ $kpis['special_cases'] }}</div>
+          </div>
+          <div class="icon-box" style="background: rgba(250, 204, 21, 0.1);">
+            <i class="ri-alert-line" style="color: #ffffff;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    @endif
+
+    <div class="col-12 col-md-2">
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -94,7 +116,7 @@
       </div>
     </div>
 
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-2">
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -107,45 +129,53 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-3">
-      <div class="zmc-card h-100">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="text-muted small fw-bold">Awaiting verification</div>
-            <div class="h3 fw-black mb-0">{{ $summaryAwaitingVerification }}</div>
-          </div>
-          <div class="icon-box text-primary"><i class="ri-shield-check-line"></i></div>
+  {{-- Filter Section --}}
+  @if(isset($kpis))
+  <div class="zmc-card mb-3">
+    <div class="card-body">
+      <form method="GET" action="{{ route('staff.accounts.dashboard') }}" class="row g-3 align-items-end">
+        @if(isset($year))
+          <input type="hidden" name="year" value="{{ $year }}">
+        @endif
+        <div class="col-md-3">
+          <label class="form-label small fw-bold">Payment Submission Method</label>
+          <select name="submission_method" class="form-select form-select-sm">
+            <option value="">All Methods</option>
+            <option value="paynow_reference" {{ request('submission_method') === 'paynow_reference' ? 'selected' : '' }}>
+              PayNow ({{ $kpis['paynow_submissions'] ?? 0 }})
+            </option>
+            <option value="proof_upload" {{ request('submission_method') === 'proof_upload' ? 'selected' : '' }}>
+              Proof Upload ({{ $kpis['proof_submissions'] ?? 0 }})
+            </option>
+            <option value="waiver" {{ request('submission_method') === 'waiver' ? 'selected' : '' }}>
+              Waiver ({{ $kpis['waiver_submissions'] ?? 0 }})
+            </option>
+          </select>
         </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-3">
-      <div class="zmc-card h-100">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="text-muted small fw-bold">From Registrar (waiver)</div>
-            <div class="h3 fw-black mb-0">{{ $summaryFromRegistrar }}</div>
-          </div>
-          <div class="icon-box" style="color:#7c3aed;"><i class="ri-file-shield-2-line"></i></div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="ri-filter-line me-1"></i>Filter
+          </button>
         </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-3">
-      <a href="{{ route('staff.accounts.cash-payment.create') }}" class="text-decoration-none">
-        <div class="zmc-card h-100">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <div class="text-muted small fw-bold">Record cash payment</div>
-              <div class="small text-primary mt-1"><i class="ri-add-circle-line me-1"></i>New entry</div>
-            </div>
-            <div class="icon-box text-dark"><i class="ri-money-dollar-circle-line"></i></div>
+        <div class="col-md-2">
+          <a href="{{ route('staff.accounts.dashboard') }}" class="btn btn-light border btn-sm w-100">
+            <i class="ri-refresh-line me-1"></i>Reset
+          </a>
+        </div>
+        <div class="col-md-5 text-end">
+          <div class="small text-muted">
+            <span class="badge bg-light text-dark border me-2">
+              <i class="ri-inbox-line me-1"></i>No Submission: {{ $kpis['no_submission'] ?? 0 }}
+            </span>
+            <span class="badge bg-light text-dark border">
+              <i class="ri-folder-line me-1"></i>Total: {{ $kpis['total_pending'] ?? 0 }}
+            </span>
           </div>
         </div>
-      </a>
+      </form>
     </div>
   </div>
+  @endif
 
   {{-- Table --}}
   <div class="zmc-card p-0 shadow-sm border-0">
@@ -165,7 +195,10 @@
             <th style="width:60px;">#</th>
             <th><i class="ri-hashtag me-1"></i> Ref</th>
             <th><i class="ri-user-line me-1"></i> Applicant</th>
-            <th>Type</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-file-text-line me-1"></i> Type</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-information-line me-1"></i> Request</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-global-line me-1"></i> Scope</th>
+            <th><i class="ri-money-dollar-circle-line me-1"></i> Payment Method</th>
             <th><i class="ri-map-pin-line me-1"></i> Region</th>
             <th><i class="ri-calendar-line me-1"></i> Date</th>
             <th><i class="ri-flag-line me-1"></i> Status</th>
@@ -180,13 +213,10 @@
             $badge = match($status) {
               'returned_to_accounts' => 'warning',
               'paid_confirmed' => 'success',
-              'awaiting_accounts_verification' => 'primary',
-              'pending_accounts_from_registrar' => 'secondary',
-              'payment_rejected' => 'danger',
               default => 'info',
             };
 
-            $canAct = in_array($status, ['accounts_review','returned_to_accounts','awaiting_accounts_verification','pending_accounts_from_registrar'], true);
+            $canAct = in_array($status, ['accounts_review','returned_to_accounts'], true);
 
             $rowNo = method_exists($applications,'firstItem') && $applications->firstItem()
               ? ($applications->firstItem() + $i)
@@ -199,12 +229,30 @@
             <td class="text-muted small">{{ $rowNo }}</td>
             <td class="fw-bold text-dark">{{ $ref }}</td>
             <td>{{ $app->applicant?->name ?? $app->applicant_name ?? '—' }}</td>
+            @php
+              $appType = ucwords($app->application_type ?? '—');
+              $reqType = ucwords($app->request_type ?? '—');
+              $scope = ucwords($app->journalist_scope ?? $app->residency_type ?? 'Local');
+            @endphp
+            <td style="font-size: var(--font-size-dense);">{{ $appType }}</td>
+            <td style="font-size: var(--font-size-dense);">{{ $reqType }}</td>
+            <td style="font-size: var(--font-size-dense);">{{ $scope }}</td>
             <td>
               @php
-                $reqType = $app->request_type ?? 'new';
-                $reqBadge = match($reqType) { 'renewal' => 'warning', 'replacement' => 'info', default => 'success' };
+                $methodBadges = [
+                  'paynow_reference' => ['icon' => 'ri-bank-card-line', 'color' => 'primary', 'label' => 'PayNow'],
+                  'proof_upload' => ['icon' => 'ri-file-upload-line', 'color' => 'info', 'label' => 'Proof'],
+                  'waiver' => ['icon' => 'ri-price-tag-3-line', 'color' => 'warning', 'label' => 'Waiver'],
+                ];
+                $method = $app->payment_submission_method;
+                $badge = $methodBadges[$method] ?? ['icon' => 'ri-question-line', 'color' => 'secondary', 'label' => 'None'];
               @endphp
-              <span class="badge bg-{{ $reqBadge }}">{{ ucfirst($reqType) }}</span>
+              <span class="badge bg-{{ $badge['color'] }}-subtle text-{{ $badge['color'] }} border border-{{ $badge['color'] }}">
+                <i class="{{ $badge['icon'] }} me-1"></i>{{ $badge['label'] }}
+              </span>
+              @if($app->payment_submitted_at)
+                <div class="text-muted" style="font-size: var(--font-size-xs);">{{ $app->payment_submitted_at->diffForHumans() }}</div>
+              @endif
             </td>
             <td class="text-capitalize">{{ $app->collection_region ?? '—' }}</td>
             <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
@@ -212,6 +260,13 @@
               <span class="badge rounded-pill bg-{{ $badge }} px-3">
                 {{ ucwords(str_replace('_',' ', $status ?: '—')) }}
               </span>
+              @if($app->status === 'pending_accounts_review_from_registrar')
+                <div class="mt-1">
+                  <span class="badge" style="background: rgba(250, 204, 21, 0.2); color: #000; border: 1px solid #facc15; font-size: var(--font-size-xs);">
+                    <i class="ri-alert-line me-1"></i>SPECIAL CASE
+                  </span>
+                </div>
+              @endif
             </td>
 
             <td class="text-end">
@@ -252,18 +307,6 @@
                   <i class="fa-solid fa-check"></i>
                 </button>
 
-                {{-- Reject Payment --}}
-                <button
-                  type="button"
-                  class="btn btn-sm zmc-icon-btn btn-outline-danger js-open-modal"
-                  data-target="#rejectPaymentModal{{ $app->id }}"
-                  @if(!$canAct) disabled @endif
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Reject payment"
-                >
-                  <i class="fa-solid fa-times"></i>
-                </button>
-
               </div>
             </td>
           </tr>
@@ -280,7 +323,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-regular fa-message me-2" style="color:var(--zmc-accent-dark)"></i>
                         Return to Officer
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">Send a note back to the Accreditation Officer.</div>
                     </div>
@@ -313,9 +356,9 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-check me-2" style="color:var(--zmc-green)"></i>
                         Confirm payment
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
-                      <div class="zmc-modal-sub">This will verify payment and send to Production.</div>
+                      <div class="zmc-modal-sub">This will move the application to Registrar review.</div>
                     </div>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
@@ -334,44 +377,11 @@
                 </form>
               </div>
             </div>
-
-            {{-- Reject Payment Modal --}}
-            <div class="modal fade" id="rejectPaymentModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered modal-lg">
-                <form class="modal-content" method="POST" action="{{ $rejectPaymentUrl($app->id) }}">
-                  @csrf
-
-                  <div class="modal-header zmc-modal-header">
-                    <div>
-                      <div class="zmc-modal-title">
-                        <i class="fa-solid fa-times me-2" style="color:#dc3545"></i>
-                        Reject Payment
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
-                      </div>
-                      <div class="zmc-modal-sub">Applicant will need to resubmit payment.</div>
-                    </div>
-                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-
-                  <div class="modal-body">
-                    <label class="form-label zmc-lbl">Reason for rejection <span class="text-danger">*</span></label>
-                    <textarea name="rejection_reason" class="form-control zmc-input" rows="4" required placeholder="Provide a reason for rejecting this payment..."></textarea>
-                  </div>
-
-                  <div class="modal-footer zmc-modal-footer">
-                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger fw-bold">
-                      <i class="fa-solid fa-times me-1"></i>Reject payment
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
           @endpush
 
         @empty
           <tr>
-            <td colspan="8" class="text-center py-5 text-muted">No applications found.</td>
+            <td colspan="7" class="text-center py-5 text-muted">No applications found.</td>
           </tr>
         @endforelse
         </tbody>
@@ -404,7 +414,7 @@
       <div class="modal-body">
         <div id="mdl_loading" class="d-none text-center py-5">
           <div class="spinner-border" style="color:var(--zmc-accent-dark)"></div>
-          <div class="text-muted mt-2" style="font-size:12px;">Loading…</div>
+          <div class="text-muted mt-2" style="font-size: var(--font-size-sm);">Loading…</div>
         </div>
 
         <div id="mdl_error" class="alert alert-danger d-none"></div>
@@ -523,6 +533,43 @@
           </div>
         `;
         html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Applicant details`, body);
+      }
+
+      // Previous Applications Block
+      const prevApps = Array.isArray(data.previous_applications) ? data.previous_applications : [];
+      if (prevApps.length > 0) {
+        let prevRows = prevApps.map(pa => `
+          <tr>
+            <td>${zmcFmt(pa.reference)}</td>
+            <td class="text-capitalize">${zmcFmt(pa.type)}</td>
+            <td><span class="badge bg-light text-dark border">${zmcFmt(pa.status)}</span></td>
+            <td>${zmcFmt(pa.date)}</td>
+          </tr>
+        `).join('');
+
+        html += zmcBlock(
+          `<i class="fa-solid fa-history"></i> Previous Applications`,
+          `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Type</th><th>Status</th><th>Date</th></tr></thead><tbody>${prevRows}</tbody></table></div>`
+        );
+      }
+
+      // Previous Payments Block
+      const prevPays = Array.isArray(data.previous_payments) ? data.previous_payments : [];
+      if (prevPays.length > 0) {
+        let payRows = prevPays.map(p => `
+          <tr>
+            <td>${zmcFmt(p.reference)}</td>
+            <td>${zmcFmt(p.amount)} ${zmcFmt(p.currency)}</td>
+            <td class="text-capitalize">${zmcFmt(p.method)}</td>
+            <td><span class="badge bg-light text-dark border text-capitalize">${zmcFmt(p.status)}</span></td>
+            <td>${zmcFmt(p.date)}</td>
+          </tr>
+        `).join('');
+
+        html += zmcBlock(
+          `<i class="fa-solid fa-money-bill-transfer"></i> Payment History`,
+          `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody>${payRows}</tbody></table></div>`
+        );
       }
 
       if (formCode === 'AP1') {

@@ -29,7 +29,11 @@ class PaynowController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        if ($application->status !== Application::ACCOUNTS_REVIEW) {
+        if (!in_array($application->status, [
+            Application::ACCOUNTS_REVIEW, 
+            Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+            Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT
+        ], true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'This application is not awaiting payment.'
@@ -53,6 +57,8 @@ class PaynowController extends Controller
             $application->update([
                 'paynow_reference' => $response->pollUrl(),
                 'payment_status' => 'pending',
+                'payment_submission_method' => 'paynow_reference',
+                'payment_submitted_at' => now(),
             ]);
 
             return response()->json([
@@ -82,7 +88,11 @@ class PaynowController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        if ($application->status !== Application::ACCOUNTS_REVIEW) {
+        if (!in_array($application->status, [
+            Application::ACCOUNTS_REVIEW, 
+            Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+            Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT
+        ], true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'This application is not awaiting payment.'
@@ -111,6 +121,8 @@ class PaynowController extends Controller
             $application->update([
                 'paynow_reference' => $response->pollUrl(),
                 'payment_status' => 'awaiting_confirmation',
+                'payment_submission_method' => 'paynow_reference',
+                'payment_submitted_at' => now(),
             ]);
 
             return response()->json([
@@ -349,5 +361,46 @@ class PaynowController extends Controller
 
         $requestType = $application->request_type ?? 'new';
         return $requestType === 'new' ? 500.00 : 300.00;
+    }
+
+    /**
+     * Submit manual PayNow reference number
+     */
+    public function submitReference(Request $request, Application $application)
+    {
+        $user = Auth::user();
+
+        if ($application->applicant_user_id !== $user->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'reference' => 'required|string|max:100',
+        ]);
+
+        // Transition to accounts verification
+        $newStatus = Application::AWAITING_ACCOUNTS_VERIFICATION;
+        if ($application->application_type === 'registration' && $application->status === Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT) {
+            $newStatus = Application::REGISTRATION_FEE_AWAITING_VERIFICATION;
+        }
+
+        $application->update([
+            'status' => $newStatus,
+            'paynow_reference' => $validated['reference'],
+            'payment_status' => 'submitted_reference',
+            'payment_submission_method' => 'paynow_manual_reference',
+            'payment_submitted_at' => now(),
+            'last_action_at' => now(),
+        ]);
+
+        Log::info('Manual PayNow reference submitted', [
+            'application_id' => $application->id,
+            'reference' => $validated['reference'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reference number submitted successfully. Awaiting accounts verification.',
+        ]);
     }
 }

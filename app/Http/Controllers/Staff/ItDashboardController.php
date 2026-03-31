@@ -47,13 +47,19 @@ class ItDashboardController extends Controller
         // Approval / rejection metrics
         $hasDecisionStatus = Schema::hasColumn('applications', 'decision_status');
         if ($hasDecisionStatus) {
-            $approvedCount = Application::where('decision_status', 'Approved')->count();
-            $rejectedCount = Application::where('decision_status', 'Rejected')->count();
-            $pendingCount  = Application::where('decision_status', 'Pending')->count();
+            $approvedCount = Application::where('decision_status', 'Approved')
+                ->count();
+            $rejectedCount = Application::where('decision_status', 'Rejected')
+                ->count();
+            $pendingCount  = Application::where('decision_status', 'Pending')
+                ->count();
         } else {
-            $approvedCount = Application::whereNotNull('approved_at')->count();
-            $rejectedCount = Application::whereNotNull('rejected_at')->count();
-            $pendingCount  = Application::whereNull('approved_at')->whereNull('rejected_at')->count();
+            $approvedCount = Application::whereNotNull('approved_at')
+                ->count();
+            $rejectedCount = Application::whereNotNull('rejected_at')
+                ->count();
+            $pendingCount  = Application::whereNull('approved_at')->whereNull('rejected_at')
+                ->count();
         }
         $totalDecisions = max(1, $approvedCount + $rejectedCount);
         $approvalRatio  = round(($approvedCount / $totalDecisions) * 100, 1);
@@ -157,11 +163,16 @@ class ItDashboardController extends Controller
                 'journalist'  => Application::where('application_type', 'accreditation')->count(),
             ],
             'approval_metrics' => [
-                'approved' => Application::whereIn('status', [Application::ISSUED, Application::PRINTED, Application::CERT_GENERATED])->count(),
-                'rejected' => Application::where('status', Application::OFFICER_REJECTED)->orWhere('status', Application::REGISTRAR_REJECTED)->count(),
+                'approved' => Application::whereIn('status', [Application::ISSUED, Application::PRINTED, Application::CERT_GENERATED])
+                    ->when(!$isCurrentYear, fn($q) => $q->whereBetween('created_at', [$yearStart, $yearEnd]))->count(),
+                'rejected' => Application::where('status', Application::OFFICER_REJECTED)->orWhere('status', Application::REGISTRAR_REJECTED)
+                    ->when(!$isCurrentYear, fn($q) => $q->whereBetween('created_at', [$yearStart, $yearEnd]))->count(),
             ],
-            'draft_count'      => Application::where('status', Application::DRAFT)->count(),
-            'payment_summary'  => Application::select('payment_status', DB::raw('count(*) as total'))->groupBy('payment_status')->pluck('total', 'payment_status')->toArray(),
+            'draft_count'      => Application::where('status', Application::DRAFT)
+                ->when(!$isCurrentYear, fn($q) => $q->whereBetween('created_at', [$yearStart, $yearEnd]))->count(),
+            'payment_summary'  => Application::select('payment_status', DB::raw('count(*) as total'))
+                ->when(!$isCurrentYear, fn($q) => $q->whereBetween('created_at', [$yearStart, $yearEnd]))
+                ->groupBy('payment_status')->pluck('total', 'payment_status')->toArray(),
         ];
 
         // Trends for ApexCharts with dynamic range
@@ -297,10 +308,9 @@ class ItDashboardController extends Controller
         ];
 
         return view('staff.it.dashboard.index', compact(
-            // Dashboard data
-            'totalUsers', 'usersByRole', 'appStats',
-            'approvedCount', 'rejectedCount', 'pendingCount', 'approvalRatio',
-            'approvalTrend', 'paymentSummary', 'accreditationTrend', 'avgProcessingHours',
+            'totalUsers', 'usersByRole', 'appStats', 'approvedCount', 'rejectedCount', 
+            'pendingCount', 'approvalRatio', 'approvalTrend', 'paymentSummary', 'isDbUp', 'maintenanceMode',
+            'driveSpace', 'lastBackup', 'envData', 'activeTab',
             'health', 'storageUsageBytes', 'storageByModule',
             'regions', 'pending',
             // Dashboard detailed data

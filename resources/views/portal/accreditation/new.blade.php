@@ -407,13 +407,13 @@
             </div>
           </div>
 
-          {{-- Foreign-only travel details (visible for all foreign applicants) --}}
+          {{-- Foreign-only employment extras --}}
+          {{-- Foreign-only travel details (Required for ALL foreign applicants) --}}
           <div class="scope-foreign">
-            <h6 class="mt-4 fw-bold">TRAVEL DETAILS</h6>
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label required">Country in which journalist is based</label>
-                <input type="text" class="form-control" name="journalist_based_country" data-req="1">
+                <label class="form-label">Country in which media practitioner is based</label>
+                <input type="text" class="form-control" name="journalist_based_country">
               </div>
               <div class="form-field">
                 <label class="form-label required">Arrived on</label>
@@ -774,18 +774,21 @@
     foreigners.forEach(el => setRequiredWithin(el, scope === 'foreign'));
   }
 
-  function scopeVisible(el){
+  function visible(el){
     if (!el) return false;
     if (el.closest('.scope-local') && document.getElementById('ap3_scope').value !== 'local') return false;
     if (el.closest('.scope-foreign') && document.getElementById('ap3_scope').value !== 'foreign') return false;
     if (el.closest('.employment-only') && currentEmploymentType() !== 'employed') return false;
     if (el.closest('.freelancer-only') && currentEmploymentType() !== 'freelancer') return false;
-    return true;
-  }
-
-  function visible(el){
-    if (!scopeVisible(el)) return false;
-    if (el.offsetParent === null) return false;
+    
+    if (el.offsetParent === null) {
+      // File inputs are often display:none but their container is visible
+      if (el.type === 'file') {
+        const parent = el.closest('.form-field') || el.parentElement;
+        return parent ? parent.offsetParent !== null : false;
+      }
+      return false;
+    }
     return true;
   }
 
@@ -1139,7 +1142,7 @@
       `;
     }
 
-    const employmentExtraForeign = (formData.journalist_scope === 'foreign') ? `
+    const employmentExtraForeign = (formData.journalist_scope === 'foreign' && empType === 'employed') ? `
       <div class="col-6"><p><strong>Country based:</strong> ${formData.journalist_based_country || '-'}</p></div>
       <div class="col-6"><p><strong>Arrived on:</strong> ${formData.arrived_on || '-'}</p></div>
       <div class="col-6"><p><strong>By Air/Road:</strong> ${formData.arrival_mode || '-'}</p></div>
@@ -1200,10 +1203,10 @@
             <div class="col-6"><p><strong>Immediate Supervisor:</strong> ${formData.immediate_supervisor || '-'}</p></div>
             <div class="col-6"><p><strong>String for Orgs:</strong> ${formData.string_for_orgs || '-'}</p></div>
             <div class="col-6"><p><strong>Details:</strong> ${formData.string_for_details || '-'}</p></div>
+            ${employmentExtraForeign}
           ` : `
             <div class="col-12"><div class="alert alert-light border mb-0">Freelancer selected — organisation fields were not required.</div></div>
           `}
-          ${employmentExtraForeign}
         </div>
       </div>
 
@@ -1273,7 +1276,7 @@
 
     const response = await fetch('{{ route("accreditation.saveDraft") }}', {
       method: 'POST',
-      headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+      headers: { 'X-CSRF-TOKEN': csrfToken },
       body: fd,
     });
 
@@ -1316,7 +1319,8 @@
 
     const fileInputs = document.querySelectorAll('#ap3Form input[type="file"]');
     fileInputs.forEach(input => {
-      if (!scopeVisible(input)) return;
+      // Use the improved visible check that handles hidden file inputs
+      if (!visible(input)) return;
       if (input.files && input.files[0]) submitData.append(input.name, input.files[0]);
     });
 
@@ -1330,26 +1334,28 @@
 
       const response = await fetch(submitUrl, {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        headers: { 'X-CSRF-TOKEN': csrfToken },
         body: submitData,
       });
 
-      const result = await response.json().catch(() => null);
-
-      if (!response.ok || !result?.success) {
-        let msg = result?.message || '';
-        if (result?.errors) {
-          const errs = Object.values(result.errors).flat();
-          msg = errs.join('\n');
-        }
-        alert('Submission error: ' + (msg || 'Please check all required fields and try again.'));
-        console.error('Submission failed:', result);
-        return;
+      const responseText = await response.text();
+      let result;
+      try {
+          result = JSON.parse(responseText);
+      } catch (e) {
+          console.error('Submission failed (raw):', responseText);
+          throw new Error('Server returned an invalid response (' + response.status + ').');
       }
 
-      bootstrap.Modal.getInstance(document.getElementById('ap3ReviewModal')).hide();
-      alert('Application submitted successfully! Reference: ' + result.reference);
-      window.location.href = "{{ route('accreditation.home') }}";
+      if (response.ok && result.success) {
+        bootstrap.Modal.getInstance(document.getElementById('ap3ReviewModal')).hide();
+        alert('Application submitted successfully! Reference: ' + result.reference);
+        window.location.href = "{{ route('accreditation.home') }}";
+      } else {
+        // Handle Laravel validation errors or manual 422s
+        const msg = result.message || (result.errors ? Object.values(result.errors).flat().join('\n') : 'Please check all required fields.');
+        alert('Submission failed: ' + msg);
+      }
     } catch (error) {
       console.error(error);
       alert('An error occurred while submitting the application: ' + error.message);

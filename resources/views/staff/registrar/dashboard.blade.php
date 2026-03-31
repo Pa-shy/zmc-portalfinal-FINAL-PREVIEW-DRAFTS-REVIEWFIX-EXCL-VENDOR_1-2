@@ -2,27 +2,21 @@
 @section('title', 'Registrar Dashboard')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   {{-- Header --}}
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color: var(--zmc-text-dark);">
         Registrar Dashboard
       </h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
         Approve / reject applications from Accounts. Approved items are pushed to <b>Production</b>.
       </div>
     </div>
 
     <div class="d-flex align-items-center gap-2">
-      <a href="{{ route('staff.registrar.accounts-oversight') }}" class="btn btn-outline-secondary btn-sm" title="Accounts Oversight">
-        <i class="ri-eye-line me-1"></i> Accounts Oversight
-      </a>
-      <a href="{{ route('staff.registrar.reminders.index') }}" class="btn btn-outline-info btn-sm" title="Reminders">
-        <i class="ri-alarm-line me-1"></i> Reminders
-      </a>
       <a href="{{ route('staff.registrar.notices-events') }}" class="btn btn-outline-primary btn-sm" title="Notices & Events">
         <i class="ri-notification-line me-1"></i> Notices & Events
       </a>
@@ -41,7 +35,7 @@
 
   @if(session('success'))
     <div class="alert alert-success d-flex align-items-start gap-2">
-      <i class="ri-checkbox-circle-line" style="font-size:18px;line-height:1;"></i>
+      <i class="ri-checkbox-circle-line" style="font-size: var(--font-size-lg); line-height: 1;"></i>
       <div>{{ session('success') }}</div>
     </div>
   @endif
@@ -85,12 +79,7 @@
       <div class="zmc-card h-100 border-success">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="text-muted small fw-bold">Approved Today</div>
-            <div class="h3 fw-black mb-0">{{ $k['approved_today'] ?? 0 }}</div>
-          </div>
-          <div class="icon-box text-success"><i class="ri-check-double-line"></i></div>
-        </div>
-        <div class="mt-2 small text-muted">Week: {{ $k['approved_this_week'] ?? 0 }}</div>
+        <div class="mt-2 small text-muted">Total Approved: {{ $k['approved_this_week'] ?? 0 }}</div>
       </div>
     </div>
 
@@ -115,7 +104,7 @@
           </div>
           <div class="icon-box text-danger"><i class="ri-alert-line"></i></div>
         </div>
-        <div class="mt-2 small text-muted">Found this week</div>
+        <div class="mt-2 small text-muted">Found {{ $year == now()->year ? 'this week' : 'in ' . $year }}</div>
       </div>
     </div>
   </div>
@@ -131,49 +120,9 @@
                 </div>
                 <div class="icon-box text-primary"><i class="ri-money-dollar-circle-line"></i></div>
             </div>
-            <div class="mt-2 small text-muted">After officer approval</div>
+            <div class="mt-2 small text-muted">Forward to Accounts</div>
         </div>
     </div>
-    <div class="col-12 col-md-3">
-        <div class="zmc-card h-100 border-info">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="text-muted small fw-bold">Forwarded to Registrar</div>
-                    <div class="h3 fw-black mb-0 text-info">{{ $k['forwarded_to_registrar'] ?? 0 }}</div>
-                </div>
-                <div class="icon-box text-info"><i class="ri-share-forward-line"></i></div>
-            </div>
-            <div class="mt-2 small text-muted">Waiver / special cases</div>
-        </div>
-    </div>
-    <div class="col-12 col-md-3">
-        <div class="zmc-card h-100 border-warning">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="text-muted small fw-bold">Fix Requests</div>
-                    <div class="h3 fw-black mb-0 text-warning">{{ $k['fix_requests'] ?? 0 }}</div>
-                </div>
-                <div class="icon-box text-warning"><i class="ri-tools-line"></i></div>
-            </div>
-            <div class="mt-2 small text-muted">Sent back to officer</div>
-        </div>
-    </div>
-    <div class="col-12 col-md-3">
-        <div class="zmc-card h-100 border-danger">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="text-muted small fw-bold">Flagged Reprints</div>
-                    <div class="h2 fw-black mb-0 text-danger">{{ $k['flagged_reprints'] ?? 0 }}</div>
-                </div>
-                <div class="icon-box text-danger"><i class="ri-error-warning-fill"></i></div>
-            </div>
-            <div class="mt-1 small text-muted">Prints > Threshold</div>
-        </div>
-    </div>
-  </div>
-
-  {{-- Third row of KPIs --}}
-  <div class="row g-3 mb-4">
     <div class="col-12 col-md-3">
         <div class="zmc-card h-100">
             <div class="d-flex justify-content-between align-items-start">
@@ -197,6 +146,18 @@
             </div>
         </div>
     </div>
+    <div class="col-12 col-md-3">
+        <div class="zmc-card h-100 border-danger">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="text-muted small fw-bold">Flagged Reprints</div>
+                    <div class="h2 fw-black mb-0 text-danger">{{ $k['flagged_reprints'] ?? 0 }}</div>
+                </div>
+                <div class="icon-box text-danger"><i class="ri-error-warning-fill"></i></div>
+            </div>
+            <div class="mt-1 small text-muted">Prints > Threshold</div>
+        </div>
+    </div>
   </div>
 
   {{-- Quick Filters --}}
@@ -212,15 +173,12 @@
         </div>
         <div class="col-md-2">
             <label class="small fw-bold text-muted">Status</label>
+            <input type="hidden" name="year" value="{{ $year }}">
             <select name="status" class="form-select form-select-sm">
                 <option value="">All Statuses</option>
-                <option value="paid_confirmed" {{ request('status') == 'paid_confirmed' ? 'selected' : '' }}>Paid Confirmed</option>
-                <option value="registrar_review" {{ request('status') == 'registrar_review' ? 'selected' : '' }}>Registrar Review</option>
-                <option value="approved_awaiting_payment" {{ request('status') == 'approved_awaiting_payment' ? 'selected' : '' }}>Awaiting Payment</option>
-                <option value="forwarded_to_registrar" {{ request('status') == 'forwarded_to_registrar' ? 'selected' : '' }}>Forwarded to Registrar</option>
-                <option value="registrar_fix_request" {{ request('status') == 'registrar_fix_request' ? 'selected' : '' }}>Fix Request</option>
+                <option value="paid_confirmed" {{ request('status') == 'paid_confirmed' ? 'selected' : '' }}>Awaiting Registrar</option>
                 <option value="registrar_approved" {{ request('status') == 'registrar_approved' ? 'selected' : '' }}>Approved</option>
-                <option value="returned_to_officer" {{ request('status') == 'returned_to_officer' ? 'selected' : '' }}>Returned to Officer</option>
+                <option value="returned_to_officer" {{ request('status') == 'returned_to_officer' ? 'selected' : '' }}>Returned</option>
             </select>
         </div>
         <div class="col-md-3">
@@ -291,7 +249,9 @@
             <th style="width:60px;">#</th>
             <th><i class="ri-hashtag me-1"></i> Ref</th>
             <th><i class="ri-user-line me-1"></i> Applicant</th>
-            <th><i class="ri-file-text-line me-1"></i> Type</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-file-text-line me-1"></i> Application</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-information-line me-1"></i> Type</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-global-line me-1"></i> Scope</th>
             <th><i class="ri-calendar-line me-1"></i> Date</th>
             <th><i class="ri-flag-line me-1"></i> Status</th>
             <th class="text-end" style="min-width:210px;">Action</th>
@@ -306,16 +266,11 @@
               'registrar_rejected' => 'danger',
               'registrar_approved' => 'success',
               'returned_to_accounts' => 'secondary',
-              'forwarded_to_registrar' => 'warning',
-              'approved_awaiting_payment' => 'primary',
-              'registrar_fix_request' => 'dark',
               default => 'info',
             };
 
-            $canDecide = in_array($status, ['registrar_review','paid_confirmed','accounts_review','returned_to_accounts','approved_awaiting_payment','forwarded_to_registrar'], true);
+            $canDecide = in_array($status, ['registrar_review','paid_confirmed','accounts_review','returned_to_accounts'], true);
             $canApproveForPayment = $status === 'registrar_review' && $app->payment_status !== 'paid' && !$app->registrar_reviewed_at;
-            $canFixRequest = in_array($status, ['registrar_review','approved_awaiting_payment','forwarded_to_registrar'], true);
-            $canPushToAccounts = $status === 'forwarded_to_registrar';
 
             $rowNo = method_exists($applications,'firstItem') && $applications->firstItem()
               ? ($applications->firstItem() + $i)
@@ -333,14 +288,28 @@
           <tr>
             <td class="text-muted small">{{ $rowNo }}</td>
             <td class="fw-bold text-dark">{{ $ref }}</td>
-            <td>{{ $app->applicant?->name ?? '—' }}</td>
             <td>
-              <span class="small fw-bold text-uppercase">{{ $type }}</span>
+              <div class="fw-bold">{{ $app->applicant?->name ?? '—' }}</div>
+              <div class="small text-muted">{{ $app->applicant?->email }}</div>
+            </td>
+            <td><span class="small fw-bold text-uppercase" style="font-size: var(--font-size-dense-sm);">{{ $type }}</span></td>
+            <td>
               @php
-                $reqType = $app->request_type ?? 'new';
-                $reqBadge = match($reqType) { 'renewal' => 'warning', 'replacement' => 'info', default => 'success' };
+                $reqType = strtolower((string)($app->request_type ?? 'new'));
+                $newOrRenewal = match($reqType) {
+                  'renewal' => 'Renewal',
+                  'replacement' => 'Replacement',
+                  default => 'New'
+                };
               @endphp
-              <span class="badge bg-{{ $reqBadge }} ms-1">{{ ucfirst($reqType) }}</span>
+              <span class="badge rounded-pill bg-{{ $newOrRenewal === 'Renewal' ? 'info' : ($newOrRenewal === 'Replacement' ? 'warning' : 'primary') }} px-3" style="font-size: var(--font-size-dense-sm);">{{ $newOrRenewal }}</span>
+            </td>
+            <td>
+              @php
+                $scopeStr = strtolower((string)($app->journalist_scope ?? $app->residency_type ?? $app->form_data['journalist_scope'] ?? $app->form_data['residency_type'] ?? 'local'));
+                $foreignOrLocal = ($scopeStr === 'foreign' || $scopeStr === 'non-resident') ? 'Foreign' : 'Local';
+              @endphp
+              <span class="badge rounded-pill bg-{{ $foreignOrLocal === 'Foreign' ? 'warning' : 'success' }} px-3" style="font-size: var(--font-size-dense-sm);">{{ $foreignOrLocal }}</span>
             </td>
             <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
             <td>
@@ -396,32 +365,6 @@
                   <i class="fa-regular fa-comment-dots"></i>
                 </button>
 
-                {{-- Fix Request --}}
-                @if($canFixRequest)
-                <button
-                  type="button"
-                  class="btn btn-sm zmc-icon-btn btn-outline-secondary js-open-modal"
-                  data-target="#fixRequestModal{{ $app->id }}"
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Raise Fix Request"
-                >
-                  <i class="fa-solid fa-wrench"></i>
-                </button>
-                @endif
-
-                {{-- Push to Accounts (waiver cases) --}}
-                @if($canPushToAccounts)
-                <button
-                  type="button"
-                  class="btn btn-sm zmc-icon-btn btn-outline-info js-open-modal"
-                  data-target="#pushToAccountsModal{{ $app->id }}"
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Push to Accounts"
-                >
-                  <i class="fa-solid fa-share"></i>
-                </button>
-                @endif
-
                 {{-- Reject --}}
                 <button
                   type="button"
@@ -449,7 +392,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-award me-2" style="color:var(--zmc-accent-dark)"></i>
                         Reassign Category
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">Change the assigned category for this application.</div>
                     </div>
@@ -499,7 +442,7 @@
                       <div>
                         <div class="zmc-modal-title">
                           Return / Notes
-                          <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                          <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                         </div>
                         <div class="zmc-modal-sub">Send back to Accounts/Payments with clear notes.</div>
                       </div>
@@ -525,22 +468,16 @@
             {{-- Approve Modal --}}
             <div class="modal fade" id="approveModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
-                <form class="modal-content" method="POST" action="{{ $approveUrl($app->id) }}" enctype="multipart/form-data">
+                <form class="modal-content" method="POST" action="{{ $approveUrl($app->id) }}">
                   @csrf
                   <div class="modal-header zmc-modal-header">
                     <div>
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-check me-2" style="color:var(--zmc-accent-dark)"></i>
                         Approve application
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
-                      <div class="zmc-modal-sub">
-                        @if($isRegistration)
-                          This will approve pending registration fee. Official letter required.
-                        @else
-                          This will forward to Accounts for payment.
-                        @endif
-                      </div>
+                      <div class="zmc-modal-sub">This will move the application to Production.</div>
                     </div>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
@@ -563,26 +500,9 @@
                       </select>
                     </div>
 
-                    @if($isRegistration)
-                    <div class="mb-3">
-                      <label class="form-label zmc-lbl">Official Registrar Letter <span class="text-danger">*</span></label>
-                      @if($app->registrar_letter_path)
-                        <div class="small text-success mb-1"><i class="ri-check-line"></i> Letter already uploaded</div>
-                      @endif
-                      <input type="file" name="registrar_letter" class="form-control zmc-input" accept=".pdf,.jpg,.jpeg,.png" {{ empty($app->registrar_letter_path) ? 'required' : '' }}>
-                      <div class="form-text">PDF, JPG or PNG. Required for media house registration.</div>
-                    </div>
-                    @endif
-
                     <label class="form-label zmc-lbl">Notes (optional)</label>
                     <textarea name="decision_notes" class="form-control zmc-input" rows="4" placeholder="Add any notes (optional)"></textarea>
-                    <div class="form-text mt-2">
-                      @if($isRegistration)
-                        Next stage: <b>Pending Registration Fee</b>
-                      @else
-                        Next stage: <b>Accounts</b> (payment processing)
-                      @endif
-                    </div>
+                    <div class="form-text mt-2">Next stage: <b>Production</b> (card / certificate generation).</div>
                   </div>
 
                   <div class="modal-footer zmc-modal-footer">
@@ -605,7 +525,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-money-bill me-2" style="color:var(--zmc-accent-dark)"></i>
                         Approve for Payment
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">This will forward the application to Accounts for payment processing.</div>
                     </div>
@@ -637,7 +557,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-xmark me-2" style="color:var(--zmc-accent-dark)"></i>
                         Reject application
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">Reason will be visible to the applicant.</div>
                     </div>
@@ -653,70 +573,6 @@
                     <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger fw-bold">
                       <i class="fa-solid fa-xmark me-1"></i>Reject
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            {{-- Fix Request Modal --}}
-            <div class="modal fade" id="fixRequestModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <form class="modal-content" method="POST" action="{{ route('staff.registrar.applications.fix-request', $app) }}">
-                  @csrf
-                  <div class="modal-header zmc-modal-header">
-                    <div>
-                      <div class="zmc-modal-title">
-                        <i class="fa-solid fa-wrench me-2" style="color:var(--zmc-accent-dark)"></i>
-                        Raise Fix Request
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
-                      </div>
-                      <div class="zmc-modal-sub">Send back to Accreditation Officer with instructions.</div>
-                    </div>
-                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-
-                  <div class="modal-body">
-                    <label class="form-label zmc-lbl">Message to Officer <span class="text-danger">*</span></label>
-                    <textarea name="message" class="form-control zmc-input" rows="4" required placeholder="Describe what needs to be fixed..."></textarea>
-                  </div>
-
-                  <div class="modal-footer zmc-modal-footer">
-                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-secondary fw-bold">
-                      <i class="fa-solid fa-wrench me-1"></i>Send Fix Request
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            {{-- Push to Accounts Modal --}}
-            <div class="modal fade" id="pushToAccountsModal{{ $app->id }}" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
-                <form class="modal-content" method="POST" action="{{ route('staff.registrar.applications.push-to-accounts', $app) }}">
-                  @csrf
-                  <div class="modal-header zmc-modal-header">
-                    <div>
-                      <div class="zmc-modal-title">
-                        <i class="fa-solid fa-share me-2" style="color:var(--zmc-accent-dark)"></i>
-                        Push to Accounts
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
-                      </div>
-                      <div class="zmc-modal-sub">Forward this waiver/special case to Accounts for processing.</div>
-                    </div>
-                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-
-                  <div class="modal-body">
-                    <label class="form-label zmc-lbl">Notes (optional)</label>
-                    <textarea name="notes" class="form-control zmc-input" rows="4" placeholder="Add any notes for Accounts..."></textarea>
-                  </div>
-
-                  <div class="modal-footer zmc-modal-footer">
-                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-info fw-bold">
-                      <i class="fa-solid fa-share me-1"></i>Push to Accounts
                     </button>
                   </div>
                 </form>
@@ -759,7 +615,7 @@
       <div class="modal-body">
         <div id="mdl_loading" class="d-none text-center py-5">
           <div class="spinner-border" style="color:var(--zmc-accent-dark)"></div>
-          <div class="text-muted mt-2" style="font-size:12px;">Loading…</div>
+          <div class="text-muted mt-2" style="font-size: var(--font-size-sm);">Loading…</div>
         </div>
 
         <div id="mdl_error" class="alert alert-danger d-none"></div>
@@ -875,7 +731,45 @@
             ${zmcTextarea('Local address', (app.zim_local_address || app.zim_address))}
           </div>
         `;
-        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Media Practitioner details`, body);
+        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Media practitioner details`, body);
+
+        // Previous Applications Block
+        const prevApps = Array.isArray(data.previous_applications) ? data.previous_applications : [];
+        if (prevApps.length > 0) {
+          let prevRows = prevApps.map(pa => `
+            <tr>
+              <td>${zmcFmt(pa.reference)}</td>
+              <td class="text-capitalize">${zmcFmt(pa.type)}</td>
+              <td class="text-capitalize">${zmcFmt(pa.scope)}</td>
+              <td><span class="badge bg-light text-dark border">${zmcFmt(pa.status)}</span></td>
+              <td>${zmcFmt(pa.date)}</td>
+            </tr>
+          `).join('');
+
+          html += zmcBlock(
+            `<i class="fa-solid fa-history"></i> Previous Applications`,
+            `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Type</th><th>Scope</th><th>Status</th><th>Date</th></tr></thead><tbody>${prevRows}</tbody></table></div>`
+          );
+        }
+
+        // Previous Payments Block
+        const prevPays = Array.isArray(data.previous_payments) ? data.previous_payments : [];
+        if (prevPays.length > 0) {
+          let payRows = prevPays.map(p => `
+            <tr>
+              <td>${zmcFmt(p.reference)}</td>
+              <td>${zmcFmt(p.amount)} ${zmcFmt(p.currency)}</td>
+              <td class="text-capitalize">${zmcFmt(p.method)}</td>
+              <td><span class="badge bg-light text-dark border text-capitalize">${zmcFmt(p.status)}</span></td>
+              <td>${zmcFmt(p.date)}</td>
+            </tr>
+          `).join('');
+
+          html += zmcBlock(
+            `<i class="fa-solid fa-money-bill-transfer"></i> Payment History`,
+            `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody>${payRows}</tbody></table></div>`
+          );
+        }
       }
 
       if (formCode === 'AP1') {

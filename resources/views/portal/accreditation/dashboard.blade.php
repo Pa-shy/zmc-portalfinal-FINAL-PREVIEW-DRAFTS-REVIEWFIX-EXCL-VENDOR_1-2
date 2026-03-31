@@ -6,6 +6,7 @@
 @php
   use Illuminate\Support\Facades\Route;
   use Illuminate\Support\Str;
+  use App\Models\Application;
 
   $detailsUrlTemplate = Route::has('portal.applications.details')
     ? route('portal.applications.details', ['application' => '__ID__'])
@@ -19,14 +20,17 @@
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
       <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Media Practitioner Accreditation Dashboard</h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <div class="text-muted mt-1" style="font-size:14px;">
         <i class="ri-information-line me-1"></i>
         Track your AP3 (New Accreditation) and AP5 (Renewal/Replacement) submissions.
       </div>
     </div>
 
     <div class="d-flex align-items-center gap-2">
-      <a href="{{ route('accreditation.renewals') }}" class="btn btn-white border shadow-sm btn-sm px-3">
+      <button type="button" class="btn btn-outline-success border shadow-sm btn-sm px-3" onclick="showRequirementsModal()">
+        <i class="ri-file-list-3-line me-1"></i> View Requirements
+      </button>
+      <a href="{{ route('accreditation.renewals.index') }}" class="btn btn-white border shadow-sm btn-sm px-3">
         <i class="ri-refresh-line me-1"></i> Renew / Replace
       </a>
       <a href="{{ route('accreditation.new') }}" class="btn btn-dark btn-sm px-3">
@@ -100,8 +104,8 @@
             <div class="d-flex gap-2 mb-2">
               <i class="ri-checkbox-blank-circle-fill" style="font-size:9px; margin-top:5px; color:var(--zmc-accent-dark)"></i>
               <div>
-                <div class="fw-bold" style="font-size:12px;">{{ $n->title }}</div>
-                <div class="text-muted" style="font-size:11px">{{ Str::limit(strip_tags($n->body), 90) }}</div>
+                <div class="fw-bold" style="font-size:14px; text-transform: none !important;">{{ $n->title }}</div>
+                <div class="text-muted" style="font-size:12px; text-transform: none !important;">{{ Str::limit(strip_tags($n->body), 90) }}</div>
               </div>
             </div>
           @empty
@@ -122,8 +126,8 @@
           @forelse(($events ?? collect())->take(4) as $e)
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div>
-                <div class="fw-bold" style="font-size:12px">{{ $e->title }}</div>
-                <div class="text-muted" style="font-size:11px">
+                <div class="fw-bold" style="font-size:14px">{{ $e->title }}</div>
+                <div class="text-muted" style="font-size:12px">
                   {{ optional($e->starts_at)->format('d M Y') ?? 'TBA' }}
                   {{ $e->location ? (' • ' . $e->location) : '' }}
                 </div>
@@ -159,14 +163,22 @@
               $status = strtolower((string)($app->status ?? ''));
               $badge = match(true) {
                 (bool)($app->is_draft) => 'secondary',
-                in_array($status, ['payment_rejected'], true) => 'danger',
                 str_contains($status, 'rejected') => 'danger',
-                in_array($status, ['approved_awaiting_payment','registrar_approved_pending_reg_fee'], true) => 'warning',
-                in_array($status, ['awaiting_accounts_verification'], true) => 'info',
-                in_array($status, ['payment_verified'], true) => 'success',
-                str_contains($status, 'approved') || $status === 'issued' => 'success',
-                in_array($status, ['needs_correction','correction_requested'], true) => 'warning',
-                in_array($status, ['submitted','officer_review','registrar_review','accounts_review'], true) => 'info',
+                in_array($status, [
+                    'approved_by_officer_awaiting_payment_and_registrar_master',
+                    'approved_by_accreditation_officer_awaiting_payment',
+                    'approved_by_ao_awaiting_payment_and_registrar_master'
+                ], true) => 'info',
+                in_array($status, [
+                    'submitted',
+                    'submitted_to_accreditation_officer',
+                    'officer_review',
+                    'registrar_review',
+                    'accounts_review',
+                    'awaiting_accounts_verification',
+                    'registrar_raised_fix_request',
+                    'returned_to_officer'
+                ], true) => 'info',
                 default => 'warning',
               };
 
@@ -206,26 +218,21 @@
                         <i class="ri-edit-2-line me-1"></i> Edit
                       </a>
                     @endif
-                    @if(in_array($status, ['accounts_review','approved_awaiting_payment','registrar_approved_pending_reg_fee']))
+                    @php
+                      $canPay = in_array($app->status, [
+                        'accounts_review',
+                        'approved_by_officer_awaiting_payment_and_registrar_master',
+                        'approved_by_accreditation_officer_awaiting_payment',
+                        'approved_by_ao_awaiting_payment_and_registrar_master'
+                      ], true);
+                    @endphp
+                    @if($canPay)
                       <button type="button" class="btn btn-sm btn-success fw-bold js-pay-now" 
                               data-app-id="{{ $app->id }}" 
                               data-app-ref="{{ $app->reference }}"
-                              data-payment-stage="{{ $status === 'registrar_approved_pending_reg_fee' ? 'registration_fee' : 'accreditation_fee' }}"
                               title="Pay Now">
                         <i class="ri-bank-card-line me-1"></i> Pay
                       </button>
-                    @endif
-                    @if($status === 'payment_rejected')
-                      <button type="button" class="btn btn-sm btn-danger fw-bold js-pay-now" 
-                              data-app-id="{{ $app->id }}" 
-                              data-app-ref="{{ $app->reference }}"
-                              data-rejection-reason="{{ $app->proof_review_notes ?? $app->rejection_reason ?? '' }}"
-                              title="Resubmit Payment">
-                        <i class="ri-error-warning-line me-1"></i> Resubmit Payment
-                      </button>
-                    @endif
-                    @if($status === 'awaiting_accounts_verification')
-                      <span class="badge bg-info px-2"><i class="ri-time-line me-1"></i>Verifying Payment</span>
                     @endif
                     @if(in_array($status, ['submitted','officer_review','registrar_review','accounts_review']))
                       <button type="button" class="btn btn-sm zmc-icon-btn btn-outline-danger js-withdraw-app" data-app-id="{{ $app->id }}" title="Withdraw Application">
@@ -340,28 +347,24 @@
 
       let html = '';
 
-      if (formCode === 'AP3') {
-        const body = `<div class="row g-3">
-          ${zmcInput('Title', app.title)}
-          ${zmcInput('First name', app.first_name)}
-          ${zmcInput('Surname', app.surname)}
-          ${zmcInput('Other names', app.other_names)}
-          ${zmcInput('Date of birth', app.dob)}
-          ${zmcInput('Sex', app.sex)}
-          ${zmcInput('Birth place', app.birth_place)}
-          ${zmcInput('Origin', app.origin)}
-          ${zmcInput('Nationality', app.nationality)}
-          ${zmcInput('ID / Passport', app.id_passport_number)}
-          ${zmcInput('Employer', app.employer_name)}
-          ${zmcInput('Medium type', app.medium_type)}
-          ${zmcInput('Designation', app.designation)}
-          ${zmcTextarea('Assignment brief', app.assignment_brief)}
-          ${zmcInput('Arrival date', app.arrival_date)}
-          ${zmcInput('Departure date', app.departure_date)}
-          ${zmcInput('Port of entry', app.port_entry)}
-          ${zmcTextarea('Local address', (app.zim_local_address || app.zim_address))}
-        </div>`;
-        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Applicant details`, body);
+      const fd = data.form_data || {};
+      const labels = data.labels || {};
+      const exclude = ['current_step', 'registration_scope', 'journalist_scope', 'directors', 'managers', 'directors_rows', 'managers_rows', 'ap1'];
+
+      let fieldsHtml = '';
+      for (const [key, val] of Object.entries(fd)) {
+        if (exclude.includes(key) || !val) continue;
+        const label = labels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        if (typeof val === 'object' && val !== null) {
+          fieldsHtml += zmcTextarea(label, JSON.stringify(val, null, 2));
+        } else {
+          fieldsHtml += zmcInput(label, val);
+        }
+      }
+
+      if (fieldsHtml) {
+        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Application details`, `<div class="row g-3">${fieldsHtml}</div>`);
       }
 
       const docs = Array.isArray(data.documents) ? data.documents : [];
@@ -374,6 +377,42 @@
       });
 
       html += zmcBlock(`<i class="fa-regular fa-folder-open"></i> Attachments`, `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Type</th><th>File</th><th class="text-end">Open</th></tr></thead><tbody>${docRows}</tbody></table></div>`);
+
+      const prevApps = Array.isArray(data.previous_applications) ? data.previous_applications : [];
+      if (prevApps.length > 0) {
+        let prevRows = prevApps.map(pa => `
+          <tr>
+            <td>${zmcFmt(pa.reference)}</td>
+            <td class="text-capitalize">${zmcFmt(pa.type)}</td>
+            <td><span class="badge bg-light text-dark border">${zmcFmt(pa.status)}</span></td>
+            <td>${zmcFmt(pa.date)}</td>
+          </tr>
+        `).join('');
+
+        html += zmcBlock(
+          `<i class="fa-solid fa-history"></i> Previous Applications`,
+          `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Type</th><th>Status</th><th>Date</th></tr></thead><tbody>${prevRows}</tbody></table></div>`
+        );
+      }
+
+      // Previous Payments Block
+      const prevPays = Array.isArray(data.previous_payments) ? data.previous_payments : [];
+      if (prevPays.length > 0) {
+        let payRows = prevPays.map(p => `
+          <tr>
+            <td>${zmcFmt(p.reference)}</td>
+            <td>${zmcFmt(p.amount)} ${zmcFmt(p.currency)}</td>
+            <td class="text-capitalize">${zmcFmt(p.method)}</td>
+            <td><span class="badge bg-light text-dark border text-capitalize">${zmcFmt(p.status)}</span></td>
+            <td>${zmcFmt(p.date)}</td>
+          </tr>
+        `).join('');
+
+        html += zmcBlock(
+          `<i class="fa-solid fa-money-bill-transfer"></i> Payment History`,
+          `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody>${payRows}</tbody></table></div>`
+        );
+      }
 
       if (area) {
         area.innerHTML = html;
@@ -451,8 +490,95 @@
         }
       }
     });
+
+    // Show welcome modal on every page load
+    const modalEl = document.getElementById('welcomeRequirementsModal');
+    if (modalEl) {
+      setTimeout(() => {
+        const m = bootstrap.Modal.getOrCreateInstance(modalEl);
+        m.show();
+      }, 800);
+    }
   });
+
+  // Function to manually show requirements modal
+  function showRequirementsModal() {
+    const modalEl = document.getElementById('welcomeRequirementsModal');
+    if (modalEl) {
+      const m = bootstrap.Modal.getOrCreateInstance(modalEl);
+      m.show();
+    }
+  }
 </script>
 @endpush
+</div>
+
+{{-- Media Practitioner Requirements Welcome Modal - Updated with Green Theme --}}
+<div class="modal fade" id="welcomeRequirementsModal" tabindex="-1" aria-labelledby="practitionerWelcomeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content overflow-hidden border-0 shadow-lg" style="border-radius: 24px;">
+      <div class="modal-body p-0">
+        <div class="row g-0">
+          <div class="col-md-4 d-none d-md-block position-relative" style="background: url('{{ asset('zmc_building.png') }}') center center / cover no-repeat;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(45, 80, 22, 0.75), rgba(31, 58, 15, 0.80)); z-index: 1;"></div>
+            <div class="h-100 d-flex flex-column justify-content-center p-5 text-white position-relative" style="z-index: 2;">
+              <i class="ri-user-star-line mb-4" style="font-size: 80px; color: #ffffff;"></i>
+              <h2 class="fw-black mb-3" style="color: #ffffff;">Welcome, Practitioner!</h2>
+              <p style="color: rgba(255,255,255,0.9);">Getting accredited is an important step in your media career. Ensure you have all necessary documents ready for a smooth AP3 application process.</p>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="p-4 p-md-5">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-black m-0" id="practitionerWelcomeModalLabel" style="color: #1e293b;">Media Practitioner Accreditation Requirements</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+
+              <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                  <div class="fw-bold mb-3" style="color: #2d5016;"><i class="ri-user-line me-2"></i>Local Applicants</div>
+                  <ul class="list-unstyled small mb-0">
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>National ID</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Education Certificate</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Letter of Employment (if employed)</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Passport Sized Photo</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <div class="fw-bold mb-3" style="color: #2d5016;"><i class="ri-global-line me-2"></i>Foreign Applicants</div>
+                  <ul class="list-unstyled small mb-0">
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Passport</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Education Certificate</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Passport Sized Photo</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Clearance Letter</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="alert mb-4" style="background: rgba(45, 80, 22, 0.1); border-left: 4px solid #2d5016;">
+                <div class="d-flex align-items-start gap-2">
+                  <i class="ri-information-line" style="color: #2d5016; font-size: 1.2rem; margin-top: 2px;"></i>
+                  <div class="small" style="color: #334155;">
+                    <strong style="color: #2d5016;">Important:</strong> All documents must be clear, legible, and in acceptable formats (PDF, JPG, PNG). Ensure your education certificates are certified copies where required.
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-grid">
+                <button type="button" class="btn btn-lg py-3 rounded-pill fw-bold shadow-sm" data-bs-dismiss="modal" style="background: #2d5016; border-color: #2d5016; color: #ffffff;">
+                  I Understand, Let's Begin <i class="ri-arrow-right-line ms-2"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .fw-black { font-weight: 900 !important; }
+</style>
 
 @endsection
