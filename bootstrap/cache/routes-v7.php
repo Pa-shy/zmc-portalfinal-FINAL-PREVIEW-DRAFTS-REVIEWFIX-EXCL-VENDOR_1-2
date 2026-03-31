@@ -52,7 +52,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::M4DQ1j3w32gDA7jZ',
+            '_route' => 'generated::3pGpdFaCnWGt909m',
           ),
           1 => NULL,
           2 => 
@@ -499,25 +499,6 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/settings/theme/ajax' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'settings.theme.ajax',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
       '/settings/security' => 
       array (
         0 => 
@@ -608,6 +589,25 @@ app('router')->setCompiledRoutes(
           array (
             'GET' => 0,
             'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/notifications/mark-read' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'notifications.markRead',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'POST' => 0,
           ),
           3 => NULL,
           4 => false,
@@ -719,7 +719,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'accreditation.renewals',
+            '_route' => 'accreditation.renewals.index',
           ),
           1 => NULL,
           2 => 
@@ -831,26 +831,6 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/portal/accreditation/requirements' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'accreditation.requirements',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
       '/portal/accreditation/profile' => 
       array (
         0 => 
@@ -920,6 +900,42 @@ app('router')->setCompiledRoutes(
           array (
             'GET' => 0,
             'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/portal/accreditation/renewals/select-type' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.select-type',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+        1 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.store-type',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'POST' => 0,
           ),
           3 => NULL,
           4 => false,
@@ -1050,7 +1066,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'mediahouse.renewals',
+            '_route' => 'mediahouse.renewals.index',
           ),
           1 => NULL,
           2 => 
@@ -1064,32 +1080,30 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/media-house/registration/renewals/save-draft' => 
+      '/media-house/registration/renewals/select-type' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'mediahouse.ap5.saveDraft',
+            '_route' => 'mediahouse.renewals.select-type',
           ),
           1 => NULL,
           2 => 
           array (
-            'POST' => 0,
+            'GET' => 0,
+            'HEAD' => 1,
           ),
           3 => NULL,
           4 => false,
           5 => false,
           6 => NULL,
         ),
-      ),
-      '/media-house/registration/renewals/submit' => 
-      array (
-        0 => 
+        1 => 
         array (
           0 => 
           array (
-            '_route' => 'mediahouse.ap5.submit',
+            '_route' => 'mediahouse.renewals.store-type',
           ),
           1 => NULL,
           2 => 
@@ -1149,26 +1163,6 @@ app('router')->setCompiledRoutes(
           0 => 
           array (
             '_route' => 'mediahouse.howto',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/media-house/registration/requirements' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'mediahouse.requirements',
           ),
           1 => NULL,
           2 => 
@@ -2242,62 +2236,6 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/staff/accreditation-officer/physical-intake' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.officer.physical-intake',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-        1 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.officer.physical-intake.process',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/staff/accreditation-officer/production-queue' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.officer.production-queue',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
       '/staff/accreditation-officer/applications' => 
       array (
         0 => 
@@ -3136,6 +3074,46 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
+      '/staff/accreditation-officer/fix-requests' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.officer.fix-requests',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/staff/accreditation-officer/renewals-production' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.officer.renewals.production',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
       '/staff/registrar' => 
       array (
         0 => 
@@ -3235,13 +3213,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/staff/registrar/accounts-oversight' => 
+      '/staff/registrar/fix-requests' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'staff.registrar.accounts-oversight',
+            '_route' => 'staff.registrar.fix-requests',
           ),
           1 => NULL,
           2 => 
@@ -3255,35 +3233,19 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      '/staff/registrar/reminders' => 
+      '/staff/registrar/payment-oversight' => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'staff.registrar.reminders.index',
+            '_route' => 'staff.registrar.payment-oversight',
           ),
           1 => NULL,
           2 => 
           array (
             'GET' => 0,
             'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-        1 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.registrar.reminders.store',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'POST' => 0,
           ),
           3 => NULL,
           4 => false,
@@ -3536,45 +3498,6 @@ app('router')->setCompiledRoutes(
           0 => 
           array (
             '_route' => 'staff.accounts.proofs.bulk-download',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/staff/accounts/cash-payment/create' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.cash-payment.create',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/staff/accounts/cash-payment' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.cash-payment.store',
           ),
           1 => NULL,
           2 => 
@@ -3887,6 +3810,26 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
+      '/staff/accounts/renewals' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.accounts.renewals.queue',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
       '/staff/production' => 
       array (
         0 => 
@@ -4054,62 +3997,6 @@ app('router')->setCompiledRoutes(
           0 => 
           array (
             '_route' => 'staff.production.batch.print',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/staff/production/designer' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.production.designer',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      '/staff/production/templates' => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.production.templates',
-          ),
-          1 => NULL,
-          2 => 
-          array (
-            'GET' => 0,
-            'HEAD' => 1,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-        1 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.production.templates.store',
           ),
           1 => NULL,
           2 => 
@@ -5541,7 +5428,7 @@ app('router')->setCompiledRoutes(
     ),
     2 => 
     array (
-      0 => '{^(?|/reset\\-password/([^/]++)(*:32)|/lang/([^/]++)(*:53)|/p(?|ortal/a(?|ccreditation/(?|applications/([^/]++)(?|/(?|edit(*:123)|resubmit(*:139)|withdraw(*:155))|(*:164))|lookup\\-number/([^/]++)(*:196)|downloads/file/([^/]++)(*:227))|pplications/([^/]++)/details(*:264))|ayments/([^/]++)/(?|initiate(?|(*:304)|\\-mobile(*:320))|s(?|tatus(*:338)|ubmit\\-reference(*:362))|upload\\-(?|proof(*:387)|waiver(*:401))))|/me(?|dia\\-house/registration/(?|applications/([^/]++)(?|/(?|edit(*:477)|resubmit(*:493)|withdraw(*:509))|(*:518))|staff\\-members/([^/]++)(*:550)|lookup\\-number/([^/]++)(*:581)|downloads/file/([^/]++)(*:612))|ssages/application/([^/]++)(?|(*:651)))|/a(?|dmin/(?|downloads/csv/([^/]++)(*:696)|applications/([^/]++)(*:725)|co(?|ntent/(?|notices/([^/]++)(?|(*:766))|events/([^/]++)(?|(*:793)))|mplaints/([^/]++)(*:820))|news/([^/]++)(?|(*:845))|user(?|s/([^/]++)/(?|access(?|(*:884))|reset(*:898))|\\-approvals/([^/]++)/approve(*:935))|roles/([^/]++)(?|/edit(*:966)|(*:974)))|ccount/setup/([^/]++)(?|(*:1008)))|/st(?|aff/(?|a(?|pplications/([^/]++)/details(*:1064)|cc(?|reditation\\-officer/applications(?|/([^/]++)(?|(*:1125)|/(?|approve(*:1145)|request\\-correction(*:1173)|message(*:1189)|unlock(*:1204)|forward\\-to\\-registrar(*:1235)))|\\-export/(all|new|pending|approved|rejected)(*:1290))|ounts/(?|payments/(?|retry/([^/]++)(*:1335)|([^/]++)/re(?|verse(*:1363)|fund(*:1376)))|refunds/([^/]++)/approve(*:1411)|applications/([^/]++)(?|/(?|p(?|roof/(?|approve(*:1467)|reject(*:1482))|a(?|yment/reject(*:1508)|id(*:1519)))|waiver(?|\\-verification/(?|approve(*:1564)|reject(*:1579))|/(?|approve(*:1600)|reject(*:1615)))|re(?|ceipt(*:1636)|turn(*:1649))|unlock(*:1665))|(*:1675))|cash\\-payment/([^/]++)/void(*:1712))))|documents/([^/]++)(*:1742)|registrar/(?|applications/([^/]++)/(?|reassign\\-category(*:1807)|approve\\-for\\-payment(*:1837))|(accreditation|registration)/applications/(new|under-review|approved|rejected|corrections)(*:1937)|renewals/(due-soon|submitted|renewed-expired)(*:1991)|applications/([^/]++)(?|(*:2024)|/(?|approve(*:2044)|re(?|ject(*:2062)|turn(*:2075))|fix\\-request(*:2097)|push\\-to\\-accounts(*:2124))))|production/(?|applications/([^/]++)(?|(*:2174)|/(?|c(?|ard/pr(?|eview(*:2205)|int(?|(*:2220)|\\-back(*:2235)))|ertificate/pr(?|eview(*:2267)|int(*:2279)))|generate\\-c(?|ard(*:2307)|ertificate(*:2326))|print(*:2341)|issue(*:2355)|unlock(*:2370)))|templates/([^/]++)(?|(*:2402)|/activate(*:2420)))|it/(?|re(?|gions/([^/]++)/toggle(*:2463)|ports/generate/([^/]++)(*:2495))|notices/([^/]++)(?|(*:2524))|events/([^/]++)(?|(*:2552))|vacancies/([^/]++)(?|(*:2583))|tenders/([^/]++)(?|(*:2612))|applica(?|nts/([^/]++)/reset(*:2650)|tion(?|\\-overview/([^/]++)(?|(*:2688)|/download\\-batch(*:2713))|/([^/]++)/(?|unlock(*:2742)|reset(*:2756))))|user/([^/]++)/(?|suspend(*:2792)|reset\\-password(*:2816))|security/session/([^/]++)/logout(*:2858)))|orage/(.*)(*:2879))|/verify/([^/]++)(*:2905))/?$}sDu',
+      0 => '{^(?|/reset\\-password/([^/]++)(*:32)|/notifications/([^/]++)/mark\\-read(*:73)|/p(?|ortal/a(?|ccreditation/(?|applications/([^/]++)(?|/(?|edit(*:143)|resubmit(*:159)|withdraw(*:175))|(*:184))|lookup/([^/]++)(*:208)|downloads/file/([^/]++)(*:239)|renewals/([^/]++)(?|/(?|lookup(?|(*:280))|confirm(?|(*:299)|\\-no\\-changes(*:320))|submit\\-changes(*:344)|payment(?|(*:362)|/p(?|aynow(*:380)|roof(*:392))))|(*:403)))|pplications/([^/]++)/details(*:441))|ayments/([^/]++)/(?|initiate(?|(*:481)|\\-mobile(*:497))|s(?|tatus(*:515)|ubmit\\-reference(*:539))|upload\\-(?|proof(*:564)|waiver(*:578))))|/me(?|dia\\-house/registration/(?|applications/([^/]++)(?|/(?|edit(*:654)|resubmit(*:670)|withdraw(*:686)|official\\-letter(*:710)|payment/(?|application\\-fee/p(?|aynow(*:755)|roof(*:767))|registration\\-fee/p(?|aynow(*:803)|roof(*:815))))|(*:826))|staff\\-members/([^/]++)(*:858)|renewals/([^/]++)(?|/(?|lookup(?|(*:899))|confirm(?|(*:918)|\\-no\\-changes(*:939))|submit\\-changes(*:963)|payment(?|(*:981)|/p(?|aynow(*:999)|roof(*:1011))))|(*:1023))|downloads/file/([^/]++)(*:1056))|ssages/application/([^/]++)(?|(*:1096)))|/a(?|dmin/(?|downloads/csv/([^/]++)(*:1142)|applications/([^/]++)(*:1172)|co(?|ntent/(?|notices/([^/]++)(?|(*:1214))|events/([^/]++)(?|(*:1242)))|mplaints/([^/]++)(*:1270))|news/([^/]++)(?|(*:1296))|user(?|s/([^/]++)/(?|access(?|(*:1336))|reset(*:1351))|\\-approvals/([^/]++)/approve(*:1389))|roles/([^/]++)(?|/edit(*:1421)|(*:1430)))|ccount/setup/([^/]++)(?|(*:1465)))|/st(?|aff/(?|a(?|pplications/([^/]++)/details(*:1521)|cc(?|reditation\\-officer/(?|applications(?|/([^/]++)(?|(*:1585)|/(?|approve(*:1605)|request\\-correction(*:1633)|message(*:1649)|unlock(*:1664)|forward\\-no\\-approval(*:1694)))|\\-export/(all|new|pending|approved|rejected)(*:1749))|fix\\-requests/([^/]++)/resolve(*:1789)|renewals\\-production/([^/]++)(?|(*:1830)|/(?|generate(*:1851)|mark\\-produced(*:1874)|print(*:1888))))|ounts/(?|payments/(?|retry/([^/]++)(*:1935)|([^/]++)/re(?|verse(*:1963)|fund(*:1976)))|re(?|funds/([^/]++)/approve(*:2014)|newals/([^/]++)(?|(*:2041)|/verify(*:2057)))|applications/([^/]++)(?|/(?|p(?|roof/(?|approve(*:2115)|reject(*:2130))|aid(*:2143))|re(?|ceipt(*:2163)|turn(*:2176))|waiver/(?|approve(*:2203)|reject(*:2218))|unlock(*:2234)|verify\\-payment(*:2258))|(*:2268)))))|documents/([^/]++)(*:2299)|registrar/(?|applications/([^/]++)/(?|reassign\\-category(*:2364)|approve\\-for\\-payment(*:2394))|(accreditation|registration)/applications/(new|under-review|approved|rejected|corrections)(*:2494)|renewals/(due-soon|submitted|renewed-expired)(*:2548)|applications/([^/]++)(?|(*:2581)|/(?|approve(?|(*:2604)|\\-(?|special\\-case(*:2631)|with\\-letter(*:2652)))|re(?|ject(*:2672)|turn(*:2685))|send\\-fix\\-request(*:2713)))|payment\\-oversight/([^/]++)(*:2751))|production/applications/([^/]++)(?|(*:2796)|/(?|c(?|ard/pr(?|eview(*:2827)|int(?|(*:2842)|\\-back(*:2857)))|ertificate/pr(?|eview(*:2889)|int(*:2901)))|generate\\-c(?|ard(*:2929)|ertificate(*:2948))|print(*:2963)|issue(*:2977)|unlock(*:2992)))|it/(?|re(?|gions/([^/]++)/toggle(*:3035)|ports/generate/([^/]++)(*:3067))|notices/([^/]++)(?|(*:3096))|events/([^/]++)(?|(*:3124))|vacancies/([^/]++)(?|(*:3155))|tenders/([^/]++)(?|(*:3184))|applica(?|nts/([^/]++)/reset(*:3222)|tion(?|\\-overview/([^/]++)(?|(*:3260)|/download\\-batch(*:3285))|/([^/]++)/(?|unlock(*:3314)|reset(*:3328))))|user/([^/]++)/(?|suspend(*:3364)|reset\\-password(*:3388))|security/session/([^/]++)/logout(*:3430)))|orage/(.*)(*:3451))|/verify/([^/]++)(*:3477))/?$}sDu',
     ),
     3 => 
     array (
@@ -5568,30 +5455,29 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      53 => 
+      73 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'lang.switch',
+            '_route' => 'notifications.markOne',
           ),
           1 => 
           array (
-            0 => 'locale',
+            0 => 'id',
           ),
           2 => 
           array (
-            'GET' => 0,
-            'HEAD' => 1,
+            'POST' => 0,
           ),
           3 => NULL,
           4 => false,
-          5 => true,
+          5 => false,
           6 => NULL,
         ),
       ),
-      123 => 
+      143 => 
       array (
         0 => 
         array (
@@ -5614,7 +5500,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      139 => 
+      159 => 
       array (
         0 => 
         array (
@@ -5636,7 +5522,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      155 => 
+      175 => 
       array (
         0 => 
         array (
@@ -5658,7 +5544,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      164 => 
+      184 => 
       array (
         0 => 
         array (
@@ -5680,17 +5566,17 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      196 => 
+      208 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'accreditation.lookupNumber',
+            '_route' => 'accreditation.lookup',
           ),
           1 => 
           array (
-            0 => 'number',
+            0 => 'accreditationNumber',
           ),
           2 => 
           array (
@@ -5703,7 +5589,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      227 => 
+      239 => 
       array (
         0 => 
         array (
@@ -5726,7 +5612,206 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      264 => 
+      280 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.lookup',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+        1 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.perform-lookup',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      299 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.confirm',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      320 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.confirm-no-changes',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      344 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.submit-changes',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      362 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.payment',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      380 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.payment.paynow',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      392 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.payment.proof',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      403 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'accreditation.renewals.show',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      441 => 
       array (
         0 => 
         array (
@@ -5749,7 +5834,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      304 => 
+      481 => 
       array (
         0 => 
         array (
@@ -5771,7 +5856,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      320 => 
+      497 => 
       array (
         0 => 
         array (
@@ -5793,7 +5878,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      338 => 
+      515 => 
       array (
         0 => 
         array (
@@ -5816,13 +5901,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      362 => 
+      539 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'payments.submit_reference',
+            '_route' => 'paynow.submit_reference',
           ),
           1 => 
           array (
@@ -5838,7 +5923,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      387 => 
+      564 => 
       array (
         0 => 
         array (
@@ -5860,7 +5945,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      401 => 
+      578 => 
       array (
         0 => 
         array (
@@ -5882,7 +5967,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      477 => 
+      654 => 
       array (
         0 => 
         array (
@@ -5905,7 +5990,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      493 => 
+      670 => 
       array (
         0 => 
         array (
@@ -5927,7 +6012,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      509 => 
+      686 => 
       array (
         0 => 
         array (
@@ -5949,7 +6034,118 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      518 => 
+      710 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.download-official-letter',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      755 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.payment.app-fee.paynow',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      767 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.payment.app-fee.proof',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      803 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.payment.reg-fee.paynow',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      815 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.payment.reg-fee.proof',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      826 => 
       array (
         0 => 
         array (
@@ -5971,7 +6167,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      550 => 
+      858 => 
       array (
         0 => 
         array (
@@ -5993,17 +6189,193 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      581 => 
+      899 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'mediahouse.lookupNumber',
+            '_route' => 'mediahouse.renewals.lookup',
           ),
           1 => 
           array (
-            0 => 'number',
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+        1 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.perform-lookup',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      918 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.confirm',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      939 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.confirm-no-changes',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      963 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.submit-changes',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      981 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.payment',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      999 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.payment.paynow',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      1011 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.payment.proof',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      1023 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'mediahouse.renewals.show',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
           ),
           2 => 
           array (
@@ -6016,7 +6388,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      612 => 
+      1056 => 
       array (
         0 => 
         array (
@@ -6039,7 +6411,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      651 => 
+      1096 => 
       array (
         0 => 
         array (
@@ -6081,7 +6453,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      696 => 
+      1142 => 
       array (
         0 => 
         array (
@@ -6104,7 +6476,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      725 => 
+      1172 => 
       array (
         0 => 
         array (
@@ -6127,7 +6499,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      766 => 
+      1214 => 
       array (
         0 => 
         array (
@@ -6168,7 +6540,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      793 => 
+      1242 => 
       array (
         0 => 
         array (
@@ -6209,7 +6581,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      820 => 
+      1270 => 
       array (
         0 => 
         array (
@@ -6231,7 +6603,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      845 => 
+      1296 => 
       array (
         0 => 
         array (
@@ -6272,7 +6644,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      884 => 
+      1336 => 
       array (
         0 => 
         array (
@@ -6314,7 +6686,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      898 => 
+      1351 => 
       array (
         0 => 
         array (
@@ -6336,7 +6708,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      935 => 
+      1389 => 
       array (
         0 => 
         array (
@@ -6358,7 +6730,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      966 => 
+      1421 => 
       array (
         0 => 
         array (
@@ -6381,7 +6753,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      974 => 
+      1430 => 
       array (
         0 => 
         array (
@@ -6403,7 +6775,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1008 => 
+      1465 => 
       array (
         0 => 
         array (
@@ -6445,7 +6817,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1064 => 
+      1521 => 
       array (
         0 => 
         array (
@@ -6468,7 +6840,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1125 => 
+      1585 => 
       array (
         0 => 
         array (
@@ -6491,7 +6863,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1145 => 
+      1605 => 
       array (
         0 => 
         array (
@@ -6513,7 +6885,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1173 => 
+      1633 => 
       array (
         0 => 
         array (
@@ -6535,7 +6907,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1189 => 
+      1649 => 
       array (
         0 => 
         array (
@@ -6557,7 +6929,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1204 => 
+      1664 => 
       array (
         0 => 
         array (
@@ -6579,13 +6951,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1235 => 
+      1694 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'staff.officer.applications.forward-to-registrar',
+            '_route' => 'staff.officer.applications.forward-no-approval',
           ),
           1 => 
           array (
@@ -6601,7 +6973,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1290 => 
+      1749 => 
       array (
         0 => 
         array (
@@ -6624,7 +6996,118 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1335 => 
+      1789 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.officer.fix-requests.resolve',
+          ),
+          1 => 
+          array (
+            0 => 'fixRequest',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      1830 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.officer.renewals.production.show',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      1851 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.officer.renewals.production.generate',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      1874 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.officer.renewals.production.mark-produced',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      1888 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.officer.renewals.production.print',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      1935 => 
       array (
         0 => 
         array (
@@ -6647,7 +7130,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1363 => 
+      1963 => 
       array (
         0 => 
         array (
@@ -6669,7 +7152,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1376 => 
+      1976 => 
       array (
         0 => 
         array (
@@ -6691,7 +7174,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1411 => 
+      2014 => 
       array (
         0 => 
         array (
@@ -6713,7 +7196,52 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1467 => 
+      2041 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.accounts.renewals.show',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => true,
+          6 => NULL,
+        ),
+      ),
+      2057 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.accounts.renewals.verify',
+          ),
+          1 => 
+          array (
+            0 => 'renewal',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      2115 => 
       array (
         0 => 
         array (
@@ -6735,7 +7263,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1482 => 
+      2130 => 
       array (
         0 => 
         array (
@@ -6757,29 +7285,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1508 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.applications.payment.reject',
-          ),
-          1 => 
-          array (
-            0 => 'application',
-          ),
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1519 => 
+      2143 => 
       array (
         0 => 
         array (
@@ -6801,95 +7307,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1564 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.waiver-verification.approve',
-          ),
-          1 => 
-          array (
-            0 => 'application',
-          ),
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1579 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.waiver-verification.reject',
-          ),
-          1 => 
-          array (
-            0 => 'application',
-          ),
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1600 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.waivers.approve',
-          ),
-          1 => 
-          array (
-            0 => 'application',
-          ),
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1615 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.waivers.reject',
-          ),
-          1 => 
-          array (
-            0 => 'application',
-          ),
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1636 => 
+      2163 => 
       array (
         0 => 
         array (
@@ -6912,7 +7330,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1649 => 
+      2176 => 
       array (
         0 => 
         array (
@@ -6934,7 +7352,51 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1665 => 
+      2203 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.accounts.waivers.approve',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      2218 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.accounts.waivers.reject',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      2234 => 
       array (
         0 => 
         array (
@@ -6956,7 +7418,29 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1675 => 
+      2258 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.accounts.applications.verify-payment',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      2268 => 
       array (
         0 => 
         array (
@@ -6979,29 +7463,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1712 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.accounts.cash-payment.void',
-          ),
-          1 => 
-          array (
-            0 => 'payment',
-          ),
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      1742 => 
+      2299 => 
       array (
         0 => 
         array (
@@ -7024,7 +7486,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1807 => 
+      2364 => 
       array (
         0 => 
         array (
@@ -7046,7 +7508,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1837 => 
+      2394 => 
       array (
         0 => 
         array (
@@ -7068,7 +7530,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1937 => 
+      2494 => 
       array (
         0 => 
         array (
@@ -7092,7 +7554,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      1991 => 
+      2548 => 
       array (
         0 => 
         array (
@@ -7115,7 +7577,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2024 => 
+      2581 => 
       array (
         0 => 
         array (
@@ -7138,7 +7600,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2044 => 
+      2604 => 
       array (
         0 => 
         array (
@@ -7160,7 +7622,51 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2062 => 
+      2631 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.registrar.applications.approve-special-case',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      2652 => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'staff.registrar.applications.approve-with-letter',
+          ),
+          1 => 
+          array (
+            0 => 'application',
+          ),
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      2672 => 
       array (
         0 => 
         array (
@@ -7182,7 +7688,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2075 => 
+      2685 => 
       array (
         0 => 
         array (
@@ -7204,13 +7710,13 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2097 => 
+      2713 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'staff.registrar.applications.fix-request',
+            '_route' => 'staff.registrar.applications.send-fix-request',
           ),
           1 => 
           array (
@@ -7226,29 +7732,30 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2124 => 
+      2751 => 
       array (
         0 => 
         array (
           0 => 
           array (
-            '_route' => 'staff.registrar.applications.push-to-accounts',
+            '_route' => 'staff.registrar.payment-detail',
           ),
           1 => 
           array (
-            0 => 'application',
+            0 => 'paymentSubmission',
           ),
           2 => 
           array (
-            'POST' => 0,
+            'GET' => 0,
+            'HEAD' => 1,
           ),
           3 => NULL,
           4 => false,
-          5 => false,
+          5 => true,
           6 => NULL,
         ),
       ),
-      2174 => 
+      2796 => 
       array (
         0 => 
         array (
@@ -7271,7 +7778,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2205 => 
+      2827 => 
       array (
         0 => 
         array (
@@ -7294,7 +7801,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2220 => 
+      2842 => 
       array (
         0 => 
         array (
@@ -7316,7 +7823,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2235 => 
+      2857 => 
       array (
         0 => 
         array (
@@ -7338,7 +7845,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2267 => 
+      2889 => 
       array (
         0 => 
         array (
@@ -7361,7 +7868,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2279 => 
+      2901 => 
       array (
         0 => 
         array (
@@ -7383,7 +7890,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2307 => 
+      2929 => 
       array (
         0 => 
         array (
@@ -7405,7 +7912,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2326 => 
+      2948 => 
       array (
         0 => 
         array (
@@ -7427,7 +7934,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2341 => 
+      2963 => 
       array (
         0 => 
         array (
@@ -7449,7 +7956,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2355 => 
+      2977 => 
       array (
         0 => 
         array (
@@ -7471,7 +7978,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2370 => 
+      2992 => 
       array (
         0 => 
         array (
@@ -7493,51 +8000,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2402 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.production.templates.update',
-          ),
-          1 => 
-          array (
-            0 => 'template',
-          ),
-          2 => 
-          array (
-            'PUT' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => true,
-          6 => NULL,
-        ),
-      ),
-      2420 => 
-      array (
-        0 => 
-        array (
-          0 => 
-          array (
-            '_route' => 'staff.production.templates.activate',
-          ),
-          1 => 
-          array (
-            0 => 'template',
-          ),
-          2 => 
-          array (
-            'POST' => 0,
-          ),
-          3 => NULL,
-          4 => false,
-          5 => false,
-          6 => NULL,
-        ),
-      ),
-      2463 => 
+      3035 => 
       array (
         0 => 
         array (
@@ -7559,7 +8022,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2495 => 
+      3067 => 
       array (
         0 => 
         array (
@@ -7582,7 +8045,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2524 => 
+      3096 => 
       array (
         0 => 
         array (
@@ -7623,7 +8086,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2552 => 
+      3124 => 
       array (
         0 => 
         array (
@@ -7664,7 +8127,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2583 => 
+      3155 => 
       array (
         0 => 
         array (
@@ -7705,7 +8168,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2612 => 
+      3184 => 
       array (
         0 => 
         array (
@@ -7746,7 +8209,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2650 => 
+      3222 => 
       array (
         0 => 
         array (
@@ -7768,7 +8231,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2688 => 
+      3260 => 
       array (
         0 => 
         array (
@@ -7791,7 +8254,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2713 => 
+      3285 => 
       array (
         0 => 
         array (
@@ -7814,7 +8277,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2742 => 
+      3314 => 
       array (
         0 => 
         array (
@@ -7836,7 +8299,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2756 => 
+      3328 => 
       array (
         0 => 
         array (
@@ -7858,7 +8321,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2792 => 
+      3364 => 
       array (
         0 => 
         array (
@@ -7880,7 +8343,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2816 => 
+      3388 => 
       array (
         0 => 
         array (
@@ -7902,7 +8365,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2858 => 
+      3430 => 
       array (
         0 => 
         array (
@@ -7924,7 +8387,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2879 => 
+      3451 => 
       array (
         0 => 
         array (
@@ -7947,7 +8410,7 @@ app('router')->setCompiledRoutes(
           6 => NULL,
         ),
       ),
-      2905 => 
+      3477 => 
       array (
         0 => 
         array (
@@ -8058,7 +8521,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::M4DQ1j3w32gDA7jZ' => 
+    'generated::3pGpdFaCnWGt909m' => 
     array (
       'methods' => 
       array (
@@ -8086,8 +8549,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'/home/runner/workspace/vendor/laravel/framework/src/Illuminate/Foundation/Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000005820000000000000000";}}',
-        'as' => 'generated::M4DQ1j3w32gDA7jZ',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"000000000000072e0000000000000000";}}',
+        'as' => 'generated::3pGpdFaCnWGt909m',
       ),
       'fallback' => false,
       'defaults' => 
@@ -8190,8 +8653,16 @@ app('router')->setCompiledRoutes(
         array (
           0 => 'web',
         ),
-        'uses' => 'App\\Http\\Controllers\\MiscRoutesController@choosePortal',
-        'controller' => 'App\\Http\\Controllers\\MiscRoutesController@choosePortal',
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:306:"function (\\Illuminate\\Http\\Request $request) {
+    $data = $request->validate([
+        \'portal\' => [\'required\', \'in:journalist,mass_media\'],
+    ]);
+
+    $request->session()->put(\'public_selected_portal\', $data[\'portal\']);
+
+    // Force public auth (login/signup)
+    return \\redirect()->route(\'login\');
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000007360000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -8734,43 +9205,6 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'lang.switch' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'lang/{locale}',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-        ),
-        'uses' => 'App\\Http\\Controllers\\MiscRoutesController@switchLang',
-        'controller' => 'App\\Http\\Controllers\\MiscRoutesController@switchLang',
-        'namespace' => NULL,
-        'prefix' => '',
-        'where' => 
-        array (
-        ),
-        'as' => 'lang.switch',
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
     'paynow.callback' => 
     array (
       'methods' => 
@@ -9030,43 +9464,6 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'settings.theme.ajax' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'settings/theme/ajax',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-        ),
-        'uses' => 'App\\Http\\Controllers\\SettingsController@updateThemeAjax',
-        'controller' => 'App\\Http\\Controllers\\SettingsController@updateThemeAjax',
-        'namespace' => NULL,
-        'prefix' => '',
-        'where' => 
-        array (
-        ),
-        'as' => 'settings.theme.ajax',
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
     'settings.security' => 
     array (
       'methods' => 
@@ -9193,8 +9590,24 @@ app('router')->setCompiledRoutes(
           0 => 'web',
           1 => 'auth',
         ),
-        'uses' => 'App\\Http\\Controllers\\MiscRoutesController@home',
-        'controller' => 'App\\Http\\Controllers\\MiscRoutesController@home',
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:593:"function (\\Illuminate\\Http\\Request $request) {
+
+        $selected = $request->session()->get(\'public_selected_portal\');
+
+        if ($selected === \'journalist\') {
+            $request->session()->forget(\'public_selected_portal\');
+            return \\redirect()->route(\'accreditation.home\');
+        }
+
+        if ($selected === \'mass_media\') {
+            $request->session()->forget(\'public_selected_portal\');
+            return \\redirect()->route(\'mediahouse.portal\');
+        }
+
+        // fallback if user didn\'t choose (or direct login)
+        return \\redirect()->route(\'portal\');
+
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000007140000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -9239,6 +9652,80 @@ app('router')->setCompiledRoutes(
         array (
         ),
         'as' => 'portal',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'notifications.markRead' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'notifications/mark-read',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+        ),
+        'uses' => 'App\\Http\\Controllers\\PortalController@markNotificationsRead',
+        'controller' => 'App\\Http\\Controllers\\PortalController@markNotificationsRead',
+        'namespace' => NULL,
+        'prefix' => '',
+        'where' => 
+        array (
+        ),
+        'as' => 'notifications.markRead',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'notifications.markOne' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'notifications/{id}/mark-read',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+        ),
+        'uses' => 'App\\Http\\Controllers\\PortalController@markNotificationRead',
+        'controller' => 'App\\Http\\Controllers\\PortalController@markNotificationRead',
+        'namespace' => NULL,
+        'prefix' => '',
+        'where' => 
+        array (
+        ),
+        'as' => 'notifications.markOne',
       ),
       'fallback' => false,
       'defaults' => 
@@ -9600,7 +10087,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'accreditation.renewals' => 
+    'accreditation.renewals.index' => 
     array (
       'methods' => 
       array (
@@ -9616,9 +10103,9 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'applicant.portal',
         ),
-        'uses' => 'App\\Http\\Controllers\\AccreditationPortalController@renewals',
-        'controller' => 'App\\Http\\Controllers\\AccreditationPortalController@renewals',
-        'as' => 'accreditation.renewals',
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@index',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@index',
+        'as' => 'accreditation.renewals.index',
         'namespace' => NULL,
         'prefix' => '/portal/accreditation',
         'where' => 
@@ -9715,14 +10202,14 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'accreditation.lookupNumber' => 
+    'accreditation.lookup' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'portal/accreditation/lookup-number/{number}',
+      'uri' => 'portal/accreditation/lookup/{accreditationNumber}',
       'action' => 
       array (
         'middleware' => 
@@ -9731,9 +10218,9 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'applicant.portal',
         ),
-        'uses' => 'App\\Http\\Controllers\\AccreditationPortalController@lookupAccreditationNumber',
-        'controller' => 'App\\Http\\Controllers\\AccreditationPortalController@lookupAccreditationNumber',
-        'as' => 'accreditation.lookupNumber',
+        'uses' => 'App\\Http\\Controllers\\AccreditationPortalController@lookupAccreditation',
+        'controller' => 'App\\Http\\Controllers\\AccreditationPortalController@lookupAccreditation',
+        'as' => 'accreditation.lookup',
         'namespace' => NULL,
         'prefix' => '/portal/accreditation',
         'where' => 
@@ -9851,45 +10338,6 @@ app('router')->setCompiledRoutes(
         'uses' => 'App\\Http\\Controllers\\AccreditationPortalController@howto',
         'controller' => 'App\\Http\\Controllers\\AccreditationPortalController@howto',
         'as' => 'accreditation.howto',
-        'namespace' => NULL,
-        'prefix' => '/portal/accreditation',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'accreditation.requirements' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'portal/accreditation/requirements',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'applicant.portal',
-        ),
-        'uses' => 'App\\Http\\Controllers\\AccreditationPortalController@requirements',
-        'controller' => 'App\\Http\\Controllers\\AccreditationPortalController@requirements',
-        'as' => 'accreditation.requirements',
         'namespace' => NULL,
         'prefix' => '/portal/accreditation',
         'where' => 
@@ -10084,6 +10532,429 @@ app('router')->setCompiledRoutes(
         'uses' => 'App\\Http\\Controllers\\Portal\\DownloadsController@download',
         'controller' => 'App\\Http\\Controllers\\Portal\\DownloadsController@download',
         'as' => 'accreditation.downloads.file',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.select-type' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'portal/accreditation/renewals/select-type',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@selectType',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@selectType',
+        'as' => 'accreditation.renewals.select-type',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.store-type' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'portal/accreditation/renewals/select-type',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@storeType',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@storeType',
+        'as' => 'accreditation.renewals.store-type',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.lookup' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/lookup',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@lookup',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@lookup',
+        'as' => 'accreditation.renewals.lookup',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.perform-lookup' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/lookup',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@performLookup',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@performLookup',
+        'as' => 'accreditation.renewals.perform-lookup',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.confirm' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/confirm',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@confirm',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@confirm',
+        'as' => 'accreditation.renewals.confirm',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.confirm-no-changes' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/confirm-no-changes',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@confirmNoChanges',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@confirmNoChanges',
+        'as' => 'accreditation.renewals.confirm-no-changes',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.submit-changes' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/submit-changes',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@submitChanges',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@submitChanges',
+        'as' => 'accreditation.renewals.submit-changes',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.payment' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/payment',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@payment',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@payment',
+        'as' => 'accreditation.renewals.payment',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.payment.paynow' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/payment/paynow',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@submitPaynow',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@submitPaynow',
+        'as' => 'accreditation.renewals.payment.paynow',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.payment.proof' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}/payment/proof',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@submitProof',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@submitProof',
+        'as' => 'accreditation.renewals.payment.proof',
+        'namespace' => NULL,
+        'prefix' => '/portal/accreditation',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'accreditation.renewals.show' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'portal/accreditation/renewals/{renewal}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\RenewalController@show',
+        'controller' => 'App\\Http\\Controllers\\Portal\\RenewalController@show',
+        'as' => 'accreditation.renewals.show',
         'namespace' => NULL,
         'prefix' => '/portal/accreditation',
         'where' => 
@@ -10526,7 +11397,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'mediahouse.renewals' => 
+    'mediahouse.renewals.index' => 
     array (
       'methods' => 
       array (
@@ -10542,9 +11413,9 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'applicant.portal',
         ),
-        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@renewals',
-        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@renewals',
-        'as' => 'mediahouse.renewals',
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@index',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@index',
+        'as' => 'mediahouse.renewals.index',
         'namespace' => NULL,
         'prefix' => '/media-house/registration',
         'where' => 
@@ -10565,90 +11436,14 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'mediahouse.ap5.saveDraft' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'media-house/registration/renewals/save-draft',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'applicant.portal',
-        ),
-        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@saveDraftAp5',
-        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@saveDraftAp5',
-        'as' => 'mediahouse.ap5.saveDraft',
-        'namespace' => NULL,
-        'prefix' => '/media-house/registration',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'mediahouse.ap5.submit' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'media-house/registration/renewals/submit',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'applicant.portal',
-        ),
-        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@submitAp5',
-        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@submitAp5',
-        'as' => 'mediahouse.ap5.submit',
-        'namespace' => NULL,
-        'prefix' => '/media-house/registration',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'mediahouse.lookupNumber' => 
+    'mediahouse.renewals.select-type' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'media-house/registration/lookup-number/{number}',
+      'uri' => 'media-house/registration/renewals/select-type',
       'action' => 
       array (
         'middleware' => 
@@ -10657,9 +11452,393 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'applicant.portal',
         ),
-        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@lookupRegistrationNumber',
-        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@lookupRegistrationNumber',
-        'as' => 'mediahouse.lookupNumber',
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@selectType',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@selectType',
+        'as' => 'mediahouse.renewals.select-type',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.store-type' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/renewals/select-type',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@storeType',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@storeType',
+        'as' => 'mediahouse.renewals.store-type',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.lookup' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/lookup',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@lookup',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@lookup',
+        'as' => 'mediahouse.renewals.lookup',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.perform-lookup' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/lookup',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@performLookup',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@performLookup',
+        'as' => 'mediahouse.renewals.perform-lookup',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.confirm' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/confirm',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@confirm',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@confirm',
+        'as' => 'mediahouse.renewals.confirm',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.confirm-no-changes' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/confirm-no-changes',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@confirmNoChanges',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@confirmNoChanges',
+        'as' => 'mediahouse.renewals.confirm-no-changes',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.submit-changes' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/submit-changes',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@submitChanges',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@submitChanges',
+        'as' => 'mediahouse.renewals.submit-changes',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.payment' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/payment',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@payment',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@payment',
+        'as' => 'mediahouse.renewals.payment',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.payment.paynow' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/payment/paynow',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@submitPaynow',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@submitPaynow',
+        'as' => 'mediahouse.renewals.payment.paynow',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.payment.proof' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}/payment/proof',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@submitProof',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@submitProof',
+        'as' => 'mediahouse.renewals.payment.proof',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.renewals.show' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'media-house/registration/renewals/{renewal}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@show',
+        'controller' => 'App\\Http\\Controllers\\Portal\\MediaHouseRenewalController@show',
+        'as' => 'mediahouse.renewals.show',
         'namespace' => NULL,
         'prefix' => '/media-house/registration',
         'where' => 
@@ -10777,45 +11956,6 @@ app('router')->setCompiledRoutes(
         'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@howto',
         'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@howto',
         'as' => 'mediahouse.howto',
-        'namespace' => NULL,
-        'prefix' => '/media-house/registration',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'mediahouse.requirements' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'media-house/registration/requirements',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'applicant.portal',
-        ),
-        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@requirements',
-        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@requirements',
-        'as' => 'mediahouse.requirements',
         'namespace' => NULL,
         'prefix' => '/media-house/registration',
         'where' => 
@@ -11021,6 +12161,197 @@ app('router')->setCompiledRoutes(
       'defaults' => 
       array (
         'portal' => 'mediahouse',
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.download-official-letter' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'media-house/registration/applications/{application}/official-letter',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@downloadOfficialLetter',
+        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@downloadOfficialLetter',
+        'as' => 'mediahouse.download-official-letter',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.payment.app-fee.paynow' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/applications/{application}/payment/application-fee/paynow',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@submitApplicationFeePaynow',
+        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@submitApplicationFeePaynow',
+        'as' => 'mediahouse.payment.app-fee.paynow',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.payment.app-fee.proof' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/applications/{application}/payment/application-fee/proof',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@submitApplicationFeeProof',
+        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@submitApplicationFeeProof',
+        'as' => 'mediahouse.payment.app-fee.proof',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.payment.reg-fee.paynow' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/applications/{application}/payment/registration-fee/paynow',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@submitRegistrationFeePaynow',
+        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@submitRegistrationFeePaynow',
+        'as' => 'mediahouse.payment.reg-fee.paynow',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'mediahouse.payment.reg-fee.proof' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'media-house/registration/applications/{application}/payment/registration-fee/proof',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'applicant.portal',
+        ),
+        'uses' => 'App\\Http\\Controllers\\MediaHousePortalController@submitRegistrationFeeProof',
+        'controller' => 'App\\Http\\Controllers\\MediaHousePortalController@submitRegistrationFeeProof',
+        'as' => 'mediahouse.payment.reg-fee.proof',
+        'namespace' => NULL,
+        'prefix' => '/media-house/registration',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
       ),
       'wheres' => 
       array (
@@ -11333,6 +12664,43 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'paynow.submit_reference' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'payments/{application}/submit-reference',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Portal\\PaynowController@submitReference',
+        'controller' => 'App\\Http\\Controllers\\Portal\\PaynowController@submitReference',
+        'namespace' => NULL,
+        'prefix' => '',
+        'where' => 
+        array (
+        ),
+        'as' => 'paynow.submit_reference',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'payments.upload_proof' => 
     array (
       'methods' => 
@@ -11392,43 +12760,6 @@ app('router')->setCompiledRoutes(
         array (
         ),
         'as' => 'payments.upload_waiver',
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'payments.submit_reference' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'payments/{application}/submit-reference',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Portal\\ManualPaymentController@submitReference',
-        'controller' => 'App\\Http\\Controllers\\Portal\\ManualPaymentController@submitReference',
-        'namespace' => NULL,
-        'prefix' => '',
-        'where' => 
-        array (
-        ),
-        'as' => 'payments.submit_reference',
       ),
       'fallback' => false,
       'defaults' => 
@@ -12816,7 +14147,7 @@ app('router')->setCompiledRoutes(
           2 => 'role:super_admin|director|it_admin|registrar',
           3 => 'role:super_admin|it_admin|director',
         ),
-        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:58:"fn() => \\redirect()->route(\'admin.system.master_settings\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000005070000000000000000";}}',
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:58:"fn() => \\redirect()->route(\'admin.system.master_settings\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000069a0000000000000000";}}',
         'as' => 'admin.system.settings',
         'namespace' => NULL,
         'prefix' => '/admin',
@@ -14261,168 +15592,6 @@ app('router')->setCompiledRoutes(
         'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@unlock',
         'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@unlock',
         'as' => 'staff.officer.applications.unlock',
-        'namespace' => NULL,
-        'prefix' => '/staff/accreditation-officer',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.officer.applications.forward-to-registrar' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/accreditation-officer/applications/{application}/forward-to-registrar',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accreditation_officer',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@forwardToRegistrar',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@forwardToRegistrar',
-        'as' => 'staff.officer.applications.forward-to-registrar',
-        'namespace' => NULL,
-        'prefix' => '/staff/accreditation-officer',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.officer.physical-intake' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'staff/accreditation-officer/physical-intake',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accreditation_officer',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@physicalIntake',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@physicalIntake',
-        'as' => 'staff.officer.physical-intake',
-        'namespace' => NULL,
-        'prefix' => '/staff/accreditation-officer',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.officer.physical-intake.process' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/accreditation-officer/physical-intake',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accreditation_officer',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@processPhysicalIntake',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@processPhysicalIntake',
-        'as' => 'staff.officer.physical-intake.process',
-        'namespace' => NULL,
-        'prefix' => '/staff/accreditation-officer',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.officer.production-queue' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'staff/accreditation-officer/production-queue',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accreditation_officer',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@productionQueue',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@productionQueue',
-        'as' => 'staff.officer.production-queue',
         'namespace' => NULL,
         'prefix' => '/staff/accreditation-officer',
         'where' => 
@@ -16205,6 +17374,329 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'staff.officer.fix-requests' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'staff/accreditation-officer/fix-requests',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@fixRequests',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@fixRequests',
+        'as' => 'staff.officer.fix-requests',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.officer.fix-requests.resolve' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/accreditation-officer/fix-requests/{fixRequest}/resolve',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@resolveFixRequest',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@resolveFixRequest',
+        'as' => 'staff.officer.fix-requests.resolve',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.officer.applications.forward-no-approval' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/accreditation-officer/applications/{application}/forward-no-approval',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@forwardWithoutApproval',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@forwardWithoutApproval',
+        'as' => 'staff.officer.applications.forward-no-approval',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.officer.renewals.production' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'staff/accreditation-officer/renewals-production',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@renewalsProductionQueue',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@renewalsProductionQueue',
+        'as' => 'staff.officer.renewals.production',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.officer.renewals.production.show' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'staff/accreditation-officer/renewals-production/{renewal}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@showRenewalProduction',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@showRenewalProduction',
+        'as' => 'staff.officer.renewals.production.show',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.officer.renewals.production.generate' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/accreditation-officer/renewals-production/{renewal}/generate',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@generateRenewalDocument',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@generateRenewalDocument',
+        'as' => 'staff.officer.renewals.production.generate',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.officer.renewals.production.mark-produced' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/accreditation-officer/renewals-production/{renewal}/mark-produced',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@markRenewalProduced',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@markRenewalProduced',
+        'as' => 'staff.officer.renewals.production.mark-produced',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.officer.renewals.production.print' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/accreditation-officer/renewals-production/{renewal}/print',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accreditation_officer',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@printRenewalDocument',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccreditationOfficerController@printRenewalDocument',
+        'as' => 'staff.officer.renewals.production.print',
+        'namespace' => NULL,
+        'prefix' => '/staff/accreditation-officer',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'staff.registrar.dashboard' => 
     array (
       'methods' => 
@@ -16735,94 +18227,14 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'staff.registrar.applications.fix-request' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/registrar/applications/{application}/fix-request',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:registrar',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@raiseFixRequest',
-        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@raiseFixRequest',
-        'as' => 'staff.registrar.applications.fix-request',
-        'namespace' => NULL,
-        'prefix' => '/staff/registrar',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.registrar.applications.push-to-accounts' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/registrar/applications/{application}/push-to-accounts',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:registrar',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@pushToAccounts',
-        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@pushToAccounts',
-        'as' => 'staff.registrar.applications.push-to-accounts',
-        'namespace' => NULL,
-        'prefix' => '/staff/registrar',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.registrar.accounts-oversight' => 
+    'staff.registrar.fix-requests' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'staff/registrar/accounts-oversight',
+      'uri' => 'staff/registrar/fix-requests',
       'action' => 
       array (
         'middleware' => 
@@ -16833,9 +18245,9 @@ app('router')->setCompiledRoutes(
           3 => 'role:registrar',
           4 => 'block.director.operational',
         ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@accountsOversight',
-        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@accountsOversight',
-        'as' => 'staff.registrar.accounts-oversight',
+        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@fixRequests',
+        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@fixRequests',
+        'as' => 'staff.registrar.fix-requests',
         'namespace' => NULL,
         'prefix' => '/staff/registrar',
         'where' => 
@@ -16856,14 +18268,134 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'staff.registrar.reminders.index' => 
+    'staff.registrar.applications.send-fix-request' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/registrar/applications/{application}/send-fix-request',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:registrar',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@sendFixRequest',
+        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@sendFixRequest',
+        'as' => 'staff.registrar.applications.send-fix-request',
+        'namespace' => NULL,
+        'prefix' => '/staff/registrar',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.registrar.applications.approve-special-case' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/registrar/applications/{application}/approve-special-case',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:registrar',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@approveSpecialCase',
+        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@approveSpecialCase',
+        'as' => 'staff.registrar.applications.approve-special-case',
+        'namespace' => NULL,
+        'prefix' => '/staff/registrar',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.registrar.applications.approve-with-letter' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/registrar/applications/{application}/approve-with-letter',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:registrar',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@approveWithOfficialLetter',
+        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@approveWithOfficialLetter',
+        'as' => 'staff.registrar.applications.approve-with-letter',
+        'namespace' => NULL,
+        'prefix' => '/staff/registrar',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.registrar.payment-oversight' => 
     array (
       'methods' => 
       array (
         0 => 'GET',
         1 => 'HEAD',
       ),
-      'uri' => 'staff/registrar/reminders',
+      'uri' => 'staff/registrar/payment-oversight',
       'action' => 
       array (
         'middleware' => 
@@ -16874,9 +18406,9 @@ app('router')->setCompiledRoutes(
           3 => 'role:registrar',
           4 => 'block.director.operational',
         ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@remindersIndex',
-        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@remindersIndex',
-        'as' => 'staff.registrar.reminders.index',
+        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@paymentOversight',
+        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@paymentOversight',
+        'as' => 'staff.registrar.payment-oversight',
         'namespace' => NULL,
         'prefix' => '/staff/registrar',
         'where' => 
@@ -16897,13 +18429,14 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'staff.registrar.reminders.store' => 
+    'staff.registrar.payment-detail' => 
     array (
       'methods' => 
       array (
-        0 => 'POST',
+        0 => 'GET',
+        1 => 'HEAD',
       ),
-      'uri' => 'staff/registrar/reminders',
+      'uri' => 'staff/registrar/payment-oversight/{paymentSubmission}',
       'action' => 
       array (
         'middleware' => 
@@ -16914,9 +18447,9 @@ app('router')->setCompiledRoutes(
           3 => 'role:registrar',
           4 => 'block.director.operational',
         ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@createReminder',
-        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@createReminder',
-        'as' => 'staff.registrar.reminders.store',
+        'uses' => 'App\\Http\\Controllers\\Staff\\RegistrarController@paymentDetail',
+        'controller' => 'App\\Http\\Controllers\\Staff\\RegistrarController@paymentDetail',
+        'as' => 'staff.registrar.payment-detail',
         'namespace' => NULL,
         'prefix' => '/staff/registrar',
         'where' => 
@@ -17688,247 +19221,6 @@ app('router')->setCompiledRoutes(
         'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@rejectProof',
         'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@rejectProof',
         'as' => 'staff.accounts.proofs.reject',
-        'namespace' => NULL,
-        'prefix' => '/staff/accounts',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.accounts.applications.payment.reject' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/accounts/applications/{application}/payment/reject',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accounts_payments',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@rejectPayment',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@rejectPayment',
-        'as' => 'staff.accounts.applications.payment.reject',
-        'namespace' => NULL,
-        'prefix' => '/staff/accounts',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.accounts.cash-payment.create' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'staff/accounts/cash-payment/create',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accounts_payments',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@createCashPayment',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@createCashPayment',
-        'as' => 'staff.accounts.cash-payment.create',
-        'namespace' => NULL,
-        'prefix' => '/staff/accounts',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.accounts.cash-payment.store' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/accounts/cash-payment',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accounts_payments',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@storeCashPayment',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@storeCashPayment',
-        'as' => 'staff.accounts.cash-payment.store',
-        'namespace' => NULL,
-        'prefix' => '/staff/accounts',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.accounts.cash-payment.void' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/accounts/cash-payment/{payment}/void',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accounts_payments',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@voidCashPayment',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@voidCashPayment',
-        'as' => 'staff.accounts.cash-payment.void',
-        'namespace' => NULL,
-        'prefix' => '/staff/accounts',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.accounts.waiver-verification.approve' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/accounts/applications/{application}/waiver-verification/approve',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accounts_payments',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@approveWaiverVerification',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@approveWaiverVerification',
-        'as' => 'staff.accounts.waiver-verification.approve',
-        'namespace' => NULL,
-        'prefix' => '/staff/accounts',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.accounts.waiver-verification.reject' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/accounts/applications/{application}/waiver-verification/reject',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:accounts_payments',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@rejectWaiverVerification',
-        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@rejectWaiverVerification',
-        'as' => 'staff.accounts.waiver-verification.reject',
         'namespace' => NULL,
         'prefix' => '/staff/accounts',
         'where' => 
@@ -18846,6 +20138,168 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
+    'staff.accounts.applications.verify-payment' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/accounts/applications/{application}/verify-payment',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accounts_payments',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@verifyPaymentSubmission',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@verifyPaymentSubmission',
+        'as' => 'staff.accounts.applications.verify-payment',
+        'namespace' => NULL,
+        'prefix' => '/staff/accounts',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.accounts.renewals.queue' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'staff/accounts/renewals',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accounts_payments',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@renewalsQueue',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@renewalsQueue',
+        'as' => 'staff.accounts.renewals.queue',
+        'namespace' => NULL,
+        'prefix' => '/staff/accounts',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.accounts.renewals.show' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'staff/accounts/renewals/{renewal}',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accounts_payments',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@showRenewal',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@showRenewal',
+        'as' => 'staff.accounts.renewals.show',
+        'namespace' => NULL,
+        'prefix' => '/staff/accounts',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'staff.accounts.renewals.verify' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'staff/accounts/renewals/{renewal}/verify',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'web',
+          1 => 'auth',
+          2 => 'staff.portal',
+          3 => 'role:accounts_payments',
+          4 => 'block.director.operational',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@verifyRenewalPayment',
+        'controller' => 'App\\Http\\Controllers\\Staff\\AccountsPaymentsController@verifyRenewalPayment',
+        'as' => 'staff.accounts.renewals.verify',
+        'namespace' => NULL,
+        'prefix' => '/staff/accounts',
+        'where' => 
+        array (
+        ),
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
     'staff.production.dashboard' => 
     array (
       'methods' => 
@@ -19637,208 +21091,6 @@ app('router')->setCompiledRoutes(
         'uses' => 'App\\Http\\Controllers\\Staff\\ProductionController@unlock',
         'controller' => 'App\\Http\\Controllers\\Staff\\ProductionController@unlock',
         'as' => 'staff.production.applications.unlock',
-        'namespace' => NULL,
-        'prefix' => '/staff/production',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.production.designer' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'staff/production/designer',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:production',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\ProductionController@designer',
-        'controller' => 'App\\Http\\Controllers\\Staff\\ProductionController@designer',
-        'as' => 'staff.production.designer',
-        'namespace' => NULL,
-        'prefix' => '/staff/production',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.production.templates' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'GET',
-        1 => 'HEAD',
-      ),
-      'uri' => 'staff/production/templates',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:production',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\ProductionController@templates',
-        'controller' => 'App\\Http\\Controllers\\Staff\\ProductionController@templates',
-        'as' => 'staff.production.templates',
-        'namespace' => NULL,
-        'prefix' => '/staff/production',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.production.templates.store' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/production/templates',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:production',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\ProductionController@storeTemplate',
-        'controller' => 'App\\Http\\Controllers\\Staff\\ProductionController@storeTemplate',
-        'as' => 'staff.production.templates.store',
-        'namespace' => NULL,
-        'prefix' => '/staff/production',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.production.templates.update' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'PUT',
-      ),
-      'uri' => 'staff/production/templates/{template}',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:production',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\ProductionController@updateTemplate',
-        'controller' => 'App\\Http\\Controllers\\Staff\\ProductionController@updateTemplate',
-        'as' => 'staff.production.templates.update',
-        'namespace' => NULL,
-        'prefix' => '/staff/production',
-        'where' => 
-        array (
-        ),
-      ),
-      'fallback' => false,
-      'defaults' => 
-      array (
-      ),
-      'wheres' => 
-      array (
-      ),
-      'bindingFields' => 
-      array (
-      ),
-      'lockSeconds' => NULL,
-      'waitSeconds' => NULL,
-      'withTrashed' => false,
-    ),
-    'staff.production.templates.activate' => 
-    array (
-      'methods' => 
-      array (
-        0 => 'POST',
-      ),
-      'uri' => 'staff/production/templates/{template}/activate',
-      'action' => 
-      array (
-        'middleware' => 
-        array (
-          0 => 'web',
-          1 => 'auth',
-          2 => 'staff.portal',
-          3 => 'role:production',
-          4 => 'block.director.operational',
-        ),
-        'uses' => 'App\\Http\\Controllers\\Staff\\ProductionController@activateTemplate',
-        'controller' => 'App\\Http\\Controllers\\Staff\\ProductionController@activateTemplate',
-        'as' => 'staff.production.templates.activate',
         'namespace' => NULL,
         'prefix' => '/staff/production',
         'where' => 
@@ -22004,7 +23256,7 @@ app('router')->setCompiledRoutes(
           2 => 'staff.portal',
           3 => 'role:it_admin|super_admin',
         ),
-        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:48:"fn() => \\redirect()->route(\'staff.it.dashboard\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000004210000000000000000";}}',
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:48:"fn() => \\redirect()->route(\'staff.it.dashboard\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000005b60000000000000000";}}',
         'as' => 'staff.it.',
         'namespace' => NULL,
         'prefix' => '/staff/it',
@@ -22841,6 +24093,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@dashboard',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@dashboard',
@@ -22881,6 +24134,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@accreditationPerformance',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@accreditationPerformance',
@@ -22921,6 +24175,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@financialOverview',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@financialOverview',
@@ -22961,6 +24216,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@complianceRisk',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@complianceRisk',
@@ -23001,6 +24257,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@mediaHouseOversight',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@mediaHouseOversight',
@@ -23041,6 +24298,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@staffPerformance',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@staffPerformance',
@@ -23081,6 +24339,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@issuanceOversight',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@issuanceOversight',
@@ -23121,6 +24380,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@geographicDistribution',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@geographicDistribution',
@@ -23161,6 +24421,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@reportsDownloads',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@reportsDownloads',
@@ -23200,6 +24461,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateMonthlyAccreditationReport',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateMonthlyAccreditationReport',
@@ -23239,6 +24501,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateRevenueFinancialReport',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateRevenueFinancialReport',
@@ -23278,6 +24541,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateComplianceAuditReport',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateComplianceAuditReport',
@@ -23317,6 +24581,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateMediaHouseStatusReport',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateMediaHouseStatusReport',
@@ -23356,6 +24621,7 @@ app('router')->setCompiledRoutes(
           1 => 'auth',
           2 => 'staff.portal',
           3 => 'role:director',
+          4 => 'director.view_only',
         ),
         'uses' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateOperationalPerformanceReport',
         'controller' => 'App\\Http\\Controllers\\Staff\\DirectorController@generateOperationalPerformanceReport',
@@ -23470,7 +24736,7 @@ app('router')->setCompiledRoutes(
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000005700000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000071c0000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,
