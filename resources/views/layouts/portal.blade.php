@@ -79,10 +79,10 @@
 
     .logo-text{ 
       display:block; 
-      font-family: var(--font-primary);
+      font-family: var(--font-heading, 'Montserrat', 'Inter', sans-serif);
       font-weight: var(--font-weight-black); 
-      font-size: 13px; 
-      letter-spacing:.4px; 
+      font-size: 12px; 
+      letter-spacing:.3px; 
       text-align: right; 
       line-height: var(--line-height-tight);
     }

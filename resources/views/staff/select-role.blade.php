@@ -54,7 +54,8 @@
     }
     .brand img{ height:70px; width:70px; background:white; padding:6px; border-radius:50%; object-fit:contain; box-shadow:0 2px 12px rgba(0,0,0,0.2); }
     .brand span{
-      font-weight:900; font-size:20px; color:var(--text);
+      font-family:'Montserrat','Inter',sans-serif;
+      font-weight:800; font-size:17px; color:var(--text);
       letter-spacing:-0.5px; text-transform:uppercase;
     }
     .card{
@@ -77,7 +78,7 @@
       letter-spacing:.5px;
       margin-bottom:15px;
     }
-    .title{ margin:0 0 8px; font-size:26px; font-weight:900; color:#111827;}
+    .title{ margin:0 0 8px; font-size:22px; font-weight:700; color:#111827; font-family:'Montserrat','Inter',sans-serif; }
     .subtitle{ margin:0; font-size:14px; color:var(--muted); }
     .field{ margin-bottom: 20px; }
     label{ display:block; font-size: var(--font-size-base); font-weight:900; margin-bottom:8px; color:#111827; }

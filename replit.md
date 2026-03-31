@@ -210,8 +210,12 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
   - Database-backed sessions and cache for autoscale compatibility
   - Health check router.php for non-browser requests
 
-- January 05, 2026: Green theme implementation
-  - Dark green (#1a3a1a) theme with golden/olive accent buttons (#c9a227)
+- January 05, 2026: Theme — black/yellow/white with professional typography
+  - Color scheme: Black (#1a1a1a) primary, Yellow (#f5c518) accent, White backgrounds
+  - Font stack: Montserrat (headings), Source Sans Pro / Open Sans (body), Inter (UI), Helvetica (fallback)
+  - Reduced font sizes system-wide (base 13px, headings scaled down proportionally)
+  - Removed all-caps from dashboard cards, table headers, nav tabs, content headings
+  - Kept uppercase only for brand logos, sidebar section labels, small badges/eyebrows
 
 - January 04, 2026: Paynow payment integration
   - Fee calculation: Local journalist $50 new/$30 renewal, Foreign $150/$100, Media house $500/$300

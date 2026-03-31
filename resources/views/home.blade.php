@@ -7,7 +7,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
 
     <style>
@@ -19,12 +19,14 @@
             --text-white: #ffffff;
             --text-light: rgba(255,255,255,0.85);
             --text-muted: rgba(255,255,255,0.6);
+            --font-heading: 'Montserrat', 'Inter', Helvetica, sans-serif;
+            --font-body: 'Source Sans Pro', 'Open Sans', 'Inter', Helvetica, sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
             position: relative;
@@ -84,26 +86,27 @@
 
         .header-label {
             display: inline-block;
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 600;
             color: var(--gold);
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             margin-bottom: 12px;
-            padding: 6px 16px;
+            padding: 5px 14px;
             border: 1px solid rgba(250, 204, 21, 0.3);
             border-radius: 20px;
             background: rgba(250, 204, 21, 0.08);
         }
 
         .header-title {
-            font-size: 36px;
-            font-weight: 900;
+            font-size: 32px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 0 0 12px;
+            letter-spacing: 0.5px;
+            margin: 0 0 10px;
             color: var(--text-white);
-            line-height: 1.1;
+            line-height: 1.15;
+            font-family: var(--font-heading);
         }
 
         .header-title .highlight-green { color: #f5c518; }
@@ -176,20 +179,22 @@
         }
 
         .card-title {
-            font-size: 20px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+            font-size: 17px;
+            font-weight: 700;
+            text-transform: none;
+            letter-spacing: normal;
+            margin-bottom: 8px;
             color: var(--text-white);
+            font-family: var(--font-heading);
         }
 
         .card-desc {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
             line-height: 1.6;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             flex: 1;
+            font-family: var(--font-body);
         }
 
         .card-footer {
@@ -199,19 +204,20 @@
         }
 
         .card-stream {
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             color: var(--text-muted);
         }
 
         .card-stream strong {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-light);
             letter-spacing: 0;
             margin-top: 2px;
+            text-transform: none;
         }
 
         .card-arrow {
@@ -245,10 +251,10 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             color: var(--text-muted);
         }
 

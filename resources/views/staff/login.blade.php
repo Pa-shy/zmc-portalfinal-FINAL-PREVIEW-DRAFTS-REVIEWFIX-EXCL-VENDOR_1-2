@@ -56,7 +56,8 @@
         }
         .brand img{ height:70px; width:70px; background:white; padding:6px; border-radius:50%; object-fit:contain; box-shadow:0 2px 12px rgba(0,0,0,0.2); }
         .brand span{
-            font-weight:900; font-size:20px; color:var(--text);
+            font-family:'Montserrat','Inter',sans-serif;
+            font-weight:800; font-size:17px; color:var(--text);
             letter-spacing:-0.5px; text-transform:uppercase;
         }
         .card{

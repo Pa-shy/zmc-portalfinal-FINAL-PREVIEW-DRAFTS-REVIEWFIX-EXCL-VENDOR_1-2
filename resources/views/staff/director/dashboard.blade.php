@@ -16,7 +16,7 @@
         <div class="d-flex gap-2">
             <div class="bg-white border p-2 rounded-4 px-3 d-flex align-items-center shadow-sm">
                 <div class="text-end me-3">
-                    <div class="text-muted fw-bold" style="font-size: var(--font-size-sm); text-transform: uppercase;">System Status</div>
+                    <div class="text-muted fw-bold" style="font-size: var(--font-size-sm);">System Status</div>
                     <div class="text-success fw-bold small">
                         <i class="ri-checkbox-circle-fill me-1"></i>Operational
                     </div>

@@ -78,9 +78,9 @@
         }
         .brand img { height: 70px; width: 70px; background: white; padding: 6px; border-radius: 50%; object-fit: contain; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
         .brand span{
-            font-family: var(--font-primary);
+            font-family: var(--font-heading, 'Montserrat', 'Inter', sans-serif);
             font-weight: var(--font-weight-black);
-            font-size: var(--font-size-xl);
+            font-size: 17px;
             color: var(--text);
             letter-spacing: -0.5px;
             text-transform: uppercase;

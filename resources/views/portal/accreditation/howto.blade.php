@@ -61,10 +61,10 @@
      color: #1a1a1a;
      padding: 8px 20px;
      border-radius: 100px;
-     font-size: 12px;
-     font-weight: 700;
+     font-size: 11px;
+     font-weight: 600;
      text-transform: uppercase;
-     letter-spacing: 2px;
+     letter-spacing: 1.5px;
      display: inline-block;
      margin-bottom: 24px;
      border: 1px solid rgba(0, 0, 0, 0.15);
