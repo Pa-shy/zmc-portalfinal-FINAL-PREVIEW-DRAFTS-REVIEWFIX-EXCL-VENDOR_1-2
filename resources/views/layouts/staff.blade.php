@@ -76,7 +76,7 @@
             content: "";
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, rgba(0, 0, 0, 0.90), rgba(0, 0, 0, 0.93));
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.78));
             z-index: 0;
         }
         .zmc-topbar > *{

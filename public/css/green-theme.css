@@ -24,8 +24,8 @@
   --zmc-text-dark: #1a1a1a;
 
   /* Opacity Variations for Black */
-  --zmc-dark-90: rgba(0, 0, 0, 0.9);
-  --zmc-dark-75: rgba(0, 0, 0, 0.75);
+  --zmc-dark-90: rgba(0, 0, 0, 0.72);
+  --zmc-dark-75: rgba(0, 0, 0, 0.6);
   --zmc-dark-50: rgba(0, 0, 0, 0.5);
   --zmc-dark-30: rgba(0, 0, 0, 0.3);
   --zmc-dark-15: rgba(0, 0, 0, 0.15);

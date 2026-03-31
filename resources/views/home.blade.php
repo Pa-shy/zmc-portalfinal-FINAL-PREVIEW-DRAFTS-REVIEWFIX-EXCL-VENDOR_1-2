@@ -46,9 +46,9 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(
                 160deg,
-                rgba(0, 0, 0, 0.88) 0%,
-                rgba(10, 10, 10, 0.80) 40%,
-                rgba(20, 20, 20, 0.72) 100%
+                rgba(0, 0, 0, 0.68) 0%,
+                rgba(10, 10, 10, 0.58) 40%,
+                rgba(20, 20, 20, 0.48) 100%
             );
             z-index: 1;
         }

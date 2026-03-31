@@ -59,7 +59,7 @@
 
     /* Sidebar */
     .vertical-menu{ width: 270px; background: url('/zmc_building.png') center center / cover no-repeat; color:var(--sidebar-text); position: fixed; top:0; left: 0; bottom: 0; height: 100%; display:flex; flex-direction:column; overflow:hidden; z-index: 1000; }
-    .vertical-menu::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.92)); z-index: 0; pointer-events: none; }
+    .vertical-menu::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.78)); z-index: 0; pointer-events: none; }
     .vertical-menu > *{ position: relative; z-index: 1; }
     .main{ margin-left: 270px; }
     .navbar-brand-box{ padding: 24px 16px; display:flex; flex-direction:column; gap:12px; align-items:center; border-bottom: 1px solid rgba(255,255,255,.08); justify-content: center; }
@@ -351,7 +351,7 @@
     }
 
     .topbar{ background: url('/zmc_building.png') center center / cover no-repeat !important; border-bottom: none !important; position: relative; }
-    .topbar::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.90), rgba(0, 0, 0, 0.93)); z-index: 0; }
+    .topbar::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.78)); z-index: 0; }
     .topbar > *{ position: relative; z-index: 1; }
     .topbar .icon-btn{ background: rgba(255,255,255,.1) !important; border-color: rgba(255,255,255,.2) !important; }
     .topbar .icon-btn i{ color: #fff !important; }
