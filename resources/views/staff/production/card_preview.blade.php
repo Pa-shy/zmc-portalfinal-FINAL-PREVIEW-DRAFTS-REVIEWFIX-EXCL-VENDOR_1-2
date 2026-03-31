@@ -266,7 +266,7 @@
                   <div style="text-align: right;">
                     <div class="org-name">
                       <div style="color:#000;">ZIMBABWE</div>
-                      <div style="color:#2e7d32;">MEDIA</div>
+                      <div style="color:#f5c518;">MEDIA</div>
                       <div style="color:#000;">COMMISSION</div>
                     </div>
                     <div class="org-sub">Accreditation Card (Back)</div>
@@ -379,7 +379,7 @@
 
   /* Template Variations */
   .template-modern_dark { --accent: #212121; --accentLite: rgba(33,33,33,0.15); }
-  .template-eco_green { --accent: #1b5e20; --accentLite: rgba(27,94,32,0.15); }
+  .template-eco_green { --accent: #1a1a1a; --accentLite: rgba(245,197,24,0.12); }
   .template-royal_gold { --accent: #4a148c; --accentLite: rgba(74,20,140,0.15); }
   .template-ocean_blue { --accent: #01579b; --accentLite: rgba(1,87,155,0.15); }
   .template-crimson_pro { --accent: #b71c1c; --accentLite: rgba(183,28,28,0.15); }
@@ -440,7 +440,7 @@
     text-align: center;
   }
 
-  .header-title .highlight { color: #2e7d32; }
+  .header-title .highlight { color: #f5c518; }
 
   .header-title .sub{
     font-size: 10px; /* Increased from 7.5px */

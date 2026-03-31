@@ -7,7 +7,7 @@
   <style>
     @php
         $primaryColor = $template_data['primary_color'] ?? '#1a237e';
-        $secondaryColor = $template_data['secondary_color'] ?? '#2e7d32';
+        $secondaryColor = $template_data['secondary_color'] ?? '#f5c518';
         $bgStyle = $template_data['bg_style'] ?? 'gradient';
     @endphp
 
@@ -102,7 +102,7 @@
     }
 
     .header-text .org span.media {
-      color: #2e7d32;
+      color: #f5c518;
     }
 
     .header-text .sub {
@@ -199,7 +199,7 @@
         <div class="header-text">
           <div class="org">
             <div style="color:#000;">ZIMBABWE</div>
-            <div class="media" style="color: #2e7d32;">MEDIA</div>
+            <div class="media" style="color: #f5c518;">MEDIA</div>
             <div style="color:#000;">COMMISSION</div>
           </div>
           <div class="sub">Accreditation Card (Back)</div>

@@ -339,7 +339,7 @@ class ProductionController extends Controller
         $variations = [
             'default' => [
                 'primary_color' => '#1a237e',
-                'secondary_color' => '#2e7d32',
+                'secondary_color' => '#f5c518',
                 'bg_style' => 'gradient',
                 'layout' => 'standard'
             ],
@@ -350,8 +350,8 @@ class ProductionController extends Controller
                 'layout' => 'standard'
             ],
             'eco_green' => [
-                'primary_color' => '#1b5e20',
-                'secondary_color' => '#81c784',
+                'primary_color' => '#1a1a1a',
+                'secondary_color' => '#fde68a',
                 'bg_style' => 'gradient',
                 'layout' => 'standard'
             ],
@@ -449,7 +449,7 @@ class ProductionController extends Controller
     {
         $variations = [
             'var_1' => ['orientation' => 'portrait', 'primary_color' => '#1a237e', 'secondary_color' => '#d4a574', 'bg_type' => 'solid', 'border_style' => 'solid'],
-            'var_2' => ['orientation' => 'portrait', 'primary_color' => '#1b5e20', 'secondary_color' => '#a5d6a7', 'bg_type' => 'solid', 'border_style' => 'double'],
+            'var_2' => ['orientation' => 'portrait', 'primary_color' => '#1a1a1a', 'secondary_color' => '#fde68a', 'bg_type' => 'solid', 'border_style' => 'double'],
             'var_3' => ['orientation' => 'portrait', 'primary_color' => '#b71c1c', 'secondary_color' => '#ef9a9a', 'bg_type' => 'gradient', 'border_style' => 'solid'],
             'var_4' => ['orientation' => 'portrait', 'primary_color' => '#4a148c', 'secondary_color' => '#ce93d8', 'bg_type' => 'pattern', 'border_style' => 'ornate'],
             'var_5' => ['orientation' => 'landscape', 'primary_color' => '#1a237e', 'secondary_color' => '#d4a574', 'bg_type' => 'solid', 'border_style' => 'solid'],
@@ -467,7 +467,7 @@ class ProductionController extends Controller
             'var_17' => ['orientation' => 'portrait', 'primary_color' => '#212121', 'secondary_color' => '#d4a574', 'bg_type' => 'gradient', 'border_style' => 'ornate'],
             'var_18' => ['orientation' => 'landscape', 'primary_color' => '#0d47a1', 'secondary_color' => '#bbdefb', 'bg_type' => 'pattern', 'border_style' => 'double'],
             'var_19' => ['orientation' => 'portrait', 'primary_color' => '#ff6f00', 'secondary_color' => '#ffe082', 'bg_type' => 'solid', 'border_style' => 'solid'],
-            'var_20' => ['orientation' => 'landscape', 'primary_color' => '#1b5e20', 'secondary_color' => '#c8e6c9', 'bg_type' => 'gradient', 'border_style' => 'ornate'],
+            'var_20' => ['orientation' => 'landscape', 'primary_color' => '#1a1a1a', 'secondary_color' => '#fef3c7', 'bg_type' => 'gradient', 'border_style' => 'ornate'],
             'var_21' => ['orientation' => 'portrait', 'primary_color' => '#006064', 'secondary_color' => '#b2ebf2', 'bg_type' => 'pattern', 'border_style' => 'double'],
             'var_22' => ['orientation' => 'landscape', 'primary_color' => '#4a148c', 'secondary_color' => '#e1bee7', 'bg_type' => 'solid', 'border_style' => 'solid'],
             'var_23' => ['orientation' => 'portrait', 'primary_color' => '#b71c1c', 'secondary_color' => '#ffccbc', 'bg_type' => 'gradient', 'border_style' => 'double'],

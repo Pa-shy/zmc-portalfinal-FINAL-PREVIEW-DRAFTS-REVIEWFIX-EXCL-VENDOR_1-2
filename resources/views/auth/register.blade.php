@@ -18,8 +18,8 @@
             --border: #e2e8f0;
             --muted: #64748b;
             --text: #111827;
-            --primary: #2d5016;
-            --primary-hover: #1f3a0f;
+            --primary: #1a1a1a;
+            --primary-hover: #111111;
             --accent: #facc15;
             --accent-dark: #eab308;
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -48,7 +48,7 @@
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(45, 80, 22, 0.45);
+            background: rgba(0, 0, 0, 0.75);
             pointer-events: none;
         }
 

@@ -12,10 +12,10 @@
 
     <style>
         :root {
-            --gold: #facc15;
-            --gold-dark: #d4a90a;
-            --green-dark: #1b4332;
-            --green-medium: #2d6a4f;
+            --gold: #f5c518;
+            --gold-dark: #d4a910;
+            --dark: #1a1a1a;
+            --dark-medium: #2a2a2a;
             --text-white: #ffffff;
             --text-light: rgba(255,255,255,0.85);
             --text-muted: rgba(255,255,255,0.6);
@@ -34,7 +34,7 @@
         .bg-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #0a1f0d url('/zmc_building.png') no-repeat center center;
+            background: #0a0a0a url('/zmc_building.png') no-repeat center center;
             background-size: cover;
             z-index: 0;
         }
@@ -44,9 +44,9 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(
                 160deg,
-                rgba(10, 31, 13, 0.88) 0%,
-                rgba(27, 67, 50, 0.78) 40%,
-                rgba(45, 106, 79, 0.68) 100%
+                rgba(0, 0, 0, 0.88) 0%,
+                rgba(10, 10, 10, 0.80) 40%,
+                rgba(20, 20, 20, 0.72) 100%
             );
             z-index: 1;
         }
@@ -106,7 +106,7 @@
             line-height: 1.1;
         }
 
-        .header-title .highlight-green { color: #66bb6a; }
+        .header-title .highlight-green { color: #f5c518; }
         .header-title .highlight-gold { color: #ffffff; }
 
         .header-subtitle {
@@ -166,8 +166,8 @@
         }
 
         .card-icon.accreditation {
-            background: rgba(102, 187, 106, 0.15);
-            color: #81c784;
+            background: rgba(245, 197, 24, 0.12);
+            color: var(--gold);
         }
 
         .card-icon.registration {
@@ -219,7 +219,7 @@
             height: 40px;
             border-radius: 50%;
             background: var(--gold);
-            color: var(--green-dark);
+            color: var(--dark);
             display: flex;
             align-items: center;
             justify-content: center;

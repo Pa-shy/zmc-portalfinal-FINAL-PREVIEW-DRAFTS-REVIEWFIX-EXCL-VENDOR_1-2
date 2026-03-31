@@ -39,7 +39,7 @@
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
       <div class="zmc-card text-center p-3">
-        <div class="display-6 fw-bold" style="color:#2e7d32;">{{ $stats['total'] ?? 0 }}</div>
+        <div class="display-6 fw-bold" style="color:#1a1a1a;">{{ $stats['total'] ?? 0 }}</div>
         <div class="small text-muted">Total Accredited</div>
       </div>
     </div>

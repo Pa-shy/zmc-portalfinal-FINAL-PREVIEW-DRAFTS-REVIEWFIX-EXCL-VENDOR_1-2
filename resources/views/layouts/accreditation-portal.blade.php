@@ -38,7 +38,7 @@
     .navbar-brand-box img{height:38px;}
     .logo-text{color:#fff;font-weight:800;font-size:16px;letter-spacing:0.5px;text-transform:uppercase;text-align: right;}
     .logo-text span.zimbabwe { color: #fff; }
-    .logo-text span.media { color: #4caf50; }
+    .logo-text span.media { color: #f5c518; }
     .logo-text span.commission { color: #fff; }
     .logo-sub{font-size:11px;color:var(--zmc-yellow);font-weight:600;display:block;margin-top:2px;text-align: right;}
 

@@ -521,7 +521,7 @@
       <div class="modal-body p-0">
         <div class="row g-0">
           <div class="col-md-4 d-none d-md-block position-relative" style="background: url('/zmc_building.png') center center / cover no-repeat;">
-            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(45, 80, 22, 0.75), rgba(31, 58, 15, 0.80)); z-index: 1;"></div>
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.88)); z-index: 1;"></div>
             <div class="h-100 d-flex flex-column justify-content-center p-5 text-white position-relative" style="z-index: 2;">
               <i class="ri-user-star-line mb-4" style="font-size: 80px; color: #ffffff;"></i>
               <h2 class="fw-black mb-3" style="color: #ffffff;">Welcome, Practitioner!</h2>
@@ -537,36 +537,36 @@
 
               <div class="row g-4 mb-4">
                 <div class="col-md-6">
-                  <div class="fw-bold mb-3" style="color: #2d5016;"><i class="ri-user-line me-2"></i>Local Applicants</div>
+                  <div class="fw-bold mb-3" style="color: #1a1a1a;"><i class="ri-user-line me-2"></i>Local Applicants</div>
                   <ul class="list-unstyled small mb-0">
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>National ID</li>
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Education Certificate</li>
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Letter of Employment (if employed)</li>
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Passport Sized Photo</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>National ID</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>Education Certificate</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>Letter of Employment (if employed)</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>Passport Sized Photo</li>
                   </ul>
                 </div>
                 <div class="col-md-6">
-                  <div class="fw-bold mb-3" style="color: #2d5016;"><i class="ri-global-line me-2"></i>Foreign Applicants</div>
+                  <div class="fw-bold mb-3" style="color: #1a1a1a;"><i class="ri-global-line me-2"></i>Foreign Applicants</div>
                   <ul class="list-unstyled small mb-0">
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Passport</li>
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Education Certificate</li>
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Passport Sized Photo</li>
-                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #2d5016;"></i>Clearance Letter</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>Passport</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>Education Certificate</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>Passport Sized Photo</li>
+                    <li class="mb-2" style="color: #334155;"><i class="ri-checkbox-circle-fill me-2" style="color: #1a1a1a;"></i>Clearance Letter</li>
                   </ul>
                 </div>
               </div>
 
-              <div class="alert mb-4" style="background: rgba(45, 80, 22, 0.1); border-left: 4px solid #2d5016;">
+              <div class="alert mb-4" style="background: rgba(245, 197, 24, 0.1); border-left: 4px solid #1a1a1a;">
                 <div class="d-flex align-items-start gap-2">
-                  <i class="ri-information-line" style="color: #2d5016; font-size: 1.2rem; margin-top: 2px;"></i>
+                  <i class="ri-information-line" style="color: #1a1a1a; font-size: 1.2rem; margin-top: 2px;"></i>
                   <div class="small" style="color: #334155;">
-                    <strong style="color: #2d5016;">Important:</strong> All documents must be clear, legible, and in acceptable formats (PDF, JPG, PNG). Ensure your education certificates are certified copies where required.
+                    <strong style="color: #1a1a1a;">Important:</strong> All documents must be clear, legible, and in acceptable formats (PDF, JPG, PNG). Ensure your education certificates are certified copies where required.
                   </div>
                 </div>
               </div>
 
               <div class="d-grid">
-                <button type="button" class="btn btn-lg py-3 rounded-pill fw-bold shadow-sm" data-bs-dismiss="modal" style="background: #2d5016; border-color: #2d5016; color: #ffffff;">
+                <button type="button" class="btn btn-lg py-3 rounded-pill fw-bold shadow-sm" data-bs-dismiss="modal" style="background: #1a1a1a; border-color: #1a1a1a; color: #ffffff;">
                   I Understand, Let's Begin <i class="ri-arrow-right-line ms-2"></i>
                 </button>
               </div>

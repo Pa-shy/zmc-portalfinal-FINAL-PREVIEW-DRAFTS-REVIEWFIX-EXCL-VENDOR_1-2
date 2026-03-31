@@ -4,7 +4,7 @@
       <div class="modal-header zmc-modal-header">
         <div>
           <div class="zmc-modal-title">
-            <i class="ri-bank-card-line me-2" style="color:var(--zmc-green)"></i>
+            <i class="ri-bank-card-line me-2" style="color:var(--zmc-yellow)"></i>
             Make Payment
           </div>
           <div class="zmc-modal-sub" id="pay_meta">Application: —</div>
@@ -14,7 +14,7 @@
 
       <div class="modal-body">
         <div id="pay_loading" class="d-none text-center py-4">
-          <div class="spinner-border" style="color:var(--zmc-green)"></div>
+          <div class="spinner-border" style="color:var(--zmc-yellow)"></div>
           <div class="text-muted mt-2" style="font-size:12px;">Processing...</div>
         </div>
 

@@ -22,7 +22,7 @@
   <div class="row g-3 mb-4">
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
+        <h6 class="fw-bold mb-3" style="color:#1a1a1a;">
           <i class="ri-building-2-line me-2" style="color:var(--zmc-accent)"></i>New Registration (AP1) - Documents
         </h6>
         <ul class="list-unstyled mb-0">
@@ -56,7 +56,7 @@
 
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
+        <h6 class="fw-bold mb-3" style="color:#1a1a1a;">
           <i class="ri-attachment-2 me-2" style="color:var(--zmc-accent)"></i>Additional Required Attachments
         </h6>
         <ul class="list-unstyled mb-0">
@@ -92,7 +92,7 @@
   <div class="row g-3 mb-4">
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
+        <h6 class="fw-bold mb-3" style="color:#1a1a1a;">
           <i class="ri-refresh-line me-2" style="color:var(--zmc-accent)"></i>Renewal (AP5)
         </h6>
         <ul class="list-unstyled mb-0">
@@ -118,7 +118,7 @@
 
     <div class="col-12 col-lg-6">
       <div class="zmc-card h-100">
-        <h6 class="fw-bold mb-3" style="color:#2e7d32;">
+        <h6 class="fw-bold mb-3" style="color:#1a1a1a;">
           <i class="ri-exchange-line me-2" style="color:var(--zmc-accent)"></i>Replacement (AP5)
         </h6>
         <ul class="list-unstyled mb-0">
@@ -140,7 +140,7 @@
   </div>
 
   <div class="zmc-card" style="background: linear-gradient(135deg, rgba(46, 125, 50,0.05), rgba(46, 125, 50,0.02));">
-    <h6 class="fw-bold mb-3" style="color:#2e7d32;">
+    <h6 class="fw-bold mb-3" style="color:#1a1a1a;">
       <i class="ri-money-dollar-circle-line me-2" style="color:var(--zmc-accent)"></i>Payment Information
     </h6>
     <p class="small text-muted mb-2">Application and registration fees are as per <strong>Statutory Instrument 65 of 2022</strong>.</p>

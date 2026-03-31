@@ -15,7 +15,7 @@
    :root {
      --glass-bg: rgba(255, 255, 255, 0.7);
      --glass-border: rgba(255, 255, 255, 0.4);
-     --brand-primary: #1a4d2e; /* Deeper Green */
+     --brand-primary: #1a1a1a;
      --brand-accent: #ffd700; /* Richer Gold */
      --text-main: #1e293b;
      --text-muted: #64748b;
@@ -52,13 +52,13 @@
      right: -10%;
      width: 300px;
      height: 300px;
-     background: radial-gradient(circle, rgba(45, 80, 22, 0.08) 0%, transparent 70%);
+     background: radial-gradient(circle, rgba(245, 197, 24, 0.08) 0%, transparent 70%);
      border-radius: 50%;
    }
  
    .hero-badge {
-     background: rgba(45, 80, 22, 0.1);
-     color: #2d5016;
+     background: rgba(245, 197, 24, 0.1);
+     color: #1a1a1a;
      padding: 8px 20px;
      border-radius: 100px;
      font-size: 12px;
@@ -67,7 +67,7 @@
      letter-spacing: 2px;
      display: inline-block;
      margin-bottom: 24px;
-     border: 1px solid rgba(45, 80, 22, 0.2);
+     border: 1px solid rgba(0, 0, 0, 0.15);
    }
  
    .hero-title {
@@ -102,9 +102,9 @@
  
    .premium-step:hover {
      transform: translateY(-10px) rotateX(2deg);
-     border-color: #2d5016;
+     border-color: #1a1a1a;
      background: #ffffff;
-     box-shadow: 0 12px 40px rgba(45, 80, 22, 0.15);
+     box-shadow: 0 12px 40px rgba(245, 197, 24, 0.15);
    }
  
    .step-number {
@@ -113,33 +113,33 @@
      right: 30px;
      font-size: 60px;
      font-weight: 900;
-     color: rgba(26, 77, 46, 0.05);
+     color: rgba(245, 197, 24, 0.08);
      line-height: 1;
      transition: all 0.4s ease;
    }
  
    .premium-step:hover .step-number {
-     color: rgba(26, 77, 46, 0.1);
+     color: rgba(245, 197, 24, 0.15);
      transform: scale(1.1);
    }
  
    .icon-box {
      width: 64px;
      height: 64px;
-     background: rgba(45, 80, 22, 0.08);
+     background: rgba(245, 197, 24, 0.08);
      border-radius: 18px;
      display: flex;
      align-items: center;
      justify-content: center;
      font-size: 30px;
-     color: #2d5016;
+     color: #1a1a1a;
      margin-bottom: 24px;
      transition: all 0.3s ease;
-     box-shadow: inset 0 0 0 1px rgba(45, 80, 22, 0.1);
+     box-shadow: inset 0 0 0 1px rgba(245, 197, 24, 0.1);
    }
  
    .premium-step:hover .icon-box {
-     background: #2d5016;
+     background: #1a1a1a;
      color: #ffffff;
      transform: scale(1.1) rotate(5deg);
    }
@@ -236,7 +236,7 @@
    }
  
    .modern-item i {
-     color: #10b981;
+     color: #f5c518;
      font-size: 20px;
    }
  

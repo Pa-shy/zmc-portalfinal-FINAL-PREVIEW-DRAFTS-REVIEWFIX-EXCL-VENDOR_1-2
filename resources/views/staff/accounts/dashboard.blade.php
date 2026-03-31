@@ -354,7 +354,7 @@
                   <div class="modal-header zmc-modal-header">
                     <div>
                       <div class="zmc-modal-title">
-                        <i class="fa-solid fa-check me-2" style="color:var(--zmc-green)"></i>
+                        <i class="fa-solid fa-check me-2" style="color:var(--zmc-yellow)"></i>
                         Confirm payment
                         <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
