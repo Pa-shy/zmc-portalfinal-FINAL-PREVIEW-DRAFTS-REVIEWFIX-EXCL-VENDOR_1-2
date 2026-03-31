@@ -73,12 +73,12 @@ class AccreditationOfficerController extends Controller
             Application::SUBMITTED,
             Application::OFFICER_REVIEW,
             Application::CORRECTION_REQUESTED,
-            Application::APPROVED_BY_ACCREDITATION_OFFICER_AWAITING_PAYMENT,
-            Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
-            Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR,
+            Application::RETURNED_TO_APPLICANT,
+            Application::APPROVED_AWAITING_PAYMENT,
+            Application::VERIFIED_BY_OFFICER,
             Application::RETURNED_TO_OFFICER,
-            Application::REGISTRAR_RAISED_FIX_REQUEST,
-            'officer_approved_pending_registrar',
+            Application::REGISTRAR_FIX_REQUEST,
+            Application::SUBMITTED_WITH_APP_FEE,
         ];
 
         $applications = Application::query()

@@ -150,6 +150,16 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - Used by Registrar to send notifications to portal users
 
 ## Recent Changes
+- March 31, 2026: Unified workflow enforcement & dashboard fixes
+  - Consolidated Application model status constants with simplified naming (31 canonical statuses)
+  - Legacy constant aliases for backward compatibility (old verbose names → new short string values)
+  - Unified StatusTransitionValidator to read from ApplicationWorkflow::transitionMap() (single source of truth)
+  - Updated ApplicationWorkflow transition map with all active controller routes covered
+  - Fixed RegistrarController missing `$year`/`$isCurrentYear` view variables
+  - Fixed AccountsPaymentsController dashboard `$badge` variable collision (renamed to `$statusBadge`)
+  - Updated Officer/Registrar/Accounts dashboard queries to use new status constants
+  - Added `allStatuses()` and `statusLabel()` helpers to Application model
+
 - March 31, 2026: Post-merge deployment fixes
   - Fixed TokenAuth middleware priority: TokenAuth now runs before Laravel's auth middleware via explicit priority chain
   - Fixed all post-merge migration failures: handled existing tables (reminders), duplicate columns (users.passport_number), SQLite-style drop-recreate on Postgres (renewal_applications), and CHECK constraint blocking new workflow statuses

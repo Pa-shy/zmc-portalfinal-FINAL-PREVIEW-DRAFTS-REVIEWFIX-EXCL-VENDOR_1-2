@@ -58,7 +58,7 @@
     .fw-black { font-weight: var(--font-weight-black) !important; }
 
     /* Sidebar */
-    .vertical-menu{ width: 270px; background: url('{{ asset("zmc_building.png") }}') center center / cover no-repeat; color:var(--sidebar-text); position: fixed; top:0; left: 0; bottom: 0; height: 100%; display:flex; flex-direction:column; overflow:hidden; z-index: 1000; }
+    .vertical-menu{ width: 270px; background: url('/zmc_building.png') center center / cover no-repeat; color:var(--sidebar-text); position: fixed; top:0; left: 0; bottom: 0; height: 100%; display:flex; flex-direction:column; overflow:hidden; z-index: 1000; }
     .vertical-menu::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(45, 80, 22, 0.85), rgba(31, 58, 15, 0.88)); z-index: 0; pointer-events: none; }
     .vertical-menu > *{ position: relative; z-index: 1; }
     .main{ margin-left: 270px; }
@@ -339,7 +339,7 @@
     }
     
     body{
-      background: url('{{ asset("zmc_building.png") }}') no-repeat center center fixed !important;
+      background: url('/zmc_building.png') no-repeat center center fixed !important;
       background-size: cover !important;
     }
     body::before{
@@ -350,7 +350,7 @@
       z-index: -1;
     }
 
-    .topbar{ background: url('{{ asset("zmc_building.png") }}') center center / cover no-repeat !important; border-bottom: none !important; position: relative; }
+    .topbar{ background: url('/zmc_building.png') center center / cover no-repeat !important; border-bottom: none !important; position: relative; }
     .topbar::before{ content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(45, 80, 22, 0.85), rgba(31, 58, 15, 0.88)); z-index: 0; }
     .topbar > *{ position: relative; z-index: 1; }
     .topbar .icon-btn{ background: rgba(255,255,255,.1) !important; border-color: rgba(255,255,255,.2) !important; }

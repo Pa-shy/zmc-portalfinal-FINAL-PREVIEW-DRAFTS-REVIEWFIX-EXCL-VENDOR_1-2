@@ -519,7 +519,7 @@
     <div class="modal-content overflow-hidden border-0 shadow-lg" style="border-radius: 24px;">
       <div class="modal-body p-0">
         <div class="row g-0">
-          <div class="col-md-4 d-none d-md-block position-relative" style="background: url('{{ asset('zmc_building.png') }}') center center / cover no-repeat;">
+          <div class="col-md-4 d-none d-md-block position-relative" style="background: url('/zmc_building.png') center center / cover no-repeat;">
             <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(45, 80, 22, 0.75), rgba(31, 58, 15, 0.80)); z-index: 1;"></div>
             <div class="h-100 d-flex flex-column justify-content-center p-5 text-white position-relative" style="z-index: 2;">
               <i class="ri-user-star-line mb-4" style="font-size: 80px; color: #ffffff;"></i>

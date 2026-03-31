@@ -69,7 +69,7 @@
         .border-success-subtle{ border-color: rgba(250,204,21,.3) !important; }
         
         .zmc-topbar{
-            background: url('{{ asset("zmc_building.png") }}') center center / cover no-repeat;
+            background: url('/zmc_building.png') center center / cover no-repeat;
             position: relative;
         }
         .zmc-topbar::before{

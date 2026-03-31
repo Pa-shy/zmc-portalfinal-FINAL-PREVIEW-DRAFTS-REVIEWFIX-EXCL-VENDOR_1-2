@@ -107,7 +107,7 @@
         }
 
         .header-title .highlight-green { color: #66bb6a; }
-        .header-title .highlight-gold { color: var(--gold); }
+        .header-title .highlight-gold { color: #ffffff; }
 
         .header-subtitle {
             font-size: 15px;

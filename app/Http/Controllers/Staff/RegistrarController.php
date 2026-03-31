@@ -30,47 +30,33 @@ class RegistrarController extends Controller
         $kpis = [
             'awaiting_registrar' => Application::whereIn('status', [
                     Application::REGISTRAR_REVIEW,
-                    Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
-                    Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR
-                ])
-                ->where(function($q) use ($user) {
-                    $q->whereNull('assigned_officer_id')
-                      ->orWhere('assigned_officer_id', $user->id);
-                })->count(),
-            'approved_today' => Application::whereIn('status', [Application::ACCOUNTS_REVIEW, Application::REGISTRAR_APPROVED, Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT])->where('last_action_at', '>=', $today)->count(),
-            'approved_this_week' => Application::whereIn('status', [Application::ACCOUNTS_REVIEW, Application::REGISTRAR_APPROVED, Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT])->where('last_action_at', '>=', $thisWeek)->count(),
-            'returned_to_officer' => Application::whereIn('status', [Application::RETURNED_TO_OFFICER, Application::REGISTRAR_RAISED_FIX_REQUEST])->count(),
-
-            // Category mismatches: items where registrar changed the category
+                    Application::FORWARDED_TO_REGISTRAR,
+                    Application::VERIFIED_BY_OFFICER,
+                ])->count(),
+            'approved_today' => Application::whereIn('status', [
+                    Application::REGISTRAR_APPROVED,
+                    Application::REGISTRAR_APPROVED_PENDING_REG_FEE,
+                ])->where('last_action_at', '>=', $today)->count(),
+            'approved_this_week' => Application::whereIn('status', [
+                    Application::REGISTRAR_APPROVED,
+                    Application::REGISTRAR_APPROVED_PENDING_REG_FEE,
+                ])->where('last_action_at', '>=', $thisWeek)->count(),
+            'returned_to_officer' => Application::whereIn('status', [
+                    Application::RETURNED_TO_OFFICER,
+                    Application::REGISTRAR_FIX_REQUEST,
+                ])->count(),
             'category_mismatches' => ActivityLog::where('action', 'registrar_reassign_category')->where('created_at', '>=', $thisWeek)->count(),
-
             'certificates_generated_today' => DocumentVersion::where('document_type', 'certificate')->where('created_at', '>=', $today)->count(),
             'prints_today' => PrintLog::where('created_at', '>=', $today)->count(),
-
-            // Reprints flagged: prints > 1
             'flagged_reprints' => Application::where('print_count', '>', 1)->count(),
-
-            // New: Applications awaiting Registrar to approve for payment
-            'awaiting_payment_approval' => Application::whereIn('status', [
-                    Application::REGISTRAR_REVIEW,
-                    Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
-                    Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR
-                ])
-                ->whereNull('registrar_reviewed_at')
-                ->where('payment_status', '!=', 'paid')
-                ->where(function($q) use ($user) {
-                    $q->whereNull('assigned_officer_id')
-                      ->orWhere('assigned_officer_id', $user->id);
-                })
-                ->count(),
         ];
 
-        // Global Filters logic for the main dashboard list
         $query = Application::query()
             ->with(['applicant', 'lastActionBy'])
             ->withCount('printLogs');
-            
-        // Apply year filter if it's not the current year
+
+        $year = $request->input('year', now()->year);
+        $isCurrentYear = (int)$year === now()->year;
         if (!$isCurrentYear) {
             $query->whereYear('created_at', $year);
         }
@@ -118,15 +104,14 @@ class RegistrarController extends Controller
         // By default show items needing attention or recently approved
         if (!$request->filled('status')) {
             $query->whereIn('status', [
-                Application::PAID_CONFIRMED,
+                Application::FORWARDED_TO_REGISTRAR,
                 Application::REGISTRAR_REVIEW,
-                Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
-                Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR,
+                Application::VERIFIED_BY_OFFICER,
                 Application::REGISTRAR_APPROVED,
-                Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT,
+                Application::REGISTRAR_APPROVED_PENDING_REG_FEE,
                 Application::RETURNED_TO_OFFICER,
-                Application::REGISTRAR_RAISED_FIX_REQUEST,
-                Application::ACCOUNTS_REVIEW,
+                Application::REGISTRAR_FIX_REQUEST,
+                Application::REGISTRAR_REJECTED,
             ]);
         }
 
@@ -149,7 +134,7 @@ class RegistrarController extends Controller
             ->limit(15)
             ->get();
 
-        return view('staff.registrar.dashboard', compact('applications', 'kpis', 'activity'));
+        return view('staff.registrar.dashboard', compact('applications', 'kpis', 'activity', 'year', 'isCurrentYear'));
     }
 
     /**
@@ -162,8 +147,8 @@ class RegistrarController extends Controller
             ->with(['applicant', 'assignedOfficer', 'payments'])
             ->whereIn('status', [
                 Application::REGISTRAR_REVIEW,
-                Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
-                Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR
+                Application::FORWARDED_TO_REGISTRAR,
+                Application::VERIFIED_BY_OFFICER,
             ]);
 
         // Apply filters

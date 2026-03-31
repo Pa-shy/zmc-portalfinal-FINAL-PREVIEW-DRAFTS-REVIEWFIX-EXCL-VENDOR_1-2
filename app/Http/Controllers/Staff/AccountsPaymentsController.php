@@ -322,9 +322,9 @@ class AccountsPaymentsController extends Controller
             ->with('applicant', 'paymentSubmissions')
             ->whereIn('status', [
                 Application::ACCOUNTS_REVIEW,
+                Application::AWAITING_ACCOUNTS_VERIFICATION,
                 Application::RETURNED_TO_ACCOUNTS,
-                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR, // Special cases
-                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION, // Two-stage payment
+                Application::PENDING_ACCOUNTS_FROM_REGISTRAR,
             ])
             ->where(function($q) use ($user) {
                 $q->whereNull('assigned_officer_id')
@@ -344,35 +344,21 @@ class AccountsPaymentsController extends Controller
         $applications = $query->latest()->paginate(20)->withQueryString();
 
         // KPIs by submission method
+        $pendingStatuses = [
+            Application::ACCOUNTS_REVIEW,
+            Application::AWAITING_ACCOUNTS_VERIFICATION,
+            Application::RETURNED_TO_ACCOUNTS,
+            Application::PENDING_ACCOUNTS_FROM_REGISTRAR,
+        ];
+
         $kpis = [
-            'total_pending' => Application::whereIn('status', [
-                Application::ACCOUNTS_REVIEW, 
-                Application::RETURNED_TO_ACCOUNTS,
-                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR,
-                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION,
-            ])->count(),
-            'special_cases' => Application::where('status', Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR)->count(),
-            'two_stage_pending' => Application::where('status', Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION)->count(),
-            'paynow_submissions' => Application::whereIn('status', [
-                Application::ACCOUNTS_REVIEW, 
-                Application::RETURNED_TO_ACCOUNTS,
-                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
-            ])->where('payment_submission_method', 'paynow_reference')->count(),
-            'proof_submissions' => Application::whereIn('status', [
-                Application::ACCOUNTS_REVIEW, 
-                Application::RETURNED_TO_ACCOUNTS,
-                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
-            ])->where('payment_submission_method', 'proof_upload')->count(),
-            'waiver_submissions' => Application::whereIn('status', [
-                Application::ACCOUNTS_REVIEW, 
-                Application::RETURNED_TO_ACCOUNTS,
-                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
-            ])->where('payment_submission_method', 'waiver')->count(),
-            'no_submission' => Application::whereIn('status', [
-                Application::ACCOUNTS_REVIEW, 
-                Application::RETURNED_TO_ACCOUNTS,
-                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
-            ])->whereNull('payment_submission_method')->count(),
+            'total_pending' => Application::whereIn('status', $pendingStatuses)->count(),
+            'special_cases' => Application::where('status', Application::PENDING_ACCOUNTS_FROM_REGISTRAR)->count(),
+            'paynow_submissions' => Application::whereIn('status', $pendingStatuses)->where('payment_submission_method', 'paynow_reference')->count(),
+            'proof_submissions' => Application::whereIn('status', $pendingStatuses)->where('payment_submission_method', 'proof_upload')->count(),
+            'waiver_submissions' => Application::whereIn('status', $pendingStatuses)->where('payment_submission_method', 'waiver')->count(),
+            'verified_today' => Application::where('status', Application::PAYMENT_VERIFIED)->where('last_action_at', '>=', now()->startOfDay())->count(),
+            'rejected_today' => Application::where('status', Application::PAYMENT_REJECTED)->where('last_action_at', '>=', now()->startOfDay())->count(),
         ];
 
         return view('staff.accounts.dashboard', compact('applications', 'kpis'));

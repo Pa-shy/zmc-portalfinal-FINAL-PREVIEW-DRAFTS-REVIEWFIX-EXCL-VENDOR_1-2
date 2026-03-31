@@ -48,7 +48,7 @@
             line-height: var(--line-height-normal);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: #000 url('{{ asset("zmc_building.png") }}') no-repeat center center fixed;
+            background: #000 url('/zmc_building.png') no-repeat center center;
             background-size: cover;
             color: var(--text);
             display: flex;
@@ -76,7 +76,7 @@
             margin-bottom: 25px;
             text-decoration: none;
         }
-        .brand img { height: 45px; width: auto; }
+        .brand img { height: 70px; width: 70px; background: white; padding: 6px; border-radius: 50%; object-fit: contain; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
         .brand span{
             font-family: var(--font-primary);
             font-weight: var(--font-weight-black);
@@ -233,7 +233,7 @@
     </style>
 </head>
 
-<body>
+<body class="landing-page">
 
 <div class="wrap">
     {{-- Brand with Logo --}}

@@ -210,7 +210,7 @@
         @forelse($applications as $i => $app)
           @php
             $status = strtolower((string)($app->status ?? ''));
-            $badge = match($status) {
+            $statusBadge = match($status) {
               'returned_to_accounts' => 'warning',
               'paid_confirmed' => 'success',
               default => 'info',
@@ -257,7 +257,7 @@
             <td class="text-capitalize">{{ $app->collection_region ?? '—' }}</td>
             <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
             <td>
-              <span class="badge rounded-pill bg-{{ $badge }} px-3">
+              <span class="badge rounded-pill bg-{{ $statusBadge }} px-3">
                 {{ ucwords(str_replace('_',' ', $status ?: '—')) }}
               </span>
               @if($app->status === 'pending_accounts_review_from_registrar')
