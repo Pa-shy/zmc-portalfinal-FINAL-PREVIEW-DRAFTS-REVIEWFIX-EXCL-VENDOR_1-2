@@ -52,7 +52,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::3pGpdFaCnWGt909m',
+            '_route' => 'generated::bX4UIq6zx19gDUBU',
           ),
           1 => NULL,
           2 => 
@@ -8521,7 +8521,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::3pGpdFaCnWGt909m' => 
+    'generated::bX4UIq6zx19gDUBU' => 
     array (
       'methods' => 
       array (
@@ -8549,8 +8549,8 @@ app('router')->setCompiledRoutes(
                     return response(\\Illuminate\\Support\\Facades\\View::file(\'/home/runner/workspace/vendor/laravel/framework/src/Illuminate/Foundation/Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"000000000000072e0000000000000000";}}',
-        'as' => 'generated::3pGpdFaCnWGt909m',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"000000000000058b0000000000000000";}}',
+        'as' => 'generated::bX4UIq6zx19gDUBU',
       ),
       'fallback' => false,
       'defaults' => 
@@ -8662,7 +8662,7 @@ app('router')->setCompiledRoutes(
 
     // Force public auth (login/signup)
     return \\redirect()->route(\'login\');
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000007360000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000005930000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -9607,7 +9607,7 @@ app('router')->setCompiledRoutes(
         // fallback if user didn\'t choose (or direct login)
         return \\redirect()->route(\'portal\');
 
-    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000007140000000000000000";}}',
+    }";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000005710000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
@@ -14147,7 +14147,7 @@ app('router')->setCompiledRoutes(
           2 => 'role:super_admin|director|it_admin|registrar',
           3 => 'role:super_admin|it_admin|director',
         ),
-        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:58:"fn() => \\redirect()->route(\'admin.system.master_settings\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"000000000000069a0000000000000000";}}',
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:58:"fn() => \\redirect()->route(\'admin.system.master_settings\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000004f70000000000000000";}}',
         'as' => 'admin.system.settings',
         'namespace' => NULL,
         'prefix' => '/admin',
@@ -23256,7 +23256,7 @@ app('router')->setCompiledRoutes(
           2 => 'staff.portal',
           3 => 'role:it_admin|super_admin',
         ),
-        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:48:"fn() => \\redirect()->route(\'staff.it.dashboard\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000005b60000000000000000";}}',
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:48:"fn() => \\redirect()->route(\'staff.it.dashboard\')";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000004130000000000000000";}}',
         'as' => 'staff.it.',
         'namespace' => NULL,
         'prefix' => '/staff/it',
@@ -24736,7 +24736,7 @@ app('router')->setCompiledRoutes(
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"000000000000071c0000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000005790000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,
