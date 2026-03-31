@@ -15,13 +15,15 @@
 
     <style>
         :root{
-            --bg: #f0f7f0;
+            --bg: #fafafa;
             --card: #ffffff;
             --border: #e2e8f0;
             --muted: #64748b;
             --text: #0f172a;
-            --green: #1a3a1a;
-            --green-hover: #0d2810;
+            --primary: #000000;
+            --primary-hover: #1a1a1a;
+            --accent: #facc15;
+            --accent-dark: #eab308;
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             --radius: 16px;
         }
@@ -29,8 +31,12 @@
         *{box-sizing:border-box}
         body{
             margin:0;
-            font-family: Roboto, Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-            background: url('{{ asset("zmc_building.png") }}') no-repeat center center fixed;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: #000 url('{{ asset("zmc_building.png") }}') no-repeat center center fixed;
             background-size: cover;
             color: var(--text);
             display: flex;
@@ -44,11 +50,11 @@
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(240, 247, 240, 0.92) 0%, rgba(220, 237, 220, 0.95) 100%);
-            z-index: -1;
+            background: rgba(0, 0, 0, 0.45);
+            pointer-events: none;
         }
 
-        .wrap{ width: 100%; max-width: 520px; }
+        .wrap{ width: 100%; max-width: 520px; position: relative; z-index: 1; }
 
         .brand{
             display: flex;
@@ -60,7 +66,7 @@
         }
         .brand img { height: 45px; width: auto; }
         .brand span{
-            font-family: Roboto, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-weight: 900;
             font-size: 20px;
             color: var(--text);
@@ -82,8 +88,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(26, 58, 26, 0.1);
-            color: var(--green);
+            background: rgba(0, 0, 0, 0.08);
+            color: var(--primary);
             padding: 6px 14px;
             border-radius: 99px;
             font-size: 11px;
@@ -122,8 +128,8 @@
             background: #fef2f2;
         }
         .input:focus{
-            border-color: var(--green);
-            box-shadow: 0 0 0 4px rgba(26, 58, 26, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.15);
         }
 
         .toggle{
@@ -154,12 +160,12 @@
         }
 
         .info-box{
-            background: rgba(26, 58, 26, 0.05);
-            border-left: 3px solid var(--green);
+            background: rgba(250, 204, 21, 0.1);
+            border-left: 3px solid var(--accent);
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 13px;
-            color: var(--green);
+            color: #78350f;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -170,9 +176,9 @@
         .btn{
             width: 100%;
             height: 52px;
-            background-color: var(--green);
-            color: white;
-            border: none;
+            background-color: var(--primary);
+            color: var(--accent);
+            border: 2px solid var(--accent);
             border-radius: 12px;
             font-size: 15px;
             font-weight: 900;
@@ -182,9 +188,13 @@
             justify-content: center;
             gap: 10px;
             margin-top: 10px;
-            transition: background 0.2s, transform .08s ease;
+            transition: all 0.2s ease;
         }
-        .btn:hover { background-color: var(--green-hover); }
+        .btn:hover { 
+            background-color: var(--accent);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
         .btn:active{ transform: translateY(1px); }
 
         .footer-text{
@@ -194,11 +204,14 @@
             margin-top: 20px;
         }
         .footer-text a{
-            color: var(--green);
+            color: var(--primary);
             font-weight: 900;
             text-decoration: none;
         }
-        .footer-text a:hover{ text-decoration: underline; }
+        .footer-text a:hover{ 
+            color: var(--accent-dark);
+            text-decoration: underline; 
+        }
 
         @media (max-width: 480px){
             .card { padding: 30px 20px; }

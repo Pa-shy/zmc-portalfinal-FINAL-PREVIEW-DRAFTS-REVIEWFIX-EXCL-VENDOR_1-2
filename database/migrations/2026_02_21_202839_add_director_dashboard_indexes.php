@@ -17,7 +17,7 @@ return new class extends Migration
             $table->index('application_type', 'idx_applications_type');
             $table->index('accreditation_category_code', 'idx_applications_category');
             $table->index('residency_type', 'idx_applications_residency');
-            $table->index('media_house_id', 'idx_applications_media_house');
+            // Removed: media_house_id index (column doesn't exist)
             $table->index(['status', 'issued_at'], 'idx_applications_status_issued');
             $table->index(['status', 'submitted_at'], 'idx_applications_status_submitted');
         });
@@ -57,7 +57,7 @@ return new class extends Migration
             $table->dropIndex('idx_applications_type');
             $table->dropIndex('idx_applications_category');
             $table->dropIndex('idx_applications_residency');
-            $table->dropIndex('idx_applications_media_house');
+            // Removed: media_house_id index (column doesn't exist)
             $table->dropIndex('idx_applications_status_issued');
             $table->dropIndex('idx_applications_status_submitted');
         });

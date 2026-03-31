@@ -12,14 +12,13 @@
 
     <style>
         :root {
-            --bg-dark: #1a3a1a;
-            --bg-dark-2: #0d2810;
-            --zmc-green: #2d5a27;
-            --zmc-green-light: #3d7a35;
-            --zmc-yellow: #c9a227;
-            --zmc-orange: #ea580c;
+            --bg-dark: #000000;
+            --bg-dark-2: #1a1a1a;
+            --primary: #000000;
+            --accent: #facc15;
+            --accent-dark: #eab308;
             --card-bg: rgba(255, 255, 255, 0.08);
-            --card-border: rgba(255, 255, 255, 0.15);
+            --card-border: rgba(250, 204, 21, 0.3);
             --text-main: #ffffff;
             --text-muted: rgba(255, 255, 255, 0.7);
         }
@@ -27,22 +26,26 @@
 
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: url('<?php echo e(asset("zmc_building.png")); ?>') no-repeat top center fixed;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: #000 url('<?php echo e(asset("zmc_building.png")); ?>') no-repeat center center fixed;
             background-size: cover;
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            position: relative;
         }
         body::before {
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* More vibrant, dynamic gradient with better transparency */
-            background: radial-gradient(circle at top right, rgba(45, 90, 39, 0.65) 0%, rgba(13, 40, 16, 0.85) 100%);
-            z-index: -1;
+            background: rgba(45, 80, 22, 0.45);
+            pointer-events: none;
         }
 
         .container {
@@ -52,16 +55,23 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .brand img {
-            height: 65px;
+            height: 120px;
+            width: 120px;
             margin-bottom: 15px;
-            filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.15));
+            filter: drop-shadow(0 0 20px rgba(250, 204, 21, 0.2));
+            background: white;
+            padding: 10px;
+            border-radius: 50%;
+            object-fit: contain;
         }
 
         .welcome-hero { margin-bottom: 35px; text-align: right; }
@@ -69,7 +79,7 @@
         .welcome-name {
             font-size: 14px;
             font-weight: 700;
-            color: var(--zmc-yellow);
+            color: var(--accent);
             text-transform: uppercase;
             letter-spacing: 3px;
             margin-bottom: 5px;
@@ -87,7 +97,7 @@
 
         .header-title span.zimbabwe { color: #fff; }
         .header-title span.media { color: #4caf50; }
-        .header-title span.commission { color: #fff; }
+        .header-title span.commission { color: #facc15; }
 
         .instruction {
             font-size: 13px;
@@ -99,17 +109,17 @@
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            gap: 30px;
             width: 100%;
         }
 
         .portal-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 45px 35px;
-            border-radius: 8px; /* Slightly softer corners for premium feel */
+            background: rgba(45, 80, 22, 0.40);
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            padding: 55px 45px;
+            border-radius: 8px;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            backdrop-filter: blur(25px); /* Increased blur for glassmorphism effect */
+            backdrop-filter: blur(15px);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -118,42 +128,43 @@
             width: 100%;
             cursor: pointer;
             text-align: left;
+            min-height: 320px;
         }
 
         .portal-card:hover {
-            border-color: var(--zmc-yellow);
-            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent);
+            background: rgba(45, 80, 22, 0.60);
             transform: translateY(-4px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            box-shadow: 0 15px 35px rgba(250, 204, 21, 0.3);
         }
 
         .portal-card h2 {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 800;
             text-transform: uppercase;
-            margin: 0 0 12px;
+            margin: 0 0 15px;
             letter-spacing: 1.5px;
-            color: var(--zmc-yellow);
+            color: var(--accent);
         }
 
         .portal-card p {
             color: var(--text-muted);
-            font-size: 13.5px;
+            font-size: 15px;
             line-height: 1.6;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         .portal-type {
-            font-size: 36px;
+            font-size: 40px;
             font-weight: 900;
-            margin: 15px 0;
+            margin: 20px 0;
             color: var(--text-main);
             letter-spacing: -1px;
         }
 
         .portal-type span {
             font-size: 10px;
-            color: var(--zmc-yellow);
+            color: var(--accent);
             text-transform: uppercase;
             display: block;
             letter-spacing: 4px;
@@ -162,23 +173,23 @@
         }
 
         .btn {
-            padding: 14px 30px;
-            font-size: 11px;
+            padding: 16px 35px;
+            font-size: 12px;
             font-weight: 900;
             text-transform: uppercase;
             border-radius: 2px;
             transition: all 0.2s ease;
             letter-spacing: 2px;
             display: inline-block;
-            border: 1px solid var(--zmc-yellow);
-            background: var(--zmc-yellow);
-            color: #1a3a1a;
+            border: 2px solid var(--accent);
+            background: var(--accent);
+            color: #2d5016;
             width: fit-content;
         }
 
         .portal-card:hover .btn {
             background: transparent;
-            color: var(--zmc-yellow);
+            color: var(--accent);
         }
 
         .feature-bar {
@@ -195,7 +206,7 @@
         }
 
         .feature-bar span i {
-            color: var(--zmc-green);
+            color: var(--accent);
             margin-right: 5px;
         }
 
@@ -210,7 +221,7 @@
 
 <div class="container">
     <div class="brand">
-        <img src="<?php echo e(asset('zimbabwe_media_commission_transparent_edges.png')); ?>" alt="ZMC Logo">
+        <img src="<?php echo e(asset('zmc_logo.png')); ?>" alt="ZMC Logo">
     </div>
 
     <div class="welcome-hero">
@@ -220,18 +231,18 @@
     </div>
 
     <div class="grid">
-        <!-- Media Practitioner / Journalist -->
+        <!-- Media Practitioner -->
         <form method="POST" action="<?php echo e(route('public.choose_portal')); ?>">
             <?php echo csrf_field(); ?>
             <input type="hidden" name="portal" value="journalist">
             <button type="submit" class="portal-card" style="border:none;">
                 <div>
                     <h2>Accreditation</h2>
-                    <p>Apply for new press cards, renewals, replacements, and manage your journalist profile.</p>
+                    <p>Apply for new press cards, renewals, replacements, and manage your media practitioner profile.</p>
                 </div>
                 <div class="portal-type">
                     <span>Stream</span>
-                    MEDIA PRACTITIONER / JOURNALIST
+                    MEDIA PRACTITIONER
                 </div>
                 <div class="btn">Continue</div>
             </button>

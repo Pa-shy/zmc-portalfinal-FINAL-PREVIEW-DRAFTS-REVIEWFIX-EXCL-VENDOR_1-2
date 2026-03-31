@@ -2,7 +2,7 @@
 @section('title', 'Incoming Queue')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold m-0">Incoming Queue</h4>
@@ -362,7 +362,7 @@
       <div class="modal-body">
         <div id="mdl_loading" class="d-none text-center py-5">
           <div class="spinner-border" style="color:var(--zmc-accent-dark)"></div>
-          <div class="text-muted mt-2" style="font-size:12px;">Loading…</div>
+          <div class="text-muted mt-2" style="font-size: var(--font-size-sm);">Loading…</div>
         </div>
 
         <div id="mdl_error" class="alert alert-danger d-none"></div>
@@ -479,7 +479,7 @@
             ${zmcTextarea('Local address', (app.zim_local_address || app.zim_address))}
           </div>
         `;
-        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Journalist details`, body);
+        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Media practitioner details`, body);
       }
 
       if (formCode === 'AP1') {

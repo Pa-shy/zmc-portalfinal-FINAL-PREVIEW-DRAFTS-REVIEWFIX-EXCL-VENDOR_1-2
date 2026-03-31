@@ -52,7 +52,7 @@ class ProductionController extends Controller
         return $q;
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $applications = $this->baseQuery([
             Application::PRODUCTION_QUEUE,
@@ -60,7 +60,7 @@ class ProductionController extends Controller
             Application::CERT_GENERATED,
             Application::PRINTED,
             Application::ISSUED,
-        ])->paginate(20);
+        ])->paginate(20)->withQueryString();
 
         // KPI counters (region scoped)
         $kpiQueue       = (clone $this->baseQuery([Application::PRODUCTION_QUEUE]))->count();
@@ -69,7 +69,6 @@ class ProductionController extends Controller
         $kpiIssued      = (clone $this->baseQuery([Application::ISSUED]))->count();
 
         // "Today" counts (created_at as proxy for production events)
-        // Note: for more accuracy, derive from workflow logs/audit trail later.
         $today = now()->startOfDay();
         $kpiGeneratedToday = (clone $this->baseQuery([Application::CARD_GENERATED, Application::CERT_GENERATED]))
             ->where('updated_at', '>=', $today)->count();

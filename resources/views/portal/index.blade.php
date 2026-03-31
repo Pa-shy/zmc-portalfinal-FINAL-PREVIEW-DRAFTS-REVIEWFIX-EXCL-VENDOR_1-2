@@ -14,7 +14,7 @@
             </a>
         @else
             <button class="btn btn-green" style="opacity: 0.5; cursor: not-allowed;" disabled>
-                Authorized for Journalists Only
+                Authorized for Media Practitioners Only
             </button>
         @endhasrole
     @endguest

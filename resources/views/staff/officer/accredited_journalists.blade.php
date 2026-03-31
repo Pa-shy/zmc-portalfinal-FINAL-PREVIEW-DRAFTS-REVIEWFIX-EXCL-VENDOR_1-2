@@ -1,18 +1,18 @@
 @extends('layouts.portal')
-@section('title', 'Accredited Journalists')
+@section('title', 'Accredited Media Practitioners')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   {{-- Header --}}
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">
-        Accredited Journalists
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color: var(--zmc-text-dark);">
+        Accredited Media Practitioners
       </h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
-        View and manage all accredited journalists. Filter by name, certificate number, collection status, or expiry.
+        View and manage all accredited media practitioners. Filter by name, certificate number, collection status, or expiry.
       </div>
     </div>
 
@@ -25,7 +25,7 @@
 
   @if(session('success'))
     <div class="alert alert-success d-flex align-items-start gap-2">
-      <i class="ri-checkbox-circle-line" style="font-size:18px;line-height:1;"></i>
+      <i class="ri-checkbox-circle-line" style="font-size: var(--font-size-lg); line-height: 1;"></i>
       <div>{{ session('success') }}</div>
     </div>
   @endif
@@ -147,7 +147,7 @@
             <tr>
               <td colspan="7" class="text-center text-muted py-4">
                 <i class="ri-file-list-line" style="font-size:48px;opacity:0.3;"></i>
-                <div class="mt-2">No accredited journalists found</div>
+                <div class="mt-2">No accredited media practitioners found</div>
               </td>
             </tr>
           @endforelse

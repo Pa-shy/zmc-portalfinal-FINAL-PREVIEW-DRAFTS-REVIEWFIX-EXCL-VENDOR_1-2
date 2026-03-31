@@ -14,7 +14,7 @@
 
   <div class="form-container">
     <div class="form-header">
-      <h1>Application for Accreditation of a Journalist</h1>
+      <h1>Application for Accreditation of a Media Practitioner</h1>
       <p>Zimbabwe Media Commission Act (2020), Statutory Instrument 169C (Registration, Accreditation and Levy) Regulations (2002)</p>
     </div>
 
@@ -49,14 +49,14 @@
           <h3 class="step-title">Select Applicant Type</h3>
           <div class="current-step-info">
             <i class="ri-information-line me-2"></i>
-            Select whether you are a Local or Foreign journalist. Different requirements apply.
+            Select whether you are a Local or Foreign media practitioner. Different requirements apply.
           </div>
 
           <div class="app-type-container">
             <div class="app-type-cards">
               <div class="app-type-card" data-type="local">
                 <i class="ri-user-3-line"></i>
-                <h4>Local Journalist</h4>
+                <h4>Local Media Practitioner</h4>
                 <p>Zimbabwean citizens/residents applying for accreditation.</p>
                 <div style="margin-top:15px;">
                   <span class="badge bg-light text-dark">14 Days Processing</span>
@@ -66,8 +66,8 @@
 
               <div class="app-type-card" data-type="foreign">
                 <i class="ri-global-line"></i>
-                <h4>Foreign Journalist</h4>
-                <p>International journalists seeking temporary accreditation.</p>
+                <h4>Foreign Media Practitioner</h4>
+                <p>International media practitioners seeking temporary accreditation.</p>
                 <div style="margin-top:15px;">
                   <span class="badge bg-light text-dark">21 Days Processing</span>
                   <span class="badge bg-light text-dark">Passport Required</span>
@@ -408,10 +408,11 @@
           </div>
 
           {{-- Foreign-only employment extras --}}
-          <div class="scope-foreign employment-only">
+          {{-- Foreign-only travel details (Required for ALL foreign applicants) --}}
+          <div class="scope-foreign">
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Country in which journalist is based</label>
+                <label class="form-label">Country in which media practitioner is based</label>
                 <input type="text" class="form-control" name="journalist_based_country">
               </div>
               <div class="form-field">
@@ -779,7 +780,15 @@
     if (el.closest('.scope-foreign') && document.getElementById('ap3_scope').value !== 'foreign') return false;
     if (el.closest('.employment-only') && currentEmploymentType() !== 'employed') return false;
     if (el.closest('.freelancer-only') && currentEmploymentType() !== 'freelancer') return false;
-    if (el.offsetParent === null) return false;
+    
+    if (el.offsetParent === null) {
+      // File inputs are often display:none but their container is visible
+      if (el.type === 'file') {
+        const parent = el.closest('.form-field') || el.parentElement;
+        return parent ? parent.offsetParent !== null : false;
+      }
+      return false;
+    }
     return true;
   }
 
@@ -821,7 +830,7 @@
   function ap3ValidateStep(step){
     const scope = document.getElementById('ap3_scope').value;
     if(step === 1){
-      if(!scope){ alert('Please select an applicant type (Local or Foreign Journalist)'); return false; }
+      if(!scope){ alert('Please select an applicant type (Local or Foreign Media Practitioner)'); return false; }
     }
 
     const currentContent = ap3StepContents[step-1];
@@ -1065,7 +1074,7 @@
 
   function showReviewModal() {
     const formData = getFormData();
-    const scope = formData.journalist_scope === 'foreign' ? 'Foreign Journalist' : 'Local Journalist';
+    const scope = formData.journalist_scope === 'foreign' ? 'Foreign Media Practitioner' : 'Local Media Practitioner';
     const empType = formData.employment_type || '-';
 
     const highest = extractRows('highest_academic_', formData, ['year','institution','qualification']);
@@ -1310,6 +1319,7 @@
 
     const fileInputs = document.querySelectorAll('#ap3Form input[type="file"]');
     fileInputs.forEach(input => {
+      // Use the improved visible check that handles hidden file inputs
       if (!visible(input)) return;
       if (input.files && input.files[0]) submitData.append(input.name, input.files[0]);
     });
@@ -1328,19 +1338,23 @@
         body: submitData,
       });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error('Submission failed:', errText);
-        throw new Error('Server returned an error (' + response.status + '). Please check the console for details.');
+      const responseText = await response.text();
+      let result;
+      try {
+          result = JSON.parse(responseText);
+      } catch (e) {
+          console.error('Submission failed (raw):', responseText);
+          throw new Error('Server returned an invalid response (' + response.status + ').');
       }
 
-      const result = await response.json();
-      if (result.success) {
+      if (response.ok && result.success) {
         bootstrap.Modal.getInstance(document.getElementById('ap3ReviewModal')).hide();
         alert('Application submitted successfully! Reference: ' + result.reference);
         window.location.href = "{{ route('accreditation.home') }}";
       } else {
-        alert('Failed to submit application: ' + (result.message || 'Please try again.'));
+        // Handle Laravel validation errors or manual 422s
+        const msg = result.message || (result.errors ? Object.values(result.errors).flat().join('\n') : 'Please check all required fields.');
+        alert('Submission failed: ' + msg);
       }
     } catch (error) {
       console.error(error);

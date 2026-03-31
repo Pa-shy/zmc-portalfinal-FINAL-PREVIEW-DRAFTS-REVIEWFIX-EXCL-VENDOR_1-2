@@ -59,8 +59,13 @@ class MediaHousePortalController extends Controller
                 ->whereIn('status', [
                     Application::SUBMITTED,
                     Application::OFFICER_REVIEW,
+                    Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+                    Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR,
                     Application::REGISTRAR_REVIEW,
+                    Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT,
                     Application::ACCOUNTS_REVIEW,
+                    Application::AWAITING_ACCOUNTS_VERIFICATION,
+                    Application::REGISTRATION_FEE_AWAITING_VERIFICATION,
                 ])
                 ->count(),
             'renewals_due' => 0,
@@ -72,19 +77,34 @@ class MediaHousePortalController extends Controller
             ->get();
 
         $notices = \App\Models\Notice::where('is_published', true)
-            ->whereIn('target_portal', ['mediahouse', 'both'])
-            ->orderByDesc('published_at')
-            ->limit(5)
-            ->get();
-
-        $events = \App\Models\Event::where('is_published', true)
-            ->whereIn('target_portal', ['mediahouse', 'both'])
-            ->orderBy('starts_at')
-            ->limit(5)
-            ->get();
-
-        return view('portal.mediahouse.dashboard', compact('stats', 'recentApplications', 'notices', 'events'));
-    }
+             ->whereIn('target_portal', ['mediahouse', 'both'])
+             ->orderByDesc('published_at')
+             ->limit(5)
+             ->get();
+ 
+         $events = \App\Models\Event::where('is_published', true)
+             ->whereIn('target_portal', ['mediahouse', 'both'])
+             ->orderBy('starts_at')
+             ->limit(5)
+             ->get();
+ 
+         $registration = \App\Models\RegistrationRecord::where('contact_user_id', $user->id)
+              ->where('status', 'active')
+              ->orderByDesc('expires_at')
+              ->first();
+ 
+          $yearsRemaining = null;
+          if ($registration && $registration->expires_at) {
+              $now = now();
+              if ($registration->expires_at->isPast()) {
+                  $yearsRemaining = 0;
+              } else {
+                  $yearsRemaining = $now->diffInDays($registration->expires_at) / 365.25;
+              }
+          }
+ 
+         return view('portal.mediahouse.dashboard', compact('stats', 'recentApplications', 'notices', 'events', 'registration', 'yearsRemaining'));
+     }
 
     public function newRegistration()
     {
@@ -167,10 +187,10 @@ class MediaHousePortalController extends Controller
     $user = Auth::user();
 
     $validated = $request->validate([
-        'collection_region' => 'required|in:harare,bulawayo,mutare,masvingo',
-        'form_data' => 'required',
-        'documents' => 'sometimes|array',
-        'documents.*' => 'file|max:10240|mimes:pdf,jpg,jpeg,png,zip',
+        'collection_region' => 'nullable|in:harare,bulawayo,mutare,masvingo',
+        'form_data'         => 'required',
+        'documents'         => 'sometimes|array',
+        'documents.*'       => 'file|max:10240|mimes:pdf,jpg,jpeg,png,zip',
     ]);
 
     $raw = $validated['form_data'];
@@ -197,7 +217,7 @@ class MediaHousePortalController extends Controller
         ],
         [
             'reference'         => $reference,
-            'collection_region' => $validated['collection_region'],
+            'collection_region' => $validated['collection_region'] ?? $draft?->collection_region ?? 'harare',
             'form_data'         => $formData,
             'journalist_scope'  => $formData['registration_scope'] ?? null,
             'status'            => Application::DRAFT,
@@ -356,13 +376,13 @@ class MediaHousePortalController extends Controller
             'draft_reference' => 'nullable|string|max:64',
             'current_step' => 'nullable|integer|min:1|max:5',
             'declaration_confirmed' => 'required|in:1',
-            'current_step' => 'nullable|integer|min:1|max:5',
             // optional for draft
             'previous_reference' => 'nullable|string|max:150',
-            'collection_region' => 'nullable|string|max:150',
+            'collection_region' => 'nullable|in:harare,bulawayo,mutare,masvingo',
 
             'proof_of_payment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'current_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'official_request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'supporting_docs' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'affidavit' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'police_report' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -395,6 +415,7 @@ class MediaHousePortalController extends Controller
         $docMap = ['proof_of_payment' => 'proof_of_payment'];
         if ($validated['request_type'] === 'renewal') {
             if ($request->hasFile('current_certificate')) $docMap['current_certificate'] = 'current_certificate';
+            if ($request->hasFile('official_request_letter')) $docMap['official_request_letter'] = 'official_request_letter';
             if ($request->hasFile('supporting_docs')) $docMap['supporting_docs'] = 'supporting_docs';
         } else {
             if ($request->hasFile('affidavit')) $docMap['affidavit'] = 'affidavit';
@@ -450,10 +471,11 @@ class MediaHousePortalController extends Controller
             'replacement_reason' => 'required_if:request_type,replacement|in:lost,damaged,stolen',
 
             'proof_of_payment' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-
+ 
             'current_certificate' => 'required_if:request_type,renewal|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'official_request_letter' => 'required_if:request_type,renewal|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'supporting_docs' => 'nullable|file|mimes:pdf,jpg,jpeg,png,zip|max:10240',
-
+ 
             'affidavit' => 'required_if:request_type,replacement|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'police_report' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
@@ -499,6 +521,7 @@ class MediaHousePortalController extends Controller
 
         if ($validated['request_type'] === 'renewal') {
             $docMap['current_certificate'] = 'current_certificate';
+            $docMap['official_request_letter'] = 'official_request_letter';
             if ($request->hasFile('supporting_docs')) $docMap['supporting_docs'] = 'supporting_docs';
         } else {
             $docMap['affidavit'] = 'affidavit';
@@ -658,6 +681,278 @@ class MediaHousePortalController extends Controller
         return response()->json([
             'success' => true, 
             'message' => 'Application withdrawn and moved back to drafts.'
+        ]);
+    }
+
+    /**
+     * Download official letter for approved media house application
+     */
+    public function downloadOfficialLetter(Application $application)
+    {
+        $user = Auth::user();
+
+        // Verify ownership
+        if ($application->applicant_user_id !== $user->id) {
+            abort(403, 'Unauthorized access to this application.');
+        }
+
+        // Verify application type
+        if ($application->application_type !== 'registration') {
+            abort(404, 'Official letter not available for this application type.');
+        }
+
+        // Verify official letter exists
+        if (!$application->officialLetter) {
+            abort(404, 'Official letter not found for this application.');
+        }
+
+        $officialLetter = $application->officialLetter;
+
+        // Verify file exists
+        if (!$officialLetter->fileExists()) {
+            abort(404, 'Official letter file not found.');
+        }
+
+        // Log download
+        ActivityLogger::log('download_official_letter', $application, $application->status, $application->status, [
+            'official_letter_id' => $officialLetter->id,
+            'file_name' => $officialLetter->file_name,
+        ]);
+
+        // Return file download
+        return \Storage::disk('public')->download(
+            $officialLetter->file_path,
+            $officialLetter->file_name
+        );
+    }
+
+    /**
+     * Submit application fee payment (PayNow)
+     */
+    public function submitApplicationFeePaynow(Request $request, Application $application)
+    {
+        $user = Auth::user();
+
+        // Verify ownership
+        if ($application->applicant_user_id !== $user->id) {
+            return response()->json(['ok' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify application type
+        if ($application->application_type !== 'registration') {
+            return response()->json(['ok' => false, 'message' => 'Application fee only applies to media house registrations.'], 422);
+        }
+
+        $data = $request->validate([
+            'paynow_reference' => ['required', 'string', 'max:255'],
+        ]);
+
+        // Create PaymentSubmission record
+        $paymentSubmission = \App\Models\PaymentSubmission::create([
+            'application_id' => $application->id,
+            'payment_stage' => 'application_fee',
+            'method' => 'PAYNOW',
+            'reference' => $data['paynow_reference'],
+            'status' => 'submitted',
+            'submitted_at' => now(),
+        ]);
+
+        ActivityLogger::log('submit_application_fee_paynow', $application, $application->status, $application->status, [
+            'payment_submission_id' => $paymentSubmission->id,
+            'reference' => $data['paynow_reference'],
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Application fee payment reference submitted successfully.',
+        ]);
+    }
+
+    /**
+     * Submit application fee payment (Proof Upload)
+     */
+    public function submitApplicationFeeProof(Request $request, Application $application)
+    {
+        $user = Auth::user();
+
+        // Verify ownership
+        if ($application->applicant_user_id !== $user->id) {
+            return response()->json(['ok' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify application type
+        if ($application->application_type !== 'registration') {
+            return response()->json(['ok' => false, 'message' => 'Application fee only applies to media house registrations.'], 422);
+        }
+
+        $data = $request->validate([
+            'payer_name' => ['nullable', 'string', 'max:200'],
+            'payment_date' => ['required', 'date'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'reference' => ['nullable', 'string', 'max:255'],
+            'proof_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+        ]);
+
+        $file = $request->file('proof_file');
+        $path = $file->store('payment_proofs', 'public');
+        $hash = hash_file('sha256', \Storage::disk('public')->path($path));
+
+        // Create PaymentSubmission record
+        $paymentSubmission = \App\Models\PaymentSubmission::create([
+            'application_id' => $application->id,
+            'payment_stage' => 'application_fee',
+            'method' => 'PROOF_UPLOAD',
+            'reference' => $data['reference'] ?? null,
+            'amount' => $data['amount'],
+            'currency' => 'USD',
+            'status' => 'submitted',
+            'submitted_at' => now(),
+            'proof_path' => $path,
+            'proof_metadata' => [
+                'payer_name' => $data['payer_name'] ?? null,
+                'payment_date' => $data['payment_date'],
+                'amount' => $data['amount'],
+                'file_name' => $file->getClientOriginalName(),
+                'file_hash' => $hash,
+            ],
+        ]);
+
+        ActivityLogger::log('submit_application_fee_proof', $application, $application->status, $application->status, [
+            'payment_submission_id' => $paymentSubmission->id,
+            'amount' => $data['amount'],
+            'file_hash' => $hash,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Application fee proof uploaded successfully.',
+        ]);
+    }
+
+    /**
+     * Submit registration fee payment (PayNow)
+     */
+    public function submitRegistrationFeePaynow(Request $request, Application $application)
+    {
+        $user = Auth::user();
+
+        // Verify ownership
+        if ($application->applicant_user_id !== $user->id) {
+            return response()->json(['ok' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify status
+        if ($application->status !== Application::REGISTRAR_APPROVED_PENDING_REG_FEE) {
+            return response()->json(['ok' => false, 'message' => 'Registration fee can only be submitted after Registrar approval.'], 422);
+        }
+
+        $data = $request->validate([
+            'paynow_reference' => ['required', 'string', 'max:255'],
+        ]);
+
+        $from = $application->status;
+
+        \DB::transaction(function() use ($application, $data, $from) {
+            // Create PaymentSubmission record
+            $paymentSubmission = \App\Models\PaymentSubmission::create([
+                'application_id' => $application->id,
+                'payment_stage' => 'registration_fee',
+                'method' => 'PAYNOW',
+                'reference' => $data['paynow_reference'],
+                'status' => 'submitted',
+                'submitted_at' => now(),
+            ]);
+
+            // Transition to awaiting verification
+            ApplicationWorkflow::transition(
+                $application,
+                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION,
+                'submit_registration_fee_paynow',
+                ['payment_submission_id' => $paymentSubmission->id]
+            );
+
+            ActivityLogger::log('submit_registration_fee_paynow', $application, $from, $application->status, [
+                'payment_submission_id' => $paymentSubmission->id,
+                'reference' => $data['paynow_reference'],
+            ]);
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Registration fee payment reference submitted successfully. Accounts will verify it shortly.',
+        ]);
+    }
+
+    /**
+     * Submit registration fee payment (Proof Upload)
+     */
+    public function submitRegistrationFeeProof(Request $request, Application $application)
+    {
+        $user = Auth::user();
+
+        // Verify ownership
+        if ($application->applicant_user_id !== $user->id) {
+            return response()->json(['ok' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Verify status
+        if ($application->status !== Application::REGISTRAR_APPROVED_PENDING_REG_FEE) {
+            return response()->json(['ok' => false, 'message' => 'Registration fee can only be submitted after Registrar approval.'], 422);
+        }
+
+        $data = $request->validate([
+            'payer_name' => ['nullable', 'string', 'max:200'],
+            'payment_date' => ['required', 'date'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'reference' => ['nullable', 'string', 'max:255'],
+            'proof_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+        ]);
+
+        $file = $request->file('proof_file');
+        $path = $file->store('payment_proofs', 'public');
+        $hash = hash_file('sha256', \Storage::disk('public')->path($path));
+
+        $from = $application->status;
+
+        \DB::transaction(function() use ($application, $data, $file, $path, $hash, $from) {
+            // Create PaymentSubmission record
+            $paymentSubmission = \App\Models\PaymentSubmission::create([
+                'application_id' => $application->id,
+                'payment_stage' => 'registration_fee',
+                'method' => 'PROOF_UPLOAD',
+                'reference' => $data['reference'] ?? null,
+                'amount' => $data['amount'],
+                'currency' => 'USD',
+                'status' => 'submitted',
+                'submitted_at' => now(),
+                'proof_path' => $path,
+                'proof_metadata' => [
+                    'payer_name' => $data['payer_name'] ?? null,
+                    'payment_date' => $data['payment_date'],
+                    'amount' => $data['amount'],
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_hash' => $hash,
+                ],
+            ]);
+
+            // Transition to awaiting verification
+            ApplicationWorkflow::transition(
+                $application,
+                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION,
+                'submit_registration_fee_proof',
+                ['payment_submission_id' => $paymentSubmission->id]
+            );
+
+            ActivityLogger::log('submit_registration_fee_proof', $application, $from, $application->status, [
+                'payment_submission_id' => $paymentSubmission->id,
+                'amount' => $data['amount'],
+                'file_hash' => $hash,
+            ]);
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Registration fee proof uploaded successfully. Accounts will verify it shortly.',
         ]);
     }
 

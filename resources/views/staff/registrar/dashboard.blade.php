@@ -2,15 +2,15 @@
 @section('title', 'Registrar Dashboard')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   {{-- Header --}}
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color: var(--zmc-text-dark);">
         Registrar Dashboard
       </h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
         Approve / reject applications from Accounts. Approved items are pushed to <b>Production</b>.
       </div>
@@ -35,7 +35,7 @@
 
   @if(session('success'))
     <div class="alert alert-success d-flex align-items-start gap-2">
-      <i class="ri-checkbox-circle-line" style="font-size:18px;line-height:1;"></i>
+      <i class="ri-checkbox-circle-line" style="font-size: var(--font-size-lg); line-height: 1;"></i>
       <div>{{ session('success') }}</div>
     </div>
   @endif
@@ -79,12 +79,7 @@
       <div class="zmc-card h-100 border-success">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="text-muted small fw-bold">Approved Today</div>
-            <div class="h3 fw-black mb-0">{{ $k['approved_today'] ?? 0 }}</div>
-          </div>
-          <div class="icon-box text-success"><i class="ri-check-double-line"></i></div>
-        </div>
-        <div class="mt-2 small text-muted">Week: {{ $k['approved_this_week'] ?? 0 }}</div>
+        <div class="mt-2 small text-muted">Total Approved: {{ $k['approved_this_week'] ?? 0 }}</div>
       </div>
     </div>
 
@@ -109,7 +104,7 @@
           </div>
           <div class="icon-box text-danger"><i class="ri-alert-line"></i></div>
         </div>
-        <div class="mt-2 small text-muted">Found this week</div>
+        <div class="mt-2 small text-muted">Found {{ $year == now()->year ? 'this week' : 'in ' . $year }}</div>
       </div>
     </div>
   </div>
@@ -178,6 +173,7 @@
         </div>
         <div class="col-md-2">
             <label class="small fw-bold text-muted">Status</label>
+            <input type="hidden" name="year" value="{{ $year }}">
             <select name="status" class="form-select form-select-sm">
                 <option value="">All Statuses</option>
                 <option value="paid_confirmed" {{ request('status') == 'paid_confirmed' ? 'selected' : '' }}>Awaiting Registrar</option>
@@ -253,7 +249,9 @@
             <th style="width:60px;">#</th>
             <th><i class="ri-hashtag me-1"></i> Ref</th>
             <th><i class="ri-user-line me-1"></i> Applicant</th>
-            <th><i class="ri-file-text-line me-1"></i> Type</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-file-text-line me-1"></i> Application</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-information-line me-1"></i> Type</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-global-line me-1"></i> Scope</th>
             <th><i class="ri-calendar-line me-1"></i> Date</th>
             <th><i class="ri-flag-line me-1"></i> Status</th>
             <th class="text-end" style="min-width:210px;">Action</th>
@@ -290,8 +288,29 @@
           <tr>
             <td class="text-muted small">{{ $rowNo }}</td>
             <td class="fw-bold text-dark">{{ $ref }}</td>
-            <td>{{ $app->applicant?->name ?? '—' }}</td>
-            <td><span class="small fw-bold text-uppercase">{{ $type }}</span></td>
+            <td>
+              <div class="fw-bold">{{ $app->applicant?->name ?? '—' }}</div>
+              <div class="small text-muted">{{ $app->applicant?->email }}</div>
+            </td>
+            <td><span class="small fw-bold text-uppercase" style="font-size: var(--font-size-dense-sm);">{{ $type }}</span></td>
+            <td>
+              @php
+                $reqType = strtolower((string)($app->request_type ?? 'new'));
+                $newOrRenewal = match($reqType) {
+                  'renewal' => 'Renewal',
+                  'replacement' => 'Replacement',
+                  default => 'New'
+                };
+              @endphp
+              <span class="badge rounded-pill bg-{{ $newOrRenewal === 'Renewal' ? 'info' : ($newOrRenewal === 'Replacement' ? 'warning' : 'primary') }} px-3" style="font-size: var(--font-size-dense-sm);">{{ $newOrRenewal }}</span>
+            </td>
+            <td>
+              @php
+                $scopeStr = strtolower((string)($app->journalist_scope ?? $app->residency_type ?? $app->form_data['journalist_scope'] ?? $app->form_data['residency_type'] ?? 'local'));
+                $foreignOrLocal = ($scopeStr === 'foreign' || $scopeStr === 'non-resident') ? 'Foreign' : 'Local';
+              @endphp
+              <span class="badge rounded-pill bg-{{ $foreignOrLocal === 'Foreign' ? 'warning' : 'success' }} px-3" style="font-size: var(--font-size-dense-sm);">{{ $foreignOrLocal }}</span>
+            </td>
             <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
             <td>
               <span class="badge rounded-pill bg-{{ $badge }} px-3">
@@ -373,7 +392,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-award me-2" style="color:var(--zmc-accent-dark)"></i>
                         Reassign Category
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">Change the assigned category for this application.</div>
                     </div>
@@ -423,7 +442,7 @@
                       <div>
                         <div class="zmc-modal-title">
                           Return / Notes
-                          <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                          <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                         </div>
                         <div class="zmc-modal-sub">Send back to Accounts/Payments with clear notes.</div>
                       </div>
@@ -456,7 +475,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-check me-2" style="color:var(--zmc-accent-dark)"></i>
                         Approve application
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">This will move the application to Production.</div>
                     </div>
@@ -506,7 +525,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-money-bill me-2" style="color:var(--zmc-accent-dark)"></i>
                         Approve for Payment
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">This will forward the application to Accounts for payment processing.</div>
                     </div>
@@ -538,7 +557,7 @@
                       <div class="zmc-modal-title">
                         <i class="fa-solid fa-xmark me-2" style="color:var(--zmc-accent-dark)"></i>
                         Reject application
-                        <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span>
+                        <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span>
                       </div>
                       <div class="zmc-modal-sub">Reason will be visible to the applicant.</div>
                     </div>
@@ -596,7 +615,7 @@
       <div class="modal-body">
         <div id="mdl_loading" class="d-none text-center py-5">
           <div class="spinner-border" style="color:var(--zmc-accent-dark)"></div>
-          <div class="text-muted mt-2" style="font-size:12px;">Loading…</div>
+          <div class="text-muted mt-2" style="font-size: var(--font-size-sm);">Loading…</div>
         </div>
 
         <div id="mdl_error" class="alert alert-danger d-none"></div>
@@ -712,7 +731,45 @@
             ${zmcTextarea('Local address', (app.zim_local_address || app.zim_address))}
           </div>
         `;
-        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Journalist details`, body);
+        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Media practitioner details`, body);
+
+        // Previous Applications Block
+        const prevApps = Array.isArray(data.previous_applications) ? data.previous_applications : [];
+        if (prevApps.length > 0) {
+          let prevRows = prevApps.map(pa => `
+            <tr>
+              <td>${zmcFmt(pa.reference)}</td>
+              <td class="text-capitalize">${zmcFmt(pa.type)}</td>
+              <td class="text-capitalize">${zmcFmt(pa.scope)}</td>
+              <td><span class="badge bg-light text-dark border">${zmcFmt(pa.status)}</span></td>
+              <td>${zmcFmt(pa.date)}</td>
+            </tr>
+          `).join('');
+
+          html += zmcBlock(
+            `<i class="fa-solid fa-history"></i> Previous Applications`,
+            `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Type</th><th>Scope</th><th>Status</th><th>Date</th></tr></thead><tbody>${prevRows}</tbody></table></div>`
+          );
+        }
+
+        // Previous Payments Block
+        const prevPays = Array.isArray(data.previous_payments) ? data.previous_payments : [];
+        if (prevPays.length > 0) {
+          let payRows = prevPays.map(p => `
+            <tr>
+              <td>${zmcFmt(p.reference)}</td>
+              <td>${zmcFmt(p.amount)} ${zmcFmt(p.currency)}</td>
+              <td class="text-capitalize">${zmcFmt(p.method)}</td>
+              <td><span class="badge bg-light text-dark border text-capitalize">${zmcFmt(p.status)}</span></td>
+              <td>${zmcFmt(p.date)}</td>
+            </tr>
+          `).join('');
+
+          html += zmcBlock(
+            `<i class="fa-solid fa-money-bill-transfer"></i> Payment History`,
+            `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody>${payRows}</tbody></table></div>`
+          );
+        }
       }
 
       if (formCode === 'AP1') {

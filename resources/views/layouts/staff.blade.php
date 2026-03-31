@@ -12,11 +12,62 @@
     {{-- Icons (optional) --}}
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
 
+    {{-- Green Theme CSS --}}
+    <link href="{{ asset('css/green-theme.css') }}" rel="stylesheet">
+
     <style>
         :root{
-            --zmc-green:#1a3a1a;
-            --zmc-green-dark:#0d2810;
+            --zmc-primary:#2d5016;
+            --zmc-primary-dark:#1f3a0f;
+            --zmc-accent:#facc15;
+            --zmc-accent-dark:#eab308;
+            
+            /* Typography System */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-xs: 9px;
+            --font-size-sm: 10px;
+            --font-size-base: 13px;
+            --font-size-lg: 15px;
+            --font-size-xl: 18px;
+            --font-size-2xl: 22px;
+            --font-size-3xl: 28px;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            --font-weight-black: 900;
+            --line-height-tight: 1.2;
+            --line-height-normal: 1.5;
+            --line-height-relaxed: 1.75;
         }
+        body {
+            font-family: var(--font-primary);
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-normal);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-primary); line-height: var(--line-height-tight); }
+        .fw-black { font-weight: var(--font-weight-black) !important; }
+        .fw-bold { font-weight: var(--font-weight-bold) !important; }
+        .fw-semibold { font-weight: var(--font-weight-semibold) !important; }
+        .btn-primary, .btn-success{
+            background: var(--zmc-primary) !important;
+            border-color: var(--zmc-accent) !important;
+            color: var(--zmc-accent) !important;
+        }
+        .btn-primary:hover, .btn-success:hover{
+            background: var(--zmc-accent) !important;
+            border-color: var(--zmc-primary) !important;
+            color: var(--zmc-primary) !important;
+        }
+        .badge.bg-success-subtle{ background: rgba(250,204,21,.15) !important; color: #78350f !important; }
+        .text-success{ color: var(--zmc-accent-dark) !important; }
+        .bg-success{ background-color: var(--zmc-accent) !important; }
+        .border-success{ border-color: var(--zmc-accent) !important; }
+        .bg-success-subtle{ background-color: rgba(250,204,21,.15) !important; }
+        .border-success-subtle{ border-color: rgba(250,204,21,.3) !important; }
+        
         .zmc-topbar{
             background: url('{{ asset("zmc_building.png") }}') center center / cover no-repeat;
             position: relative;
@@ -25,7 +76,7 @@
             content: "";
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, rgba(26, 58, 26, 0.94), rgba(13, 40, 16, 0.96));
+            background: linear-gradient(90deg, rgba(45, 80, 22, 0.85), rgba(31, 58, 15, 0.88));
             z-index: 0;
         }
         .zmc-topbar > *{
@@ -47,15 +98,10 @@
             color:#fff;
         }
         body{ 
-            background: url('{{ asset("zmc_building.png") }}') no-repeat center center fixed !important;
-            background-size: cover !important;
+            background: #f3f4f6 !important;
         }
         body::before{
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(240, 247, 240, 0.88) 0%, rgba(220, 237, 220, 0.92) 100%);
-            z-index: -1;
+            display: none;
         }
     </style>
 

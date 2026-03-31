@@ -258,15 +258,27 @@
 
         {{-- RENEWAL DOCS --}}
         <div id="ap5-renewal-docs">
-          <div class="form-row">
             <div class="form-field">
               <label class="form-label required">Current Registration Certificate / Document</label>
               <div class="upload-area">
                 <i class="ri-file-shield-2-line"></i>
                 <h5>Upload Current Certificate</h5>
                 <p>Front/back scan if applicable</p>
-                {{-- ✅ IMPORTANT: name attribute --}}
                 <input type="file" name="current_certificate" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
+                <button type="button" class="upload-btn">Choose File</button>
+              </div>
+              <div class="uploaded-files"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label required">Official Request Letter for Renewal</label>
+              <div class="upload-area">
+                <i class="ri-mail-send-line"></i>
+                <h5>Upload Request Letter</h5>
+                <p>Signed letter on company letterhead</p>
+                <input type="file" name="official_request_letter" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" required>
                 <button type="button" class="upload-btn">Choose File</button>
               </div>
               <div class="uploaded-files"></div>
@@ -523,6 +535,23 @@
     ap5SyncPoliceRequirement();
   }
 
+  function checkRequestSize(formData) {
+    let totalSize = 0;
+    for (let pair of formData.entries()) {
+      if (pair[1] instanceof File) {
+        totalSize += pair[1].size;
+      } else {
+        totalSize += (pair[1].length || 0);
+      }
+    }
+    const maxPostSize = 8 * 1024 * 1024; // 8MB limit from system check
+    if (totalSize > maxPostSize) {
+      alert(`The total size of your files (${(totalSize / 1024 / 1024).toFixed(2)}MB) exceeds the server limit (approx 8MB). Please reduce file sizes or upload fewer documents at a time.`);
+      return false;
+    }
+    return true;
+  }
+
   function ap5SyncPoliceRequirement() {
     const chosenType = document.getElementById('ap5AppType')?.value || '';
     const chosenReason = document.querySelector('input[name="replacement_reason"]:checked')?.value || '';
@@ -658,6 +687,9 @@
       const cert = document.querySelector('input[name="current_certificate"]')?.files?.[0];
       if (cert) fd.append('current_certificate', cert);
 
+      const letter = document.querySelector('input[name="official_request_letter"]')?.files?.[0];
+      if (letter) fd.append('official_request_letter', letter);
+
       const supp = document.querySelector('input[name="supporting_docs"]')?.files?.[0];
       if (supp) fd.append('supporting_docs', supp);
     } else {
@@ -666,6 +698,12 @@
 
       const pol = document.querySelector('input[name="police_report"]')?.files?.[0];
       if (pol) fd.append('police_report', pol);
+    }
+
+    if (!checkRequestSize(fd)) {
+      btn.disabled = false;
+      btn.innerHTML = old;
+      return;
     }
 
     if(!document.getElementById('ap5Agree').checked){
@@ -691,7 +729,13 @@
       const data = await res.json().catch(() => ({}));
 
       if(!res.ok){
-        alert(data.message || 'Failed to submit AP5.');
+        let errMsg = 'Failed to submit AP5 (' + res.status + ').';
+        if (data.message) errMsg += '\nDetails: ' + data.message;
+
+        if (res.status === 413) {
+          errMsg = 'Payload Too Large (413). Your files are too large for the server to process. Please reduce file sizes.';
+        }
+        alert(errMsg);
         return;
       }
 
@@ -804,6 +848,10 @@
       if (pol) fd.append('police_report', pol);
     }
 
+    if (!checkRequestSize(fd)) {
+      return;
+    }
+
     try{
       const res = await fetch('{{ route("mediahouse.ap5.saveDraft") }}', {
         method: 'POST',
@@ -813,11 +861,20 @@
         },
         body: fd
       });
-      const data = await res.json().catch(()=>({}));
       if(!res.ok){
-        alert(data.message || 'Draft save failed.');
+        let errMsg = 'Draft save failed (' + res.status + ').';
+        try {
+          const errJson = await res.json();
+          if (errJson.message) errMsg += '\nDetails: ' + errJson.message;
+        } catch (e) {}
+
+        if (res.status === 413) {
+          errMsg = 'Payload Too Large (413). Your files are too large for the server to process. Please reduce file sizes.';
+        }
+        alert(errMsg);
         return;
       }
+      const data = await res.json().catch(()=>({}));
       alert('Draft saved! Reference: ' + (data.reference || '—'));
     }catch(e){
       console.error(e);

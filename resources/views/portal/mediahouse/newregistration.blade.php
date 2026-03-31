@@ -601,7 +601,7 @@
                 ['key'=>'memorandum_of_association', 'label'=>'10. Memorandum of Association', 'required'=>true],
                 ['key'=>'market_analysis', 'label'=>'11. Market Analysis', 'required'=>true],
                 ['key'=>'cashflow_projection_3yr', 'label'=>'12. Cashflow Projection for the next 3 years', 'required'=>true],
-                ['key'=>'journalist_list', 'label'=>'13. List of names and addresses of journalist employed in the representative office', 'required'=>false, 'hint'=>'Required for Foreign Media Houses'],
+                ['key'=>'journalist_list', 'label'=>'13. List of names and addresses of media practitioners employed in the representative office', 'required'=>false, 'hint'=>'Required for Foreign Media Houses'],
               ];
             @endphp
 
@@ -710,6 +710,23 @@
       .replaceAll("'", '&#039;');
   }
 
+  function checkRequestSize(formData) {
+    let totalSize = 0;
+    for (let pair of formData.entries()) {
+      if (pair[1] instanceof File) {
+        totalSize += pair[1].size;
+      } else {
+        totalSize += (pair[1].length || 0);
+      }
+    }
+    const maxPostSize = 8 * 1024 * 1024; // 8MB limit from system check
+    if (totalSize > maxPostSize) {
+      alert(`The total size of your files (${(totalSize / 1024 / 1024).toFixed(2)}MB) exceeds the server limit (approx 8MB). Please reduce file sizes or upload fewer documents at a time.`);
+      return false;
+    }
+    return true;
+  }
+
   // ===== Step UI =====
   function ap1UpdateSteps() {
     const steps = document.querySelectorAll('#new-registration-page .step');
@@ -772,7 +789,7 @@
       if (scope === 'foreign') {
         const jList = document.querySelector('input[name="documents[journalist_list]"]');
         if (jList && (!jList.files || !jList.files[0])) {
-          alert('Foreign Media Houses must upload the list of journalists.');
+          alert('Foreign Media Houses must upload the list of media practitioners.');
           return false;
         }
       }
@@ -1420,6 +1437,12 @@
         if (input.files && input.files[0]) fd.append(input.name, input.files[0]);
       });
 
+      if (!checkRequestSize(fd)) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-save-line"></i> Save Draft';
+        return;
+      }
+
       const res = await fetch('{{ route("mediahouse.saveDraft") }}', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
@@ -1427,9 +1450,17 @@
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.error('Draft save failed:', errText);
-        throw new Error('Server returned an error (' + res.status + ').');
+        let errMsg = 'Server returned an error (' + res.status + ').';
+        try {
+          const errJson = await res.json();
+          if (errJson.message) errMsg += '\nDetails: ' + errJson.message;
+        } catch (e) {}
+        
+        if (res.status === 413) {
+          errMsg = 'Payload Too Large (413). Your files are too large for the server to process. Please reduce file sizes.';
+        }
+        
+        throw new Error(errMsg);
       }
 
       const json = await res.json();
@@ -1440,7 +1471,7 @@
       }
     } catch (e) {
       console.error(e);
-      alert('An error occurred while saving draft.');
+      alert('An error occurred while saving draft: ' + e.message);
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="ri-save-line"></i> Save Draft';
@@ -1465,6 +1496,12 @@
         if (input.files && input.files[0]) fd.append(input.name, input.files[0]);
       });
 
+      if (!checkRequestSize(fd)) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-send-plane-line me-2"></i>Confirm & Submit';
+        return;
+      }
+
       const submitUrl = @json(isset($draft) && !$draft->is_draft && ($draft->status ?? null) === \App\Models\Application::CORRECTION_REQUESTED
         ? route('mediahouse.applications.resubmit', $draft)
         : route('mediahouse.submit'));
@@ -1476,9 +1513,17 @@
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.error('Submission failed:', errText);
-        throw new Error('Server returned an error (' + res.status + ').');
+        let errMsg = 'Server returned an error (' + res.status + ').';
+        try {
+          const errJson = await res.json();
+          if (errJson.message) errMsg += '\nDetails: ' + errJson.message;
+        } catch (e) {}
+
+        if (res.status === 413) {
+          errMsg = 'Payload Too Large (413). Your files are too large for the server to process. Please reduce file sizes.';
+        }
+
+        throw new Error(errMsg);
       }
 
       const json = await res.json();

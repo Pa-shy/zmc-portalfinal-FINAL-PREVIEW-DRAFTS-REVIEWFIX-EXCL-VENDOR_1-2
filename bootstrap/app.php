@@ -38,13 +38,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Director has oversight rights, but must not run operational workflows
             'block.director.operational' => \App\Http\Middleware\BlockDirectorOperationalRoles::class,
+            'director.view_only' => \App\Http\Middleware\DirectorViewOnly::class,
+
+            // Workflow enforcement (ZMC v2)
+            'workflow.enforce' => \App\Http\Middleware\EnforceWorkflowTransitions::class,
+            'role.access' => \App\Http\Middleware\EnforceRoleBasedAccess::class,
         ]);
 
         // Global portal guard (maintenance + availability toggles)
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\AddRequestId::class,
             \App\Http\Middleware\ZmcGatekeeper::class,
-            \App\Http\Middleware\SetLocale::class,
         ]);
 
     })

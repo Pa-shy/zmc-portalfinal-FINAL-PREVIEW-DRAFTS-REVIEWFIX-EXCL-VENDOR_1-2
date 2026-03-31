@@ -12,17 +12,22 @@ class StaffAuthController extends Controller
 {
     public function show(Request $request)
     {
-        // If user is already logged in, keep them inside staff flow
+        // 1. If we have a pending selection, we show the login form for it.
+        // Even if already logged in (e.g. as a public user), we need to re-auth for staff.
+        if ($request->session()->has('staff_selected_role')) {
+            // NOTE: If they are logged in as a public user, we don't logout yet.
+            // We just let the login form show. When they POST the staff login,
+            // the login() method will handle the session regeneration.
+            return view('staff.login');
+        }
+
+        // 2. If already logged in AND NO pending selection, try to go to dashboard
         if (Auth::check()) {
             return $this->redirectAfterLogin(Auth::user(), $request);
         }
 
-        // Must choose role first
-        if (!$request->session()->has('staff_selected_role')) {
-            return redirect()->route('staff.entry'); // /staff landing
-        }
-
-        return view('staff.login');
+        // 3. Must choose role first
+        return redirect()->route('staff.entry');
     }
 
     public function login(Request $request)
@@ -47,6 +52,8 @@ class StaffAuthController extends Controller
                 'email' => $credentials['email'],
                 'selected_role' => $selectedRole,
             ]);
+            \App\Support\LoginHistory::record(null, $request, false, 'Invalid credentials (Staff)');
+
             return back()->withErrors(['email' => 'Invalid login credentials'])->withInput();
         }
 
@@ -106,6 +113,7 @@ class StaffAuthController extends Controller
         $request->session()->forget('staff_selected_role');
 
         \App\Support\AuditTrail::log('login_staff', $user, ['role' => $selectedRole]);
+        \App\Support\LoginHistory::record($user, $request, true);
 
         return $this->redirectToRoleDashboard($selectedRole);
     }
@@ -130,6 +138,7 @@ class StaffAuthController extends Controller
         $userRoles = $this->roleNamesForUser($user->id);
         $staffRoles = array_values(array_intersect($userRoles, $this->staffAllowedRoles()));
 
+        // 1. If user is NOT staff (e.g. an applicant reaching staff routes), log them out
         if (count($staffRoles) === 0) {
             Auth::logout();
             $request->session()->invalidate();
@@ -139,13 +148,28 @@ class StaffAuthController extends Controller
                 ->withErrors(['email' => 'Access denied. Not a staff account.']);
         }
 
-        // If active role exists and user still has it -> go there
+        // 2. Check if there's a pending selection (they chose a role at /staff while logged in)
+        $selected = $request->session()->get('staff_selected_role');
+        if ($selected && in_array($selected, $userRoles, true)) {
+            $request->session()->put('active_staff_role', $selected);
+            $request->session()->forget('staff_selected_role');
+            return $this->redirectToRoleDashboard($selected);
+        }
+
+        // 3. If active role exists and user still has it -> go there
         $active = $request->session()->get('active_staff_role');
         if ($active && in_array($active, $userRoles, true)) {
             return $this->redirectToRoleDashboard($active);
         }
 
-        // Otherwise force role selection again
+        // 4. Fallback: use first staff role if they reached here logged in but without selection
+        if (count($staffRoles) > 0) {
+            $first = $staffRoles[0];
+            $request->session()->put('active_staff_role', $first);
+            return $this->redirectToRoleDashboard($first);
+        }
+
+        // Otherwise force role selection
         return redirect()->route('staff.entry');
     }
 

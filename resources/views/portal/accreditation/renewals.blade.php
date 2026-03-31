@@ -136,6 +136,19 @@
 
           <div class="form-row">
             <div class="form-field">
+               <label class="form-label required">Practitioner Type</label>
+               <div class="checkbox-group">
+                 <div class="checkbox-item">
+                   <input type="radio" id="ap5-type-employed" name="practitioner_type" value="employed" checked required>
+                   <label for="ap5-type-employed">Employed</label>
+                 </div>
+                 <div class="checkbox-item">
+                   <input type="radio" id="ap5-type-freelancer" name="practitioner_type" value="freelancer" required>
+                   <label for="ap5-type-freelancer">Freelancer</label>
+                 </div>
+               </div>
+             </div>
+            <div class="form-field">
               <label class="form-label">Other Names</label>
               <input type="text" class="form-control" name="other_names">
             </div>
@@ -370,8 +383,17 @@
     document.querySelectorAll('#renewal-page input[type="file"]').forEach(f => f.required = false);
 
     if(ap5Type === 'renewal'){
+      const isFreelancer = document.getElementById('ap5-type-freelancer')?.checked;
       const f = document.querySelector('input[name="renewal_employer_letter"]');
-      if(f) f.required = true;
+      const area = f?.closest('.form-row');
+      
+      if(isFreelancer){
+        if(area) area.style.display = 'none';
+        if(f) f.required = false;
+      } else {
+        if(area) area.style.display = 'block';
+        if(f) f.required = true;
+      }
     }
 
     if(ap5Type === 'replacement'){
@@ -610,6 +632,13 @@
 
   // Replacement reason affects police required
   document.querySelectorAll('input[name="replacement_reason"]').forEach(r => {
+    r.addEventListener('change', () => {
+      applyAp5DocRequirements();
+    });
+  });
+
+  // Practitioner type affects employer letter requirement
+  document.querySelectorAll('input[name="practitioner_type"]').forEach(r => {
     r.addEventListener('change', () => {
       applyAp5DocRequirements();
     });

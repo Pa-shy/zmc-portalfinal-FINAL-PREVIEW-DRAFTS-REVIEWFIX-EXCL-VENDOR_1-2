@@ -105,15 +105,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 });
 
-// Language switcher
-Route::get('/lang/{locale}', function (Request $request, string $locale) {
-    abort_unless(in_array($locale, ['en','sn','nd','ny','cwa','kck','nmq','ndc','tso','st','toi','tn','ven','xh'], true), 404);
-    $request->session()->put('app_locale', $locale);
-    if (auth()->check()) {
-        auth()->user()->update(['locale' => $locale]);
-    }
-    return back();
-})->name('lang.switch');
 
 /*
 |--------------------------------------------------------------------------
@@ -179,6 +170,8 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/portal', [PortalController::class, 'index'])->name('portal');
+    Route::post('/notifications/mark-read', [PortalController::class, 'markNotificationsRead'])->name('notifications.markRead');
+    Route::post('/notifications/{id}/mark-read', [PortalController::class, 'markNotificationRead'])->name('notifications.markOne');
 
     /*
     |--------------------------------------------------------------------------
@@ -228,6 +221,32 @@ Route::middleware('auth')->group(function () {
                 ->name('downloads');
             Route::get('/downloads/file/{doc}', [\App\Http\Controllers\Portal\DownloadsController::class, 'download'])
                 ->name('downloads.file');
+            
+            // Renewals (Journalist)
+            Route::get('/renewals', [\App\Http\Controllers\Portal\RenewalController::class, 'index'])
+                ->name('renewals.index');
+            Route::get('/renewals/select-type', [\App\Http\Controllers\Portal\RenewalController::class, 'selectType'])
+                ->name('renewals.select-type');
+            Route::post('/renewals/select-type', [\App\Http\Controllers\Portal\RenewalController::class, 'storeType'])
+                ->name('renewals.store-type');
+            Route::get('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\RenewalController::class, 'lookup'])
+                ->name('renewals.lookup');
+            Route::post('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\RenewalController::class, 'performLookup'])
+                ->name('renewals.perform-lookup');
+            Route::get('/renewals/{renewal}/confirm', [\App\Http\Controllers\Portal\RenewalController::class, 'confirm'])
+                ->name('renewals.confirm');
+            Route::post('/renewals/{renewal}/confirm-no-changes', [\App\Http\Controllers\Portal\RenewalController::class, 'confirmNoChanges'])
+                ->name('renewals.confirm-no-changes');
+            Route::post('/renewals/{renewal}/submit-changes', [\App\Http\Controllers\Portal\RenewalController::class, 'submitChanges'])
+                ->name('renewals.submit-changes');
+            Route::get('/renewals/{renewal}/payment', [\App\Http\Controllers\Portal\RenewalController::class, 'payment'])
+                ->name('renewals.payment');
+            Route::post('/renewals/{renewal}/payment/paynow', [\App\Http\Controllers\Portal\RenewalController::class, 'submitPaynow'])
+                ->name('renewals.payment.paynow');
+            Route::post('/renewals/{renewal}/payment/proof', [\App\Http\Controllers\Portal\RenewalController::class, 'submitProof'])
+                ->name('renewals.payment.proof');
+            Route::get('/renewals/{renewal}', [\App\Http\Controllers\Portal\RenewalController::class, 'show'])
+                ->name('renewals.show');
         });
 
     /*
@@ -256,11 +275,31 @@ Route::middleware('auth')->group(function () {
             Route::post('/staff-members/link', [\App\Http\Controllers\MediaHouseStaffController::class, 'link'])->name('staff.link');
             Route::delete('/staff-members/{staff}', [\App\Http\Controllers\MediaHouseStaffController::class, 'unlink'])->name('staff.unlink');
 
-            Route::get('/renewals',    [MediaHousePortalController::class, 'renewals'])->name('renewals');
-            // AP5 (Media House renewals / replacement submit)
-            Route::post('/renewals/save-draft', [MediaHousePortalController::class, 'saveDraftAp5'])->name('ap5.saveDraft');
-            Route::post('/renewals/submit', [MediaHousePortalController::class, 'submitAp5'])
-                ->name('ap5.submit');
+            // NEW RENEWAL FLOW (AP5) - Number-Only Lookup
+            Route::get('/renewals', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'index'])
+                ->name('renewals.index');
+            Route::get('/renewals/select-type', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'selectType'])
+                ->name('renewals.select-type');
+            Route::post('/renewals/select-type', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'storeType'])
+                ->name('renewals.store-type');
+            Route::get('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'lookup'])
+                ->name('renewals.lookup');
+            Route::post('/renewals/{renewal}/lookup', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'performLookup'])
+                ->name('renewals.perform-lookup');
+            Route::get('/renewals/{renewal}/confirm', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'confirm'])
+                ->name('renewals.confirm');
+            Route::post('/renewals/{renewal}/confirm-no-changes', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'confirmNoChanges'])
+                ->name('renewals.confirm-no-changes');
+            Route::post('/renewals/{renewal}/submit-changes', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'submitChanges'])
+                ->name('renewals.submit-changes');
+            Route::get('/renewals/{renewal}/payment', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'payment'])
+                ->name('renewals.payment');
+            Route::post('/renewals/{renewal}/payment/paynow', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'submitPaynow'])
+                ->name('renewals.payment.paynow');
+            Route::post('/renewals/{renewal}/payment/proof', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'submitProof'])
+                ->name('renewals.payment.proof');
+            Route::get('/renewals/{renewal}', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'show'])
+                ->name('renewals.show');
 
             Route::get('/payments',    [MediaHousePortalController::class, 'payments'])->name('payments');
             Route::get('/notices',     [MediaHousePortalController::class, 'notices'])->name('notices');
@@ -276,6 +315,20 @@ Route::middleware('auth')->group(function () {
             Route::get('/downloads/file/{doc}', [\App\Http\Controllers\Portal\DownloadsController::class, 'download'])
                 ->defaults('portal', 'mediahouse')
                 ->name('downloads.file');
+            
+            // Official Letter Download (Two-Stage Payment)
+            Route::get('/applications/{application}/official-letter', [MediaHousePortalController::class, 'downloadOfficialLetter'])
+                ->name('download-official-letter');
+            
+            // Two-Stage Payment Submissions
+            Route::post('/applications/{application}/payment/application-fee/paynow', [MediaHousePortalController::class, 'submitApplicationFeePaynow'])
+                ->name('payment.app-fee.paynow');
+            Route::post('/applications/{application}/payment/application-fee/proof', [MediaHousePortalController::class, 'submitApplicationFeeProof'])
+                ->name('payment.app-fee.proof');
+            Route::post('/applications/{application}/payment/registration-fee/paynow', [MediaHousePortalController::class, 'submitRegistrationFeePaynow'])
+                ->name('payment.reg-fee.paynow');
+            Route::post('/applications/{application}/payment/registration-fee/proof', [MediaHousePortalController::class, 'submitRegistrationFeeProof'])
+                ->name('payment.reg-fee.proof');
         });
 
     /*
@@ -314,6 +367,8 @@ Route::middleware('auth')->group(function () {
         ->name('paynow.initiate.mobile');
     Route::get('/payments/{application}/status', [\App\Http\Controllers\Portal\PaynowController::class, 'checkStatus'])
         ->name('paynow.status');
+    Route::post('/payments/{application}/submit-reference', [\App\Http\Controllers\Portal\PaynowController::class, 'submitReference'])
+        ->name('paynow.submit_reference');
 
     /*
     |--------------------------------------------------------------------------
@@ -639,6 +694,20 @@ Route::middleware('auth')->group(function () {
             Route::get('/tools/tasks', [AccreditationOfficerController::class, 'toolsTasks'])->name('tools.tasks');
             Route::get('/tools/drafts', [AccreditationOfficerController::class, 'toolsDrafts'])->name('tools.drafts');
             Route::get('/tools/sops', [AccreditationOfficerController::class, 'toolsSops'])->name('tools.sops');
+            
+            // Fix Requests
+            Route::get('/fix-requests', [AccreditationOfficerController::class, 'fixRequests'])->name('fix-requests');
+            Route::post('/fix-requests/{fixRequest}/resolve', [AccreditationOfficerController::class, 'resolveFixRequest'])->name('fix-requests.resolve');
+            
+            // Forward Without Approval (Waiver/Special Cases)
+            Route::post('/applications/{application}/forward-no-approval', [AccreditationOfficerController::class, 'forwardWithoutApproval'])->name('applications.forward-no-approval');
+            
+            // Renewals Production
+            Route::get('/renewals-production', [AccreditationOfficerController::class, 'renewalsProductionQueue'])->name('renewals.production');
+            Route::get('/renewals-production/{renewal}', [AccreditationOfficerController::class, 'showRenewalProduction'])->name('renewals.production.show');
+            Route::post('/renewals-production/{renewal}/generate', [AccreditationOfficerController::class, 'generateRenewalDocument'])->name('renewals.production.generate');
+            Route::post('/renewals-production/{renewal}/mark-produced', [AccreditationOfficerController::class, 'markRenewalProduced'])->name('renewals.production.mark-produced');
+            Route::post('/renewals-production/{renewal}/print', [AccreditationOfficerController::class, 'printRenewalDocument'])->name('renewals.production.print');
         });
 
     /*
@@ -673,6 +742,20 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/reject', [RegistrarController::class, 'reject'])->name('applications.reject');
             Route::post('/applications/{application}/return', [RegistrarController::class, 'returnToAccounts'])->name('applications.return');
             Route::post('/renewals/send-reminders', [RegistrarController::class, 'sendRenewalReminders'])->name('renewals.send-reminders');
+            
+            // Fix Requests
+            Route::get('/fix-requests', [RegistrarController::class, 'fixRequests'])->name('fix-requests');
+            Route::post('/applications/{application}/send-fix-request', [RegistrarController::class, 'sendFixRequest'])->name('applications.send-fix-request');
+            
+            // Special Cases (Forwarded Without Approval)
+            Route::post('/applications/{application}/approve-special-case', [RegistrarController::class, 'approveSpecialCase'])->name('applications.approve-special-case');
+            
+            // Media House Two-Stage Payment: Official Letter Upload
+            Route::post('/applications/{application}/approve-with-letter', [RegistrarController::class, 'approveWithOfficialLetter'])->name('applications.approve-with-letter');
+            
+            // Payment Oversight (Read-Only)
+            Route::get('/payment-oversight', [RegistrarController::class, 'paymentOversight'])->name('payment-oversight');
+            Route::get('/payment-oversight/{paymentSubmission}', [RegistrarController::class, 'paymentDetail'])->name('payment-detail');
             
             // Notices & Events (Read-only access)
             Route::get('/notices-events', [RegistrarController::class, 'noticesEvents'])->name('notices-events');
@@ -753,6 +836,14 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/paid', [AccountsPaymentsController::class, 'markPaid'])->name('applications.paid');
             Route::post('/applications/{application}/return', [AccountsPaymentsController::class, 'returnToOfficer'])->name('applications.return');
             Route::post('/applications/{application}/unlock', [AccountsPaymentsController::class, 'unlock'])->name('applications.unlock');
+            
+            // Payment Submission Verification (Waivers & Special Cases)
+            Route::post('/applications/{application}/verify-payment', [AccountsPaymentsController::class, 'verifyPaymentSubmission'])->name('applications.verify-payment');
+            
+            // Renewals Queue
+            Route::get('/renewals', [AccountsPaymentsController::class, 'renewalsQueue'])->name('renewals.queue');
+            Route::get('/renewals/{renewal}', [AccountsPaymentsController::class, 'showRenewal'])->name('renewals.show');
+            Route::post('/renewals/{renewal}/verify', [AccountsPaymentsController::class, 'verifyRenewalPayment'])->name('renewals.verify');
         });
 
     /*
@@ -931,7 +1022,7 @@ Route::middleware('auth')->group(function () {
     | STAFF - DIRECTOR (Executive Dashboard)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['staff.portal','role:director'])
+    Route::middleware(['staff.portal','role:director','director.view_only'])
         ->prefix('staff/director')
         ->name('staff.director.')
         ->group(function () {

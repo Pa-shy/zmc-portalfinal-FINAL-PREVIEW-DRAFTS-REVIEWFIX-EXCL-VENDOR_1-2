@@ -6,15 +6,15 @@
 @section('content')
 <div id="profile-page">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold text-dark m-0" style="font-size:18px;">Journalist Profile</h4>
+    <h4 class="fw-bold text-dark m-0" style="font-size:18px;">Media Practitioner Profile</h4>
     <button class="btn btn-primary" id="editProfileBtn">
       <i class="ri-edit-line me-2"></i>Edit Profile
     </button>
   </div>
 
   <div class="form-container">
-    <div class="form-header">
-      <h5 class="m-0"><i class="ri-user-settings-line me-2"></i>Personal Information</h5>
+    <div class="form-header" style="background: transparent !important; border-bottom: 1px solid #e2e8f0;">
+      <h5 class="m-0" style="color: #334155;"><i class="ri-user-settings-line me-2"></i>Personal Information</h5>
     </div>
 
     <div class="form-steps-container">
@@ -22,7 +22,7 @@
         <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'User') }}&size=120&background=facc15&color=000&bold=true"
              class="rounded-circle" alt="Profile" width="120" height="120">
         <h5 class="mt-3 mb-1">{{ Auth::user()->name ?? 'User' }}</h5>
-        <p class="text-muted">Accredited Journalist</p>
+        <p class="text-muted">Accredited Media Practitioner</p>
         <div class="d-flex justify-content-center gap-2 mb-3">
           <span class="badge bg-light text-dark">ID: ZMC-2023-045</span>
           <span class="badge bg-success">Active</span>
@@ -30,26 +30,37 @@
       </div>
 
       <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Full Name</label>
-          <input type="text" class="form-control" value="{{ Auth::user()->name ?? '' }}" readonly>
-        </div>
-        <div class="form-field">
-          <label class="form-label">National ID / Passport</label>
-          <input type="text" class="form-control" value="{{ Auth::user()->profile_data['national_reg_no'] ?? Auth::user()->profile_data['passport_no'] ?? 'Not Provided' }}" readonly>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" value="{{ Auth::user()->email ?? '' }}" readonly>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Phone</label>
-          <input type="text" class="form-control" value="{{ Auth::user()->phone_country_code }} {{ Auth::user()->phone_number }}" readonly>
-        </div>
-      </div>
+         <div class="form-field">
+           <label class="form-label">National ID</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->profile_data['national_id'] ?? 'Not Provided' }}" readonly>
+         </div>
+         <div class="form-field">
+           <label class="form-label">Passport Number</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->profile_data['passport_number'] ?? 'Not Provided' }}" readonly>
+         </div>
+       </div>
+ 
+       <div class="form-row">
+         <div class="form-field">
+           <label class="form-label">Primary Phone</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->phone_country_code }} {{ Auth::user()->phone_number }}" readonly>
+         </div>
+         <div class="form-field">
+           <label class="form-label">Secondary Phone</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->profile_data['secondary_phone'] ?? 'Not Provided' }}" readonly>
+         </div>
+       </div>
+ 
+       <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" value="{{ Auth::user()->email ?? '' }}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Nationality</label>
+            <input type="text" class="form-control" value="{{ Auth::user()->profile_data['nationality'] ?? 'Not Provided' }}" readonly>
+          </div>
+       </div>
     </div>
   </div>
 </div>

@@ -20,9 +20,9 @@
         <h6 class="fw-bold mb-3"><i class="ri-megaphone-line me-2" style="color:var(--zmc-accent)"></i>Notices</h6>
         @forelse($notices ?? collect() as $n)
           <div class="border-bottom pb-3 mb-3">
-            <div class="fw-bold text-dark">{{ $n->title }}</div>
+            <div class="fw-bold text-dark" style="text-transform: none !important;">{{ $n->title }}</div>
             <div class="text-muted small">{{ optional($n->published_at)->format('d M Y') }}</div>
-            <div class="mt-2" style="white-space:pre-wrap; font-size:13px;">{{ $n->body }}</div>
+            <div class="mt-2" style="white-space:pre-wrap; font-size:13px; text-transform: none !important;">{{ $n->body }}</div>
           </div>
         @empty
           <div class="text-muted">No notices at the moment.</div>
@@ -35,7 +35,7 @@
         <h6 class="fw-bold mb-3"><i class="ri-calendar-event-line me-2" style="color:var(--zmc-accent)"></i>Events</h6>
         @forelse($events ?? collect() as $e)
           <div class="border-bottom pb-3 mb-3">
-            <div class="fw-bold text-dark">{{ $e->title }}</div>
+            <div class="fw-bold text-dark" style="text-transform: none !important;">{{ $e->title }}</div>
             <div class="text-muted small">
               @if($e->starts_at)
                 {{ $e->starts_at->format('d M Y, H:i') }}
@@ -44,7 +44,7 @@
               @if($e->location) - {{ $e->location }} @endif
             </div>
             @if($e->description)
-              <div class="mt-2" style="white-space:pre-wrap; font-size:13px;">{{ $e->description }}</div>
+              <div class="mt-2" style="white-space:pre-wrap; font-size:13px; text-transform: none !important;">{{ $e->description }}</div>
             @endif
           </div>
         @empty

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Services\ApplicationWorkflow;
+use App\Services\ApplicationWorkflowService;
+use App\Services\PaymentWorkflowService;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -312,14 +314,17 @@ class AccountsPaymentsController extends Controller
     /**
      * Main landing dashboard for Accounts/Payments
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = Auth::user();
-        $applications = Application::query()
-            ->with('applicant')
+        
+        $query = Application::query()
+            ->with('applicant', 'paymentSubmissions')
             ->whereIn('status', [
                 Application::ACCOUNTS_REVIEW,
                 Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR, // Special cases
+                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION, // Two-stage payment
             ])
             ->where(function($q) use ($user) {
                 $q->whereNull('assigned_officer_id')
@@ -329,11 +334,48 @@ class AccountsPaymentsController extends Controller
                 $q->whereNull('locked_at')
                   ->orWhere('locked_at', '<=', now()->subHours(2))
                   ->orWhere('locked_by', $user->id);
-            })
-            ->latest()
-            ->paginate(20);
+            });
 
-        return view('staff.accounts.dashboard', compact('applications'));
+        // Filter by payment submission method
+        if (request()->filled('submission_method')) {
+            $query->where('payment_submission_method', request('submission_method'));
+        }
+
+        $applications = $query->latest()->paginate(20)->withQueryString();
+
+        // KPIs by submission method
+        $kpis = [
+            'total_pending' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR,
+                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION,
+            ])->count(),
+            'special_cases' => Application::where('status', Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR)->count(),
+            'two_stage_pending' => Application::where('status', Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION)->count(),
+            'paynow_submissions' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->where('payment_submission_method', 'paynow_reference')->count(),
+            'proof_submissions' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->where('payment_submission_method', 'proof_upload')->count(),
+            'waiver_submissions' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->where('payment_submission_method', 'waiver')->count(),
+            'no_submission' => Application::whereIn('status', [
+                Application::ACCOUNTS_REVIEW, 
+                Application::RETURNED_TO_ACCOUNTS,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR
+            ])->whereNull('payment_submission_method')->count(),
+        ];
+
+        return view('staff.accounts.dashboard', compact('applications', 'kpis'));
     }
 
     /**
@@ -889,7 +931,12 @@ class AccountsPaymentsController extends Controller
         }
 
         $application->load(['applicant', 'documents', 'messages', 'workflowLogs', 'lockedBy']);
-        return view('staff.accounts.show', compact('application'));
+
+        $userPayments = Payment::where('payer_user_id', $application->user_id)
+            ->latest()
+            ->get();
+
+        return view('staff.accounts.show', compact('application', 'userPayments'));
     }
 
     public function unlock(Application $application)
@@ -990,6 +1037,50 @@ class AccountsPaymentsController extends Controller
         return back()->with('success', 'Returned to Accreditation Officer.');
     }
 
+    /**
+     * Verify payment submission (including waivers from special cases)
+     */
+    public function verifyPaymentSubmission(Request $request, Application $application)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:verify,reject'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+            'payment_submission_id' => ['nullable', 'exists:payment_submissions,id'],
+        ]);
+
+        // Use new workflow service - enforces strict transitions
+        try {
+            if ($data['action'] === 'verify') {
+                // Verify payment - automatically sends to production
+                $application = PaymentWorkflowService::verifyPayment($application, [
+                    'notes' => $data['notes'] ?? null,
+                    'payment_submission_id' => $data['payment_submission_id'] ?? null,
+                ]);
+
+                $message = 'Payment verified and application sent to Production.';
+                
+                // Check if two-stage payment
+                if ($application->requiresApplicationFee()) {
+                    $bothVerified = PaymentWorkflowService::areBothPaymentStagesVerified($application);
+                    if (!$bothVerified) {
+                        $message = 'Payment stage verified. Waiting for second payment stage.';
+                    }
+                }
+            } else {
+                // Reject payment
+                $application = PaymentWorkflowService::rejectPayment($application, $data['notes'] ?? 'Payment rejected', [
+                    'payment_submission_id' => $data['payment_submission_id'] ?? null,
+                ]);
+
+                $message = 'Payment rejected. Applicant must resubmit payment.';
+            }
+
+            return back()->with('success', $message);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', 'Workflow error: ' . $e->getMessage());
+        }
+    }
+
     /* helpers */
     private function audit(string $action, Application $application, ?string $from, ?string $to, array $meta = []): void
     {
@@ -1018,5 +1109,104 @@ class AccountsPaymentsController extends Controller
     {
         try { return Schema::hasColumn($table, $column); }
         catch (\Throwable $e) { return false; }
+    }
+
+    /**
+     * Renewals queue for accounts verification
+     */
+    public function renewalsQueue(Request $request)
+    {
+        $query = \App\Models\RenewalApplication::query()
+            ->with(['applicant', 'originalApplication'])
+            ->awaitingAccountsVerification()
+            ->latest('payment_submitted_at');
+
+        // Filter by payment method
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        // Filter by renewal type
+        if ($request->filled('renewal_type')) {
+            $query->where('renewal_type', $request->renewal_type);
+        }
+
+        $renewals = $query->paginate(20)->withQueryString();
+
+        // KPIs
+        $kpis = [
+            'pending' => \App\Models\RenewalApplication::awaitingAccountsVerification()->count(),
+            'verified_today' => \App\Models\RenewalApplication::where('payment_verified_at', '>=', now()->startOfDay())->count(),
+            'paynow' => \App\Models\RenewalApplication::awaitingAccountsVerification()->where('payment_method', 'PAYNOW')->count(),
+            'proof' => \App\Models\RenewalApplication::awaitingAccountsVerification()->where('payment_method', 'PROOF_UPLOAD')->count(),
+        ];
+
+        return view('staff.accounts.renewals_queue', compact('renewals', 'kpis'));
+    }
+
+    /**
+     * Show renewal details for verification
+     */
+    public function showRenewal(\App\Models\RenewalApplication $renewal)
+    {
+        $renewal->load(['applicant', 'originalApplication', 'changeRequests']);
+
+        return view('staff.accounts.renewal_show', compact('renewal'));
+    }
+
+    /**
+     * Verify renewal payment
+     */
+    public function verifyRenewalPayment(Request $request, \App\Models\RenewalApplication $renewal)
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:verify,reject'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $from = $renewal->status;
+
+        DB::transaction(function() use ($renewal, $data, $from) {
+            if ($data['action'] === 'verify') {
+                // Verify payment
+                $renewal->update([
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => Auth::id(),
+                    'status' => \App\Models\RenewalApplication::RENEWAL_PAYMENT_VERIFIED,
+                    'current_stage' => 'production',
+                    'last_action_at' => now(),
+                    'last_action_by' => Auth::id(),
+                ]);
+
+                ActivityLogger::log('renewal_payment_verified', $renewal, $from, $renewal->status, [
+                    'renewal_type' => $renewal->renewal_type,
+                    'payment_method' => $renewal->payment_method,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+
+            } else {
+                // Reject payment
+                $renewal->update([
+                    'payment_verified_at' => now(),
+                    'payment_verified_by' => Auth::id(),
+                    'payment_rejection_reason' => $data['notes'],
+                    'status' => \App\Models\RenewalApplication::RENEWAL_PAYMENT_REJECTED,
+                    'last_action_at' => now(),
+                    'last_action_by' => Auth::id(),
+                ]);
+
+                ActivityLogger::log('renewal_payment_rejected', $renewal, $from, $renewal->status, [
+                    'renewal_type' => $renewal->renewal_type,
+                    'payment_method' => $renewal->payment_method,
+                    'reason' => $data['notes'],
+                ]);
+            }
+        });
+
+        $message = $data['action'] === 'verify'
+            ? 'Renewal payment verified. Application sent to Production.'
+            : 'Renewal payment rejected. Applicant must resubmit payment.';
+
+        return back()->with('success', $message);
     }
 }

@@ -2,15 +2,15 @@
 @section('title', 'Registered Media Houses')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   {{-- Header --}}
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color: var(--zmc-text-dark);">
         Registered Media Houses
       </h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
         View and manage all registered media houses. Filter by entity name, registration number, collection status, or expiry.
       </div>
@@ -25,7 +25,7 @@
 
   @if(session('success'))
     <div class="alert alert-success d-flex align-items-start gap-2">
-      <i class="ri-checkbox-circle-line" style="font-size:18px;line-height:1;"></i>
+      <i class="ri-checkbox-circle-line" style="font-size: var(--font-size-lg); line-height: 1;"></i>
       <div>{{ session('success') }}</div>
     </div>
   @endif

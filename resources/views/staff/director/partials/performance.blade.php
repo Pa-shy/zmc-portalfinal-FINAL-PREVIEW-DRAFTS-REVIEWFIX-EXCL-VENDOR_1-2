@@ -7,7 +7,7 @@
         <div class="col-md-4">
             <h5 class="fw-bold mb-4 px-3">Approval Ratios</h5>
             <div class="px-3 mb-4">
-                <div class="text-muted small fw-bold text-uppercase mb-1">Journalist Accreditation</div>
+                <div class="text-muted small fw-bold text-uppercase mb-1">Media Practitioner Accreditation</div>
                 <div class="d-flex justify-content-between align-items-end mb-2">
                     <span class="h3 fw-black mb-0 text-primary">{{ $ratio['journalist'] }}%</span>
                     <span class="text-muted smaller">Approved / Decided</span>
@@ -68,9 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 height: 350,
                 type: 'area',
                 toolbar: { show: false },
-                fontFamily: 'Roboto, sans-serif'
+                fontFamily: 'Inter, sans-serif'
             },
-            colors: ['#3b82f6', '#10b981', '#ef4444'],
+            colors: ['#000000', '#facc15', '#ef4444'],
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 2 },
             fill: {

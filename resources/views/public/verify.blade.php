@@ -84,9 +84,9 @@
         </div>
 
         <h5 class="fw-bold mb-0">
-            {{ $isAccreditation ? ($record->holder->name ?? 'Journalist') : ($record->entity_name ?? 'Media House') }}
+            {{ $isAccreditation ? ($record->holder->name ?? 'Media Practitioner') : ($record->entity_name ?? 'Media House') }}
         </h5>
-        <p class="text-muted small">{{ $isAccreditation ? 'Accredited Journalist' : 'Registered Media House' }}</p>
+        <p class="text-muted small">{{ $isAccreditation ? 'Accredited Media Practitioner' : 'Registered Media House' }}</p>
 
         <div class="info-grid">
             <div class="info-item">

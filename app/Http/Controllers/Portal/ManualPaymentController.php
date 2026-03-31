@@ -20,7 +20,11 @@ class ManualPaymentController extends Controller
         }
 
         // Only allow when accounts review (ready to pay)
-        if (($application->status ?? '') !== Application::ACCOUNTS_REVIEW) {
+        if (!in_array($application->status, [
+            Application::ACCOUNTS_REVIEW, 
+            Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+            Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT
+        ], true)) {
             return response()->json(['ok' => false, 'message' => 'Payment proof can only be submitted when your application is ready for payment.'], 422);
         }
 
@@ -42,10 +46,18 @@ class ManualPaymentController extends Controller
         $hash = is_file($abs) ? hash_file('sha256', $abs) : null;
 
         $from = $application->status;
+        $newStatus = Application::AWAITING_ACCOUNTS_VERIFICATION;
+        if ($application->application_type === 'registration' && $application->status === Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT) {
+            $newStatus = Application::REGISTRATION_FEE_AWAITING_VERIFICATION;
+        }
+
         $application->update([
+            'status' => $newStatus,
             'payment_proof_path' => $path,
             'payment_proof_uploaded_at' => now(),
             'proof_status' => 'submitted',
+            'payment_submission_method' => 'proof_upload',
+            'payment_submitted_at' => now(),
 
             'proof_payer_first_name' => $data['proof_first_name'],
             'proof_payer_last_name'  => $data['proof_last_name'],
@@ -61,6 +73,11 @@ class ManualPaymentController extends Controller
             'last_action_at'         => now(),
             'last_action_by'         => Auth::id(),
         ]);
+        
+        // Also update the current_stage if relevant
+        if ($newStatus === Application::REGISTRATION_FEE_AWAITING_VERIFICATION) {
+            $application->update(['current_stage' => 'accounts_verification_reg_fee']);
+        }
 
         // Supporting documents
         if ($request->hasFile('supporting_docs')) {
@@ -101,7 +118,11 @@ class ManualPaymentController extends Controller
             return response()->json(['ok' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        if (($application->status ?? '') !== Application::ACCOUNTS_REVIEW) {
+        if (!in_array($application->status, [
+            Application::ACCOUNTS_REVIEW, 
+            Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+            Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT
+        ], true)) {
             return response()->json(['ok' => false, 'message' => 'Waiver can only be submitted when your application is ready for payment.'], 422);
         }
 
@@ -122,9 +143,17 @@ class ManualPaymentController extends Controller
         $hash = is_file($abs) ? hash_file('sha256', $abs) : null;
 
         $from = $application->status;
+        $newStatus = Application::AWAITING_ACCOUNTS_VERIFICATION;
+        if ($application->application_type === 'registration' && $application->status === Application::REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT) {
+            $newStatus = Application::REGISTRATION_FEE_AWAITING_VERIFICATION;
+        }
+
         $application->update([
+            'status' => $newStatus,
             'waiver_path' => $path,
             'waiver_status' => 'submitted',
+            'payment_submission_method' => 'waiver',
+            'payment_submitted_at' => now(),
 
             'waiver_beneficiary_first_name' => $data['waiver_first_name'],
             'waiver_beneficiary_last_name'  => $data['waiver_last_name'],

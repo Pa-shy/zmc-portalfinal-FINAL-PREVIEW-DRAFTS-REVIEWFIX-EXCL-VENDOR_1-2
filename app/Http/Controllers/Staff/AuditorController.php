@@ -20,11 +20,7 @@ class AuditorController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $from = $request->date('from')?->startOfDay();
-        $to   = $request->date('to')?->endOfDay();
-
-        $base = Application::query()->when($from, fn($q) => $q->where('created_at', '>=', $from))
-                                     ->when($to, fn($q) => $q->where('created_at', '<=', $to));
+        $base = Application::query();
 
         $totalApplications = (clone $base)->count();
         $approvedCount = (clone $base)->whereIn('status', [
@@ -67,7 +63,8 @@ class AuditorController extends Controller
             })
             ->count();
 
-        $recentFlags = AuditFlag::query()->latest()->limit(10)->get();
+        $recentFlags = AuditFlag::query()
+            ->latest()->limit(10)->get();
 
         // System-wide activity feed (all roles)
         $activity = ActivityLog::query()
@@ -77,7 +74,6 @@ class AuditorController extends Controller
             ->get();
 
         return view('staff.auditor.dashboard', compact(
-            'from','to',
             'totalApplications','approvedCount','rejectedCount',
             'waiversApproved','proofsApproved','paynowConfirmed',
             'irregularApprovedWithoutPayment','recentFlags','activity'

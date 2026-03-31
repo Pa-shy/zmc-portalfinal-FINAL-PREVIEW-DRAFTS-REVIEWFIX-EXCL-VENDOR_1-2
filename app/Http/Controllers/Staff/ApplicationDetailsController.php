@@ -76,6 +76,37 @@ class ApplicationDetailsController extends Controller
             ];
         })->values();
 
+        // Previous applications
+        $previousApplications = Application::where('applicant_id', $application->applicant_id)
+            ->where('id', '!=', $application->id)
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'reference', 'application_type', 'status', 'created_at'])
+            ->map(function($pa) {
+                return [
+                    'id' => $pa->id,
+                    'reference' => $pa->reference,
+                    'type' => $pa->application_type,
+                    'status' => $pa->status,
+                    'date' => $pa->created_at?->format('d M Y'),
+                ];
+            });
+
+        // Previous payments
+        $previousPayments = Payment::where('payer_user_id', $application->user_id)
+            ->orderBy('created_at', 'desc')
+            ->get(['id', 'reference', 'amount', 'currency', 'method', 'status', 'created_at'])
+            ->map(function($p) {
+                return [
+                    'id' => $p->id,
+                    'reference' => $p->reference,
+                    'amount' => $p->amount,
+                    'currency' => $p->currency,
+                    'method' => $p->method,
+                    'status' => $p->status,
+                    'date' => $p->created_at?->format('d M Y'),
+                ];
+            });
+
         return response()->json([
             'ok' => true,
             'application' => $app,
@@ -83,6 +114,8 @@ class ApplicationDetailsController extends Controller
             'directors' => $directors,
             'managers' => $managers,
             'documents' => $documents,
+            'previous_applications' => $previousApplications,
+            'previous_payments' => $previousPayments,
         ]);
     }
 

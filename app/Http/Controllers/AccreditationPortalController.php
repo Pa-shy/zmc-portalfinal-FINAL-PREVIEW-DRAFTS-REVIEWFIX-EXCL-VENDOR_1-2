@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\ApplicationDocument;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use App\Support\MasterSettings;
 
@@ -60,8 +61,12 @@ class AccreditationPortalController extends Controller
                 ->whereIn('status', [
                     Application::SUBMITTED,
                     Application::OFFICER_REVIEW,
+                    Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
                     Application::REGISTRAR_REVIEW,
                     Application::ACCOUNTS_REVIEW,
+                    Application::AWAITING_ACCOUNTS_VERIFICATION,
+                    Application::REGISTRAR_RAISED_FIX_REQUEST,
+                    Application::RETURNED_TO_OFFICER,
                 ])
                 ->count(),
             'renewals_due' => 0,
@@ -279,8 +284,8 @@ class AccreditationPortalController extends Controller
             try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
 
             // Block duplicates per application if possible
-            if ($sha256 && \Illuminate\Support\Facades\Schema::hasColumn('application_documents', 'sha256')) {
-                $exists = \App\Models\ApplicationDocument::where('application_id', $application->id)
+            if ($sha256 && Schema::hasColumn('application_documents', 'sha256')) {
+                $exists = ApplicationDocument::where('application_id', $application->id)
                     ->where('sha256', $sha256)
                     ->exists();
                 if ($exists) continue;
@@ -288,32 +293,30 @@ class AccreditationPortalController extends Controller
 
             $path = $file->store('documents/' . $application->id, 'public');
 
+            $docData = [
+                'file_path'      => $path,
+                'original_name'  => $file->getClientOriginalName(),
+                'status'         => 'draft',
+            ];
+
+            // Safely add columns only if they exist in DB
+            if (Schema::hasColumn('application_documents', 'owner_id')) $docData['owner_id'] = auth()->id();
+            if (Schema::hasColumn('application_documents', 'mime'))     $docData['mime']     = method_exists($file, 'getMimeType') ? $file->getMimeType() : null;
+            if (Schema::hasColumn('application_documents', 'size'))     $docData['size']     = method_exists($file, 'getSize')     ? $file->getSize()     : null;
+            if (Schema::hasColumn('application_documents', 'sha256'))   $docData['sha256']   = $sha256;
+
             ApplicationDocument::updateOrCreate(
                 [
                     'application_id' => $application->id,
                     'doc_type'       => $field,
                 ],
-                [
-                    'file_path'      => $path,
-                    'original_name'  => $file->getClientOriginalName(),
-                    'owner_id'       => auth()->id(),
-                    'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size'           => method_exists($file, 'getSize') ? $file->getSize() : null,
-                    'sha256'         => $sha256,
-                    'status'         => 'draft',
-                ]
+                $docData
             );
 
             // Optional mirror into files table
-            if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
-                \App\Models\FileRecord::create([
-                    'owner_id' => auth()->id(),
-                    'application_id' => $application->id,
-                    'path' => $path,
-                    'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
-                    'sha256' => $sha256,
-                ]);
+            if (Schema::hasTable('files')) {
+                // If a FileRecord model existed we would use it here, 
+                // but since it's missing, we skip this to avoid 500 errors.
             }
         }
     }
@@ -347,14 +350,31 @@ class AccreditationPortalController extends Controller
         // Decode form_data safely
         $rawFormData = $request->input('form_data');
         $formData = $rawFormData;
-
         if (is_string($rawFormData)) {
             $decoded = json_decode($rawFormData, true);
             $formData = is_array($decoded) ? $decoded : [];
         }
         if (!is_array($formData)) $formData = [];
 
-        $scope = $validated['journalist_scope'];
+        // Identify existing draft EARLY to support file presence check
+        $existingDraft = Application::where('applicant_user_id', $user->id)
+            ->where('application_type', 'accreditation')
+            ->where('request_type', 'new')
+            ->where('is_draft', true)
+            ->first();
+
+        // Helper to check if a file exists in the request OR has already been uploaded for this draft
+        $hasDoc = function($field) use ($request, $existingDraft) {
+            if ($request->hasFile($field)) return true;
+            if ($existingDraft) {
+                return ApplicationDocument::where('application_id', $existingDraft->id)
+                    ->where('doc_type', $field)
+                    ->exists();
+            }
+            return false;
+        };
+
+        $scope = $validated['journalist_scope'] ?? $formData['journalist_scope'] ?? ($existingDraft ? $existingDraft->journalist_scope : 'local');
         $employmentType = $formData['employment_type'] ?? null;
 
         // ---- REQUIRED FIELDS (SPEC) ----
@@ -411,40 +431,39 @@ class AccreditationPortalController extends Controller
                 }
             }
 
-            // Foreign employment travel fields (only if employed fields are being captured)
-            // Your spec puts these in employment section; we enforce them for foreign.
+            // Foreign travel fields (Required for ALL foreign applicants)
             $requiredForeignTravel = ['arrived_on', 'arrival_mode', 'port_of_entry', 'departing_on', 'special_assignment'];
             foreach ($requiredForeignTravel as $k) {
                 if (empty($formData[$k])) {
-                    return response()->json(['success'=>false,'message'=>"Missing required foreign field: {$k}"], 422);
+                    return response()->json(['success'=>false,'message'=>"Missing required foreign travel field: {$k}"], 422);
                 }
             }
         }
 
-        // Employed vs Freelancer upload requirements
+        // Employed vs Freelancer upload requirements (Local only per spec)
         if ($scope === 'local') {
-            if ($employmentType === 'employed' && !$request->hasFile('employment_letter')) {
+            if ($employmentType === 'employed' && !$hasDoc('employment_letter')) {
                 return response()->json(['success'=>false,'message'=>'Employment Letter is required for Employed applicants.'], 422);
             }
-            if ($employmentType === 'freelancer' && !$request->hasFile('reference_letter')) {
+            if ($employmentType === 'freelancer' && !$hasDoc('reference_letter')) {
                 return response()->json(['success'=>false,'message'=>'Reference/Testimonial/Affidavit is required for Freelancers.'], 422);
             }
         }
 
         // Required photo always
-        if (!$request->hasFile('passport_photo')) {
+        if (!$hasDoc('passport_photo')) {
             return response()->json(['success'=>false,'message'=>'Photo is required. Please upload or take a passport photo.'], 422);
         }
 
         // Required ID docs
-        if ($scope === 'local' && !$request->hasFile('id_scan')) {
+        if ($scope === 'local' && !$hasDoc('id_scan')) {
             return response()->json(['success'=>false,'message'=>'National ID Scan is required for Local applications.'], 422);
         }
         if ($scope === 'foreign') {
-            if (!$request->hasFile('passport_biodata_page')) {
+            if (!$hasDoc('passport_biodata_page')) {
                 return response()->json(['success'=>false,'message'=>'Passport Bio Data Page is required for Foreign applications.'], 422);
             }
-            if (!$request->hasFile('clearance_letter')) {
+            if (!$hasDoc('clearance_letter')) {
                 return response()->json(['success'=>false,'message'=>'Clearance Letter is required for Foreign applications.'], 422);
             }
         }
@@ -487,13 +506,6 @@ class AccreditationPortalController extends Controller
         }
 
         $reference = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
-
-        // Convert draft -> submitted if exists
-        $existingDraft = Application::where('applicant_user_id', $user->id)
-            ->where('application_type', 'accreditation')
-            ->where('request_type', 'new')
-            ->where('is_draft', true)
-            ->first();
 
         $collectionRegion = $request->input('collection_region') ?: ($formData['collection_region'] ?? 'harare');
 
@@ -541,39 +553,30 @@ class AccreditationPortalController extends Controller
             $sha256 = null;
             try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
 
-            if ($sha256 && \Illuminate\Support\Facades\Schema::hasColumn('application_documents', 'sha256')) {
-                $exists = \App\Models\ApplicationDocument::where('application_id', $application->id)
-                    ->where('sha256', $sha256)
-                    ->exists();
-                if ($exists) continue;
-            }
             $path = $file->store('documents/' . $application->id, 'public');
+
+            $docData = [
+                'file_path'      => $path,
+                'original_name'  => $file->getClientOriginalName(),
+                'status'         => 'pending',
+            ];
+
+            // Safely add columns only if they exist in DB
+            if (Schema::hasColumn('application_documents', 'owner_id')) $docData['owner_id'] = $user->id;
+            if (Schema::hasColumn('application_documents', 'mime'))     $docData['mime']     = method_exists($file, 'getMimeType') ? $file->getMimeType() : null;
+            if (Schema::hasColumn('application_documents', 'size'))     $docData['size']     = method_exists($file, 'getSize')     ? $file->getSize()     : null;
+            if (Schema::hasColumn('application_documents', 'sha256'))   $docData['sha256']   = $sha256;
 
             ApplicationDocument::updateOrCreate(
                 [
                     'application_id' => $application->id,
                     'doc_type'       => $field,
                 ],
-                [
-                    'file_path'      => $path,
-                    'original_name'  => $file->getClientOriginalName(),
-                    'owner_id'       => $user->id,
-                    'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size'           => method_exists($file, 'getSize') ? $file->getSize() : null,
-                    'sha256'         => $sha256,
-                    'status'         => 'pending',
-                ]
+                $docData
             );
 
-            if (\Illuminate\Support\Facades\Schema::hasTable('files')) {
-                \App\Models\FileRecord::create([
-                    'owner_id' => $user->id,
-                    'application_id' => $application->id,
-                    'path' => $path,
-                    'mime' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
-                    'size' => method_exists($file, 'getSize') ? $file->getSize() : null,
-                    'sha256' => $sha256,
-                ]);
+            if (Schema::hasTable('files')) {
+                // Skip FileRecord mirror if model is missing
             }
         }
 
@@ -614,16 +617,16 @@ class AccreditationPortalController extends Controller
 
         $validated = $request->validate([
             'request_type' => 'required|in:renewal,replacement',
+            'practitioner_type' => 'nullable|in:employed,freelancer',
             'draft_reference' => 'nullable|string|max:64',
             'current_step' => 'nullable|integer|min:1|max:4',
             'declaration_confirmed' => 'required|in:1',
-            'current_step' => 'nullable|integer|min:1|max:4',
-
-            // docs (optional for draft)
-            'renewal_employer_letter'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'replacement_affidavit'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'replacement_employer_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'replacement_police_report'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+ 
+             // docs (optional for draft)
+             'renewal_employer_letter'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+             'replacement_affidavit'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+             'replacement_employer_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+             'replacement_police_report'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         // Store all posted inputs (excluding files + _token) into form_data
@@ -673,6 +676,7 @@ class AccreditationPortalController extends Controller
 
         $validated = $request->validate([
             'request_type' => 'required|in:renewal,replacement',
+            'practitioner_type' => 'required_if:request_type,renewal|in:employed,freelancer',
             'current_step' => 'nullable|integer|min:1|max:4',
             'surname' => 'required|string|max:120',
             'first_name' => 'required|string|max:120',
@@ -691,8 +695,11 @@ class AccreditationPortalController extends Controller
         ]);
 
         // enforce doc rules
-        if ($validated['request_type'] === 'renewal' && !$request->hasFile('renewal_employer_letter')) {
-            return response()->json(['success' => false, 'message' => 'Employer Letter is required for renewal.'], 422);
+        if ($validated['request_type'] === 'renewal') {
+            $isEmployed = ($validated['practitioner_type'] ?? 'employed') === 'employed';
+            if ($isEmployed && !$request->hasFile('renewal_employer_letter')) {
+                return response()->json(['success' => false, 'message' => 'Employer Letter is required for employed renewal.'], 422);
+            }
         }
         if ($validated['request_type'] === 'replacement') {
             if (!$request->hasFile('replacement_affidavit') || !$request->hasFile('replacement_employer_letter')) {

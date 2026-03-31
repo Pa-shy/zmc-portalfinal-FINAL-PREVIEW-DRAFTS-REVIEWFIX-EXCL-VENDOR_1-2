@@ -6,7 +6,7 @@
   <div class="chatbot-header">
     <div>
       <div class="title fw-bold">ZMC Assistant</div>
-      <div class="sub text-muted" style="font-size:12px;">Journalist Accreditation Help</div>
+      <div class="sub text-muted" style="font-size:12px;">Media Practitioner Accreditation Help</div>
     </div>
     <button type="button" class="btn btn-sm btn-light" id="chatbotClose">
       <i class="ri-close-line"></i>
@@ -17,7 +17,7 @@
       <div class="message-content">
         Hello! I'm the ZMC Assistant. I can help you with:
         <ul class="mt-2 mb-0 ps-3">
-          <li>Journalist accreditation process</li>
+          <li>Media practitioner accreditation process</li>
           <li>Required documents</li>
           <li>Fees and payments</li>
           <li>Office locations</li>

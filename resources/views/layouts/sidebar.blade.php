@@ -1,19 +1,20 @@
-<!-- APPLICANT SIDEBAR (Journalist + Media House) -->
+<!-- APPLICANT SIDEBAR (Media Practitioner + Media House) -->
 @php
   $isAccred = request()->routeIs('accreditation.*') || str_contains(request()->path(), 'portal/accreditation');
   $isMedia  = request()->routeIs('mediahouse.*') || str_contains(request()->path(), 'media-house/registration');
 
   $subTitle = $isAccred
-    ? 'Journalist Accreditation'
+    ? 'Media Practitioner Accreditation'
     : 'Mass Media Service Registration';
 @endphp
 
 <div class="vertical-menu">
   <div class="navbar-brand-box">
-    <img src="{{ asset('zmc_logo.png') }}" alt="ZMC Logo">
-    <div>
-      <span class="logo-text"><span class="zimbabwe">ZIMBABWE</span> <span class="media">MEDIA</span> <span class="commission">COMMISSION</span></span>
-      <span class="logo-sub">{{ $subTitle }}</span>
+    <a href="{{ route('home') }}">
+      <img src="{{ asset('zmc_logo.png') }}" alt="ZMC Logo">
+    </a>
+    <div class="logo-portal-name">
+      {{ $isAccred ? 'Media Practitioner Accreditation Portal' : 'Mass Media Service Registration Portal' }}
     </div>
   </div>
 
@@ -32,8 +33,8 @@
         </a>
       </li>
 
-      <li class="{{ request()->routeIs('accreditation.renewals') ? 'active' : '' }}">
-        <a href="{{ route('accreditation.renewals') }}">
+      <li class="{{ request()->routeIs('accreditation.renewals*') ? 'active' : '' }}">
+        <a href="{{ route('accreditation.renewals.index') }}">
           <i class="ri-refresh-line"></i><span>Renewal / Replacement (AP5)</span>
         </a>
       </li>
@@ -59,6 +60,12 @@
       <li class="{{ request()->routeIs('accreditation.howto') ? 'active' : '' }}">
         <a href="{{ route('accreditation.howto') }}">
           <i class="ri-information-line"></i><span>How it Works</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="https://mediahub.zmc.co.zw" target="_blank">
+          <i class="ri-links-line"></i><span>Media Hub</span>
         </a>
       </li>
 
@@ -88,8 +95,8 @@
         </a>
       </li>
 
-      <li class="{{ request()->routeIs('mediahouse.renewals') ? 'active' : '' }}">
-        <a href="{{ route('mediahouse.renewals') }}">
+      <li class="{{ request()->routeIs('mediahouse.renewals*') ? 'active' : '' }}">
+        <a href="{{ route('mediahouse.renewals.index') }}">
           <i class="ri-refresh-line"></i><span>Renewal / Replacement (AP5)</span>
         </a>
       </li>
@@ -118,15 +125,15 @@
         </a>
       </li>
 
-      <li class="{{ request()->routeIs('mediahouse.profile') ? 'active' : '' }}">
-        <a href="{{ route('mediahouse.profile') }}">
-          <i class="ri-building-2-line"></i><span>Organization Profile</span>
+      <li>
+        <a href="https://mediahub.zmc.co.zw" target="_blank">
+          <i class="ri-links-line"></i><span>Media Hub</span>
         </a>
       </li>
 
-      <li class="{{ request()->routeIs('mediahouse.staff.index') ? 'active' : '' }}">
-        <a href="{{ route('mediahouse.staff.index') }}">
-          <i class="ri-group-line"></i><span>Staff Management</span>
+      <li class="{{ request()->routeIs('mediahouse.profile') ? 'active' : '' }}">
+        <a href="{{ route('mediahouse.profile') }}">
+          <i class="ri-building-2-line"></i><span>Organization Profile</span>
         </a>
       </li>
 
@@ -143,10 +150,10 @@
   <div class="sidebar-user">
     <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'User') }}&background=facc15&color=000" alt="user">
     <div style="line-height:1.1;">
-      <div style="font-weight:700;font-size:13px;color:#fff;">
+      <div style="font-weight:700;font-size:11px;color:#fff;">
         {{ Auth::user()->name ?? 'User' }}
       </div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.7);">Applicant Portal</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.7);">Applicant Portal</div>
     </div>
   </div>
 </div>

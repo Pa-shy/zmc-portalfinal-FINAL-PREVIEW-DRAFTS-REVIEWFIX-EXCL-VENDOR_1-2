@@ -2,13 +2,13 @@
 @section('title', 'Accreditation Officer Dashboard')
 
 @section('content')
-<div class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
 
   {{-- Header --}}
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
     <div>
-      <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Accreditation Officer Dashboard</h4>
-      <div class="text-muted mt-1" style="font-size:13px;">
+      <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color:#1e293b;">Accreditation Officer Dashboard</h4>
+      <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
         <i class="ri-information-line me-1"></i>
         Review new submissions and request corrections. Approved items go to <b>Registrar</b>.
       </div>
@@ -27,7 +27,7 @@
 
   @if(session('success'))
     <div class="alert alert-success d-flex align-items-start gap-2">
-      <i class="ri-checkbox-circle-line" style="font-size:18px;line-height:1;"></i>
+      <i class="ri-checkbox-circle-line" style="font-size: var(--font-size-lg); line-height: 1;"></i>
       <div>{{ session('success') }}</div>
     </div>
   @endif
@@ -40,8 +40,7 @@
       'submitted', 'officer_review', 'under_officer_review', 'needs_correction', 'returned_from_payments', 'returned_from_registrar'
     ], true))->count();
 
-    $summaryCorrections = $items->filter(fn($x) => in_array(strtolower((string)($x->status ?? '')), ['correction_requested','corrections_requested','needs_correction'], true))->count();
-    $summaryRejected = $kpis['rejected_applications'] ?? $items->filter(fn($x) => strtolower((string)($x->status ?? '')) === 'officer_rejected')->count();
+    $summaryCorrections = $kpis['corrections'] ?? $items->filter(fn($x) => in_array(strtolower((string)($x->status ?? '')), ['correction_requested','corrections_requested','needs_correction'], true))->count();
 
     $detailsUrlTemplate = route('staff.applications.details', ['application' => '__ID__']);
     $approveUrl = fn($id) => route('staff.officer.applications.approve', $id);
@@ -50,11 +49,11 @@
 
   {{-- Summary cards --}}
   <div class="row g-3 mb-4">
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-4">
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="text-muted small fw-bold">Total queue</div>
+            <div class="text-muted small fw-bold">Total Applications</div>
             <div class="h3 fw-black mb-0">{{ $summaryTotal }}</div>
           </div>
           <div class="icon-box text-primary"><i class="ri-folders-line"></i></div>
@@ -62,7 +61,7 @@
       </div>
     </div>
 
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-4">
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -76,7 +75,7 @@
       </div>
     </div>
 
-    <div class="col-12 col-md-3">
+    <div class="col-12 col-md-4">
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -84,18 +83,6 @@
             <div class="h3 fw-black mb-0">{{ $summaryCorrections }}</div>
           </div>
           <div class="icon-box text-warning"><i class="ri-chat-check-line"></i></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-3">
-      <div class="zmc-card h-100">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="text-muted small fw-bold">Rejected</div>
-            <div class="h3 fw-black mb-0">{{ $summaryRejected }}</div>
-          </div>
-          <div class="icon-box text-danger"><i class="ri-error-warning-line"></i></div>
         </div>
       </div>
     </div>
@@ -112,31 +99,27 @@
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start mb-3">
           <div>
-            <h6 class="fw-bold m-0">Accredited Journalists</h6>
-            <div class="text-muted small">View all accredited journalists and their collection status</div>
+            <h6 class="fw-bold m-0">Media Practitioners</h6>
+            <div class="text-muted small">Compare total media practitioners in system vs accredited</div>
           </div>
           <div class="icon-box text-primary"><i class="ri-user-star-line"></i></div>
         </div>
-        @php
-          $totalAccredited = \App\Models\AccreditationRecord::count();
-          $uncollectedCards = \App\Models\AccreditationRecord::whereNull('collected_at')->count();
-        @endphp
         <div class="row g-2 mb-3">
           <div class="col-6">
             <div class="border rounded p-2 text-center">
-              <div class="h4 fw-bold mb-0">{{ $totalAccredited }}</div>
+              <div class="h4 fw-bold mb-0">{{ $kpis['media_practitioners_total'] ?? 0 }}</div>
               <div class="small text-muted">Total</div>
             </div>
           </div>
           <div class="col-6">
             <div class="border rounded p-2 text-center">
-              <div class="h4 fw-bold mb-0 text-warning">{{ $uncollectedCards }}</div>
-              <div class="small text-muted">Uncollected</div>
+              <div class="h4 fw-bold mb-0 text-success">{{ $kpis['media_practitioners_accredited'] ?? 0 }}</div>
+              <div class="small text-muted">Accredited</div>
             </div>
           </div>
         </div>
         <a href="{{ route('staff.officer.records.accredited-journalists') }}" class="btn btn-outline-primary w-100">
-          <i class="ri-eye-line me-1"></i> View All Journalists
+          <i class="ri-eye-line me-1"></i> View All Media Practitioners
         </a>
       </div>
     </div>
@@ -144,26 +127,22 @@
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start mb-3">
           <div>
-            <h6 class="fw-bold m-0">Registered Media Houses</h6>
-            <div class="text-muted small">View all registered media houses and their collection status</div>
+            <h6 class="fw-bold m-0">Media Houses</h6>
+            <div class="text-muted small">Compare total media houses in system vs registered</div>
           </div>
           <div class="icon-box text-success"><i class="ri-building-line"></i></div>
         </div>
-        @php
-          $totalRegistered = \App\Models\RegistrationRecord::count();
-          $uncollectedCerts = \App\Models\RegistrationRecord::whereNull('collected_at')->count();
-        @endphp
         <div class="row g-2 mb-3">
           <div class="col-6">
             <div class="border rounded p-2 text-center">
-              <div class="h4 fw-bold mb-0">{{ $totalRegistered }}</div>
+              <div class="h4 fw-bold mb-0">{{ $kpis['media_houses_total'] ?? 0 }}</div>
               <div class="small text-muted">Total</div>
             </div>
           </div>
           <div class="col-6">
             <div class="border rounded p-2 text-center">
-              <div class="h4 fw-bold mb-0 text-warning">{{ $uncollectedCerts }}</div>
-              <div class="small text-muted">Uncollected</div>
+              <div class="h4 fw-bold mb-0 text-success">{{ $kpis['media_houses_registered'] ?? 0 }}</div>
+              <div class="small text-muted">Registered</div>
             </div>
           </div>
         </div>
@@ -191,7 +170,7 @@
           <div class="col-12 col-lg-6">
             <div class="border rounded p-3">
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="fw-bold small text-muted">Journalists ({{ $expiringJournalists->count() }})</div>
+                <div class="fw-bold small text-muted">Media Practitioners ({{ $expiringJournalists->count() }})</div>
                 <form method="POST" action="{{ route('staff.officer.renewals.send-reminders') }}" class="d-inline">
                   @csrf
                   <input type="hidden" name="record_type" value="accreditation">
@@ -289,7 +268,7 @@
     <div class="zmc-card mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="fw-bold m-0">
-          <i class="ri-user-unfollow-line me-2" style="color:#dc3545"></i> Inactive Journalists (2-3 Years)
+          <i class="ri-user-unfollow-line me-2" style="color:#dc3545"></i> Inactive Media Practitioners (2-3 Years)
         </h6>
         <span class="badge bg-danger">{{ $inactiveJournalists->count() }} inactive</span>
       </div>
@@ -326,7 +305,7 @@
       </div>
 
       <div class="mt-3 text-muted small">
-        <i class="ri-information-line me-1"></i> Showing journalists who haven't logged in for 2-3 years. Consider sending reactivation reminders.
+        <i class="ri-information-line me-1"></i> Showing media practitioners who haven't logged in for 2-3 years. Consider sending reactivation reminders.
       </div>
     </div>
   @endif
@@ -350,10 +329,10 @@
             <th style="width:60px;">#</th>
             <th><i class="ri-hashtag me-1"></i> Ref</th>
             <th><i class="ri-user-line me-1"></i> Applicant</th>
-            <th><i class="ri-map-pin-line me-1"></i> Region</th>
-            <th><i class="ri-calendar-line me-1"></i> Date</th>
-            <th><i class="ri-flag-line me-1"></i> Status</th>
-            <th class="text-end" style="min-width:190px;">Action</th>
+            <th><i class="ri-map-pin-line me-1"></i> Collection Region</th>
+            <th><i class="ri-calendar-line me-1"></i> Date & Time</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-flag-line me-1"></i> New or Renewal</th>
+            <th style="font-size: var(--font-size-dense);"><i class="ri-global-line me-1"></i> Foreign or Local</th>
           </tr>
         </thead>
 
@@ -373,6 +352,18 @@
 
             $rowNo = method_exists($applications,'firstItem') && $applications->firstItem() ? ($applications->firstItem() + $i) : ($i + 1);
             $ref = $app->reference ?? ('APP-' . str_pad((int)$app->id, 5, '0', STR_PAD_LEFT));
+            
+            // Determine New, Renewal or Replacement
+            $requestType = strtolower((string)($app->request_type ?? 'new'));
+            $newOrRenewal = match($requestType) {
+              'renewal' => 'Renewal',
+              'replacement' => 'Replacement',
+              default => 'New'
+            };
+            
+            // Determine Foreign or Local
+            $scope = strtolower((string)($app->journalist_scope ?? $app->residency_type ?? $app->form_data['journalist_scope'] ?? $app->form_data['residency_type'] ?? 'local'));
+            $foreignOrLocal = ($scope === 'foreign' || $scope === 'non-resident') ? 'Foreign' : 'Local';
           @endphp
 
           <tr>
@@ -380,50 +371,12 @@
             <td class="fw-bold text-dark">{{ $ref }}</td>
             <td>{{ $app->applicant?->name ?? '—' }}</td>
             <td class="text-capitalize">{{ $app->collection_region ?? '—' }}</td>
-            <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y') : '—' }}</td>
+            <td class="small">{{ !empty($app->created_at) ? \Carbon\Carbon::parse($app->created_at)->format('d M Y H:i') : '—' }}</td>
             <td>
-              <span class="badge rounded-pill bg-{{ $badge }} px-3">{{ ucwords(str_replace('_',' ', $status ?: '—')) }}</span>
+              <span class="badge rounded-pill bg-{{ $newOrRenewal === 'Renewal' ? 'info' : ($newOrRenewal === 'Replacement' ? 'warning' : 'primary') }} px-3" style="font-size: var(--font-size-dense-sm);">{{ $newOrRenewal }}</span>
             </td>
-
-            <td class="text-end">
-              <div class="zmc-action-strip">
-
-                {{-- Request correction --}}
-                <button
-                  type="button"
-                  class="btn btn-sm zmc-icon-btn btn-outline-dark js-open-modal"
-                  data-target="#corrModal{{ $app->id }}"
-                  @if(!$canDecide) disabled @endif
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Request correction"
-                >
-                  <i class="fa-regular fa-comment-dots"></i>
-                </button>
-
-                {{-- View --}}
-                <button
-                  type="button"
-                  class="btn btn-sm zmc-icon-btn btn-outline-primary js-view-more"
-                  data-app-id="{{ $app->id }}"
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="View application"
-                >
-                  <i class="fa-regular fa-eye"></i>
-                </button>
-
-                {{-- Approve --}}
-                <button
-                  type="button"
-                  class="btn btn-sm zmc-icon-btn btn-outline-success js-open-modal"
-                  data-target="#approveModal{{ $app->id }}"
-                  @if(!$canDecide) disabled @endif
-                  data-bs-toggle="tooltip" data-bs-placement="top"
-                  title="Approve"
-                >
-                  <i class="fa-solid fa-check"></i>
-                </button>
-
-              </div>
+            <td>
+              <span class="badge rounded-pill bg-{{ $foreignOrLocal === 'Foreign' ? 'warning' : 'success' }} px-3" style="font-size: var(--font-size-dense-sm);">{{ $foreignOrLocal }}</span>
             </td>
           </tr>
 
@@ -438,7 +391,7 @@
                     <div class="d-flex align-items-center gap-2">
                       <div class="zmc-avatar"><i class="fa-solid fa-user"></i></div>
                       <div>
-                        <div class="zmc-modal-title">Request correction <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span></div>
+                        <div class="zmc-modal-title">Request correction <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span></div>
                         <div class="zmc-modal-sub">Applicant: <span class="fw-bold">{{ $app->applicant?->name ?? '—' }}</span></div>
                       </div>
                     </div>
@@ -468,7 +421,7 @@
                   @csrf
                   <div class="modal-header zmc-modal-header">
                     <div>
-                      <div class="zmc-modal-title"><i class="fa-solid fa-check me-2" style="color:var(--zmc-accent-dark)"></i>Approve application <span class="ms-2 text-muted" style="font-weight:800;font-size:12px;">{{ $ref }}</span></div>
+                      <div class="zmc-modal-title"><i class="fa-solid fa-check me-2" style="color:var(--zmc-accent-dark)"></i>Approve application <span class="ms-2 text-muted" style="font-weight:800;font-size: var(--font-size-sm);">{{ $ref }}</span></div>
                       <div class="zmc-modal-sub">Choose the appropriate category, confirm, and send to Registrar.</div>
                     </div>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -531,7 +484,7 @@
       <div class="modal-body">
         <div id="mdl_loading" class="d-none text-center py-5">
           <div class="spinner-border" style="color:var(--zmc-accent-dark)"></div>
-          <div class="text-muted mt-2" style="font-size:12px;">Loading…</div>
+          <div class="text-muted mt-2" style="font-size: var(--font-size-sm);">Loading…</div>
         </div>
 
         <div id="mdl_error" class="alert alert-danger d-none"></div>
@@ -628,7 +581,7 @@
             ${zmcTextarea('Local address', (app.zim_local_address || app.zim_address))}
           </div>
         `;
-        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Journalist details`, body);
+        html += zmcBlock(`<i class="fa-regular fa-id-card"></i> Media practitioner details`, body);
       }
 
       if (formCode === 'AP1') {
@@ -678,6 +631,43 @@
         html += zmcBlock(
           `<i class="fa-solid fa-user-gear"></i> Managers`,
           `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Full name</th><th>Position</th><th>Qualification</th><th>Experience</th></tr></thead><tbody>${mRows}</tbody></table></div>`
+        );
+      }
+
+      // Previous Applications Block
+      const prevApps = Array.isArray(data.previous_applications) ? data.previous_applications : [];
+      if (prevApps.length > 0) {
+        let prevRows = prevApps.map(pa => `
+          <tr>
+            <td>${zmcFmt(pa.reference)}</td>
+            <td class="text-capitalize">${zmcFmt(pa.type)}</td>
+            <td><span class="badge bg-light text-dark border">${zmcFmt(pa.status)}</span></td>
+            <td>${zmcFmt(pa.date)}</td>
+          </tr>
+        `).join('');
+
+        html += zmcBlock(
+          `<i class="fa-solid fa-history"></i> Previous Applications`,
+          `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Type</th><th>Status</th><th>Date</th></tr></thead><tbody>${prevRows}</tbody></table></div>`
+        );
+      }
+
+      // Previous Payments Block
+      const prevPays = Array.isArray(data.previous_payments) ? data.previous_payments : [];
+      if (prevPays.length > 0) {
+        let payRows = prevPays.map(p => `
+          <tr>
+            <td>${zmcFmt(p.reference)}</td>
+            <td>${zmcFmt(p.amount)} ${zmcFmt(p.currency)}</td>
+            <td class="text-capitalize">${zmcFmt(p.method)}</td>
+            <td><span class="badge bg-light text-dark border text-capitalize">${zmcFmt(p.status)}</span></td>
+            <td>${zmcFmt(p.date)}</td>
+          </tr>
+        `).join('');
+
+        html += zmcBlock(
+          `<i class="fa-solid fa-money-bill-transfer"></i> Payment History`,
+          `<div class="table-responsive"><table class="table table-sm align-middle zmc-table-lite"><thead><tr><th>Reference</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody>${payRows}</tbody></table></div>`
         );
       }
 

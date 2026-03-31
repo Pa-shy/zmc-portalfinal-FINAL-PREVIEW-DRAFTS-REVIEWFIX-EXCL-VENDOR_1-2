@@ -211,7 +211,7 @@
           <div class="info-line"><b>Address:</b> 109 Rotten Row, Harare, Zimbabwe</div>
           <div class="info-line"><b>Phone:</b> +263 242 702 661</div>
           <div class="info-line"><b>Email:</b> info@zmc.org.zw</div>
-          <div class="info-line"><b>Designation:</b> {{ $payload['designation'] ?? 'Journalist' }}</div>
+          <div class="info-line"><b>Designation:</b> {{ $payload['designation'] ?? 'Media Practitioner' }}</div>
           <div class="info-line"><b>Accreditation No:</b> {{ $payload['accreditation_number'] ?? ($payload['reg_no'] ?? ($payload['ref'] ?? '—')) }}</div>
           <div class="info-line"><b>Valid:</b> {{ $payload['valid_from'] ?? '—' }} to {{ $payload['valid_to'] ?? '—' }}</div>
 

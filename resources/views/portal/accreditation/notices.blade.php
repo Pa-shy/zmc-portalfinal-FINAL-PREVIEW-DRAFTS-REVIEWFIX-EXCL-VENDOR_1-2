@@ -1,10 +1,10 @@
 @extends('layouts.portal')
 
 @section('title', 'Notices & Events')
-@section('page_title', 'NOTICES & EVENTS')
+@section('page_title', 'Notices & Events')
 
 @section('content')
-<div id="notices-page" class="zmc-dashboard-wrapper" style="font-family:'Roboto', sans-serif; color:#334155;">
+<div id="notices-page" style="color:#334155;">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h4 class="fw-bold m-0" style="font-size:22px; color:#1e293b;">Notices & Events</h4>
@@ -21,7 +21,7 @@
         <h6 class="fw-bold mb-3"><i class="ri-megaphone-line me-2" style="color:var(--zmc-accent)"></i>Notices</h6>
         @forelse($notices ?? collect() as $n)
           <div class="border-bottom pb-3 mb-3">
-            <div class="fw-bold text-dark">{{ $n->title }}</div>
+            <div class="fw-bold text-dark" style="text-transform: none;">{{ $n->title }}</div>
             <div class="text-muted small">{{ optional($n->published_at)->format('d M Y') }}</div>
             <div class="mt-2" style="white-space:pre-wrap; font-size:13px;">{{ $n->body }}</div>
           </div>
@@ -36,7 +36,7 @@
         <h6 class="fw-bold mb-3"><i class="ri-calendar-event-line me-2" style="color:var(--zmc-accent)"></i>Events</h6>
         @forelse($events ?? collect() as $e)
           <div class="border-bottom pb-3 mb-3">
-            <div class="fw-bold text-dark">{{ $e->title }}</div>
+            <div class="fw-bold text-dark" style="text-transform: none;">{{ $e->title }}</div>
             <div class="text-muted small">
               @if($e->starts_at)
                 {{ $e->starts_at->format('d M Y, H:i') }}

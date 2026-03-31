@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Services\ApplicationWorkflow;
+use App\Services\ApplicationWorkflowService;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ class AccreditationOfficerController extends Controller
     /**
      * Officer dashboard statuses (your list + submitted).
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = Auth::user();
 
@@ -34,21 +35,50 @@ class AccreditationOfficerController extends Controller
                 ->where(function($q) use ($user) {
                     $q->whereNull('assigned_officer_id')
                       ->orWhere('assigned_officer_id', $user->id);
-                })->count(),
-            'approved_applications' => Application::whereIn('status', [Application::OFFICER_APPROVED, Application::REGISTRAR_APPROVED, Application::ISSUED])->count(),
-            'rejected_applications' => Application::whereIn('status', [Application::OFFICER_REJECTED, Application::REGISTRAR_REJECTED])->count(),
+                })
+                ->count(),
+            'corrections' => Application::whereIn('status', [
+                Application::CORRECTION_REQUESTED,
+                'corrections_requested',
+                'needs_correction'
+            ])
+              ->count(),
             'new_this_week' => Application::where('created_at', '>=', now()->startOfWeek())->count(),
+            'pending_fix_requests' => \App\Models\FixRequest::whereIn('status', ['pending', 'in_progress'])
+                ->whereHas('application', function($q) use ($user) {
+                    $q->where('assigned_officer_id', $user->id)
+                      ->orWhereNull('assigned_officer_id');
+                })
+                ->count(),
+            
+            // Media Practitioners counters
+            'media_practitioners_total' => Application::where('application_type', 'accreditation')->count(),
+            'media_practitioners_accredited' => class_exists(\App\Models\AccreditationRecord::class) && Schema::hasTable('accreditation_records')
+                ? \App\Models\AccreditationRecord::whereIn('status', ['active', 'issued'])
+                    ->whereNotNull('issued_at')
+                    ->count()
+                : 0,
+            
+            // Media Houses counters
+            'media_houses_total' => Application::where('application_type', 'registration')
+                ->count(),
+            'media_houses_registered' => class_exists(\App\Models\RegistrationRecord::class) && Schema::hasTable('registration_records')
+                ? \App\Models\RegistrationRecord::whereIn('status', ['active', 'issued'])
+                    ->whereNotNull('issued_at')
+                    ->count()
+                : 0,
         ];
 
         $statuses = [
-            'approved_pending_payment',
-            'needs_correction',
-            'returned_from_payments',
-            'returned_from_registrar',
-            'under_officer_review',
-            'corrections_requested',
+            Application::SUBMITTED,
+            Application::OFFICER_REVIEW,
+            Application::CORRECTION_REQUESTED,
+            Application::APPROVED_BY_ACCREDITATION_OFFICER_AWAITING_PAYMENT,
+            Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+            Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR,
+            Application::RETURNED_TO_OFFICER,
+            Application::REGISTRAR_RAISED_FIX_REQUEST,
             'officer_approved_pending_registrar',
-            'submitted',
         ];
 
         $applications = Application::query()
@@ -68,7 +98,8 @@ class AccreditationOfficerController extends Controller
                   ->orWhere('locked_by', $user->id);
             })
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         // Renewals due (expiring within 90 days)
         $cutoff = now()->addDays(90);
@@ -134,7 +165,16 @@ class AccreditationOfficerController extends Controller
         'lockedBy',
     ]);
 
-    return view('staff.officer.show', compact('application'));
+    $previousApplications = Application::where('user_id', $application->user_id)
+        ->where('id', '!=', $application->id)
+        ->latest()
+        ->get();
+
+    $userPayments = \App\Models\Payment::where('payer_user_id', $application->user_id)
+        ->latest()
+        ->get();
+
+    return view('staff.officer.show', compact('application', 'previousApplications', 'userPayments'));
 }
 
 public function unlock(Application $application)
@@ -170,13 +210,6 @@ public function approve(Request $request, Application $application)
         'category_code'  => ['required','string','max:10'],
     ]);
 
-    $from = $application->status;
-
-    // Ensure review state first
-    if ($application->status === Application::SUBMITTED) {
-        ApplicationWorkflow::transition($application, Application::OFFICER_REVIEW, 'officer_open_review');
-    }
-
     // Persist category selection
     if ($application->application_type === 'registration') {
         $allowed = array_keys(Application::massMediaCategories());
@@ -193,27 +226,21 @@ public function approve(Request $request, Application $application)
     }
     $application->save();
 
-    // Officer approves then pushes directly to Registrar review
-    ApplicationWorkflow::transition($application, Application::OFFICER_APPROVED, 'officer_approve', [
-        'decision_notes' => $data['decision_notes'] ?? null,
-        'category_code' => $data['category_code'],
-    ]);
+    // Use new workflow service - enforces strict transitions
+    try {
+        $application = ApplicationWorkflowService::approveApplication($application, [
+            'notes' => $data['decision_notes'] ?? null,
+            'category_code' => $data['category_code'],
+        ]);
 
-    ApplicationWorkflow::transition($application, Application::REGISTRAR_REVIEW, 'system_send_to_registrar', [
-        'category_code' => $data['category_code'],
-    ]);
+        // Application is now APPROVED_BY_ACCREDITATION_OFFICER_AWAITING_PAYMENT
+        // Visible to both Registrar and Accounts
+        // Applicant will be prompted for payment
 
-    if (!empty($data['decision_notes']) && Schema::hasColumn('applications','decision_notes')) {
-        $application->decision_notes = $data['decision_notes'];
-        $application->save();
+        return back()->with('success', 'Application approved. Applicant will be prompted for payment. Application is now visible to Registrar and Accounts.');
+    } catch (\InvalidArgumentException $e) {
+        return back()->with('error', 'Workflow error: ' . $e->getMessage());
     }
-
-    $this->audit('officer_approve', $application, $from, $application->status, [
-        'notes' => $data['decision_notes'] ?? null,
-        'category_code' => $data['category_code'],
-    ]);
-
-    return back()->with('success', 'Approved and sent to Registrar for review.');
 }
 
 
@@ -228,31 +255,18 @@ public function approve(Request $request, Application $application)
             'notes' => ['required', 'string', 'max:5000'],
         ]);
 
-        $from = $application->status;
+        // Use new workflow service - enforces strict transitions
+        try {
+            $application = ApplicationWorkflowService::returnToApplicant($application, $data['notes'], [
+                'actor_role' => session('active_staff_role', 'accreditation_officer'),
+            ]);
 
-        // First move to review if needed
-        if ($application->status === Application::SUBMITTED) {
-            ApplicationWorkflow::transition($application, Application::OFFICER_REVIEW, 'officer_open_review');
+            $this->persistMessageIfAvailable($application, $data['notes']);
+
+            return back()->with('success', 'Correction requested. Application returned to applicant.');
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', 'Workflow error: ' . $e->getMessage());
         }
-
-        $this->safeSet($application, [
-            'correction_notes' => $data['notes'],
-            'decision_notes' => $data['notes'],
-        ]);
-
-        ApplicationWorkflow::transition($application, Application::CORRECTION_REQUESTED, 'officer_request_correction', [
-            'notes' => $data['notes'],
-        ]);
-
-        $application->refresh();
-
-        $this->audit('officer_request_correction', $application, $from, $application->status, [
-            'notes' => $data['notes'],
-        ]);
-
-        $this->persistMessageIfAvailable($application, $data['notes']);
-
-        return back()->with('success', 'Correction requested.');
     }
 
     /**
@@ -399,7 +413,7 @@ public function approve(Request $request, Application $application)
             }
         }
 
-        return back()->with('success', "Collection reminders sent to {$count} " . ($type === 'accreditation' ? 'journalists' : 'media houses') . ".");
+        return back()->with('success', "Collection reminders sent to {$count} " . ($type === 'accreditation' ? 'media practitioners' : 'media houses') . ".");
     }
 
     public function sendMessage(Request $request, Application $application)
@@ -476,7 +490,7 @@ public function approve(Request $request, Application $application)
             }
         }
 
-        return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'journalists' : 'media houses') . ".");
+        return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'media practitioners' : 'media houses') . ".");
     }
 
     public function idVerify(Request $request, Application $application)
@@ -542,7 +556,7 @@ public function approve(Request $request, Application $application)
     }
 
     // --- Records ---
-    public function recordsJournalists() { return $this->recordsListPage('Accredited Journalists', 'accreditation'); }
+    public function recordsJournalists() { return $this->recordsListPage('Accredited Media Practitioners', 'accreditation'); }
     public function recordsMediaHouses() { return $this->recordsListPage('Registered Media Houses', 'registration'); }
     public function recordsHistory()     { return $this->placeholder('Accreditation & Registration History', 'Shows historical issuance/renewal activity once records are populated.'); }
     public function recordsSuspended()   { abort(404); }
@@ -607,7 +621,7 @@ public function approve(Request $request, Application $application)
         $titles = [
             'all' => 'All Applications',
             'new' => 'New Applications',
-            'pending' => 'Pending Review',
+            'pending' => 'Pending Accounts Review',
             'approved' => 'Approved',
             'rejected' => 'Rejected / Returned',
         ];
@@ -651,17 +665,103 @@ public function approve(Request $request, Application $application)
             });
         }
 
+        // Year filter (default to current year)
+        $year = $request->query('year', now()->year);
+        $q->whereYear('created_at', $year);
+
+        // Processing status filter
+        $processingStatus = $request->query('processing_status', 'all');
+        if ($processingStatus === 'processed') {
+            // Applications reviewed by Officer and sent forward (Registrar/Accounts)
+            $q->whereIn('status', [
+                Application::OFFICER_APPROVED,
+                Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+                Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR,
+                Application::REGISTRAR_REVIEW,
+                Application::REGISTRAR_APPROVED,
+                Application::ACCOUNTS_REVIEW,
+                Application::PAYMENT_VERIFIED,
+                'production_queue',
+                'produced_ready_for_collection',
+                'issued',
+            ]);
+        } elseif ($processingStatus === 'unprocessed') {
+            // Applications not yet reviewed by Officer
+            $q->whereIn('status', [
+                Application::SUBMITTED,
+                Application::OFFICER_REVIEW,
+                Application::CORRECTION_REQUESTED,
+                Application::RETURNED_TO_OFFICER,
+            ]);
+        }
+
         // list scopes
         $list = strtolower($list);
         if ($list === 'new') {
             $q->where('status', Application::SUBMITTED);
         } elseif ($list === 'pending') {
-            $q->whereIn('status', [Application::SUBMITTED, Application::OFFICER_REVIEW, Application::CORRECTION_REQUESTED, Application::RETURNED_TO_OFFICER]);
+            // REDEFINED: Applications processed by Officer but NOT yet attended to by Accounts
+            $q->whereIn('status', [
+                Application::ACCOUNTS_REVIEW,
+                Application::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR,
+                Application::REG_FEE_SUBMITTED_AWAITING_VERIFICATION,
+                'renewal_submitted_awaiting_accounts_verification',
+            ]);
         } elseif ($list === 'approved') {
-            $q->whereIn('status', [Application::OFFICER_APPROVED, Application::REGISTRAR_REVIEW]);
+            $q->whereIn('status', [
+                Application::OFFICER_APPROVED, 
+                Application::APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER,
+                Application::VERIFIED_BY_OFFICER_PENDING_REGISTRAR,
+                Application::REGISTRAR_REVIEW
+            ]);
         } elseif ($list === 'rejected') {
             // show both rejected and returned in one page (UI tabs split)
             $q->whereIn('status', [Application::OFFICER_REJECTED, Application::RETURNED_TO_OFFICER]);
+        }
+
+        // Advanced filters
+        if ($gender = $request->query('gender')) {
+            if (in_array($gender, ['male','female','other'], true) && $this->hasColumn('applications','gender')) {
+                $q->where('gender', $gender);
+            }
+        }
+
+        if ($ageMin = $request->query('age_min')) {
+            if ($this->hasColumn('applications','dob')) {
+                $q->whereNotNull('dob')
+                  ->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) >= ?', [(int)$ageMin]);
+            }
+        }
+
+        if ($ageMax = $request->query('age_max')) {
+            if ($this->hasColumn('applications','dob')) {
+                $q->whereNotNull('dob')
+                  ->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) <= ?', [(int)$ageMax]);
+            }
+        }
+
+        if ($org = $request->query('organisation')) {
+            if ($this->hasColumn('applications','employer_name')) {
+                $q->where('employer_name', 'like', "%{$org}%");
+            }
+        }
+
+        if ($province = $request->query('province')) {
+            if ($this->hasColumn('applications','province')) {
+                $q->where('province', $province);
+            }
+        }
+
+        if ($collectionRegion = $request->query('collection_region')) {
+            if ($this->hasColumn('applications','collection_region')) {
+                $q->where('collection_region', $collectionRegion);
+            }
+        }
+
+        if ($nationality = $request->query('nationality')) {
+            if ($this->hasColumn('applications','nationality')) {
+                $q->where('nationality', 'like', "%{$nationality}%");
+            }
         }
 
         // filters
@@ -707,6 +807,14 @@ public function approve(Request $request, Application $application)
                        $u->where('name','like', "%{$search}%")
                          ->orWhere('email','like', "%{$search}%");
                    });
+                
+                // Search by accreditation/registration number if available
+                if ($this->hasColumn('applications','accreditation_number')) {
+                    $qq->orWhere('accreditation_number', 'like', "%{$search}%");
+                }
+                if ($this->hasColumn('applications','registration_number')) {
+                    $qq->orWhere('registration_number', 'like', "%{$search}%");
+                }
             });
         }
 
@@ -903,6 +1011,89 @@ public function approve(Request $request, Application $application)
         ]);
     }
 
+    /**
+     * Forward application to Registrar without approval (for waivers/special cases)
+     */
+    public function forwardWithoutApproval(Request $request, Application $application)
+    {
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'max:5000'],
+        ]);
+
+        // Use new workflow service - enforces strict transitions
+        try {
+            $application = ApplicationWorkflowService::forwardWithoutApproval($application, [
+                'notes' => $data['reason'],
+                'actor_role' => session('active_staff_role', 'accreditation_officer'),
+            ]);
+
+            // Save reason in additional field if column exists
+            $this->safeSet($application, [
+                'forward_no_approval_reason' => $data['reason'],
+            ]);
+
+            return back()->with('success', 'Application forwarded to Registrar without approval (Special/Waiver case). Reason: ' . $data['reason']);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', 'Workflow error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * View pending fix requests from Registrar
+     */
+    public function fixRequests(Request $request)
+    {
+        $query = \App\Models\FixRequest::query()
+            ->with(['application.applicant', 'requester'])
+            ->whereHas('application', function($q) {
+                $q->where('assigned_officer_id', Auth::id())
+                  ->orWhereNull('assigned_officer_id');
+            });
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            $query->whereIn('status', ['pending', 'in_progress']);
+        }
+
+        $fixRequests = $query->latest()->paginate(20)->withQueryString();
+
+        return view('staff.officer.fix_requests', compact('fixRequests'));
+    }
+
+    /**
+     * Resolve a fix request
+     */
+    public function resolveFixRequest(Request $request, \App\Models\FixRequest $fixRequest)
+    {
+        $data = $request->validate([
+            'resolution_notes' => ['nullable', 'string', 'max:5000'],
+            'action' => ['required', 'in:resolved,cancelled'],
+        ]);
+
+        $application = $fixRequest->application;
+        $from = $application->status;
+
+        if ($data['action'] === 'resolved') {
+            $fixRequest->markResolved(Auth::id(), $data['resolution_notes'] ?? null);
+
+            // Move application back to officer review
+            ApplicationWorkflow::transition($application, Application::OFFICER_REVIEW, 'officer_resolve_fix_request', [
+                'fix_request_id' => $fixRequest->id,
+            ]);
+
+            $this->audit('officer_resolve_fix_request', $application, $from, $application->status, [
+                'fix_request_id' => $fixRequest->id,
+                'resolution_notes' => $data['resolution_notes'] ?? null,
+            ]);
+
+            return back()->with('success', 'Fix request resolved. Application returned to your queue.');
+        } else {
+            $fixRequest->update(['status' => 'cancelled']);
+            return back()->with('success', 'Fix request cancelled.');
+        }
+    }
+
     /* =========================
     /* ========================= Helpers ========================= */
 
@@ -952,5 +1143,128 @@ public function approve(Request $request, Application $application)
                 'read_at'        => null,
             ]);
         }
+    }
+
+    /**
+     * Renewals production queue
+     */
+    public function renewalsProductionQueue(Request $request)
+    {
+        $query = \App\Models\RenewalApplication::query()
+            ->with(['applicant', 'originalApplication'])
+            ->readyForProduction()
+            ->latest('payment_verified_at');
+
+        // Filter by renewal type
+        if ($request->filled('renewal_type')) {
+            $query->where('renewal_type', $request->renewal_type);
+        }
+
+        $renewals = $query->paginate(20)->withQueryString();
+
+        // KPIs
+        $kpis = [
+            'ready' => \App\Models\RenewalApplication::readyForProduction()->count(),
+            'in_production' => \App\Models\RenewalApplication::inProduction()->count(),
+            'ready_for_collection' => \App\Models\RenewalApplication::readyForCollection()->count(),
+        ];
+
+        return view('staff.officer.renewals_production', compact('renewals', 'kpis'));
+    }
+
+    /**
+     * Show renewal for production
+     */
+    public function showRenewalProduction(\App\Models\RenewalApplication $renewal)
+    {
+        $renewal->load(['applicant', 'originalApplication', 'changeRequests']);
+
+        return view('staff.officer.renewal_production_show', compact('renewal'));
+    }
+
+    /**
+     * Generate renewed document
+     */
+    public function generateRenewalDocument(Request $request, \App\Models\RenewalApplication $renewal)
+    {
+        // Validate status
+        if ($renewal->status !== \App\Models\RenewalApplication::RENEWAL_PAYMENT_VERIFIED) {
+            return back()->with('error', 'Renewal is not ready for production.');
+        }
+
+        $from = $renewal->status;
+
+        DB::transaction(function() use ($renewal, $from) {
+            // Update renewal status
+            $renewal->update([
+                'status' => \App\Models\RenewalApplication::RENEWAL_IN_PRODUCTION,
+                'current_stage' => 'production',
+                'last_action_at' => now(),
+                'last_action_by' => Auth::id(),
+            ]);
+
+            ActivityLogger::log('renewal_production_started', $renewal, $from, $renewal->status, [
+                'renewal_type' => $renewal->renewal_type,
+                'original_number' => $renewal->original_number,
+            ]);
+        });
+
+        return back()->with('success', 'Renewal document generation started.');
+    }
+
+    /**
+     * Mark renewal as produced and ready for collection
+     */
+    public function markRenewalProduced(Request $request, \App\Models\RenewalApplication $renewal)
+    {
+        $data = $request->validate([
+            'collection_location' => ['required', 'string', 'max:255'],
+        ]);
+
+        // Validate status
+        if ($renewal->status !== \App\Models\RenewalApplication::RENEWAL_IN_PRODUCTION) {
+            return back()->with('error', 'Renewal is not in production.');
+        }
+
+        $from = $renewal->status;
+
+        DB::transaction(function() use ($renewal, $data, $from) {
+            $renewal->update([
+                'status' => \App\Models\RenewalApplication::RENEWAL_PRODUCED_READY_FOR_COLLECTION,
+                'current_stage' => 'collection',
+                'produced_at' => now(),
+                'produced_by' => Auth::id(),
+                'collection_location' => $data['collection_location'],
+                'last_action_at' => now(),
+                'last_action_by' => Auth::id(),
+            ]);
+
+            ActivityLogger::log('renewal_produced', $renewal, $from, $renewal->status, [
+                'renewal_type' => $renewal->renewal_type,
+                'collection_location' => $data['collection_location'],
+            ]);
+        });
+
+        return back()->with('success', 'Renewal marked as produced and ready for collection.');
+    }
+
+    /**
+     * Print renewal document
+     */
+    public function printRenewalDocument(\App\Models\RenewalApplication $renewal)
+    {
+        // Increment print count
+        $renewal->increment('print_count');
+
+        ActivityLogger::log('renewal_document_printed', $renewal, $renewal->status, $renewal->status, [
+            'renewal_type' => $renewal->renewal_type,
+            'print_count' => $renewal->print_count,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Print logged successfully.',
+            'print_count' => $renewal->print_count,
+        ]);
     }
 }

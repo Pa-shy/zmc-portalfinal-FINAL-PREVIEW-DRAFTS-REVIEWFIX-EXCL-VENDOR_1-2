@@ -12,9 +12,9 @@
   </div>
 
   <div class="form-container">
-    <div class="form-header">
-      <h5 class="m-0"><i class="ri-building-2-line me-2"></i>Registered Entity Information</h5>
-      <p class="mt-2">Maintain your organization details. (In production this should sync from your database.)</p>
+    <div class="form-header" style="background: transparent !important; border-bottom: 1px solid #e2e8f0;">
+      <h5 class="m-0" style="color: #334155;"><i class="ri-building-2-line me-2"></i>Registered Entity Information</h5>
+      <p class="mt-2" style="color: #64748b;">Maintain your organization details. (In production this should sync from your database.)</p>
     </div>
 
     <div class="form-steps-container">
@@ -40,26 +40,50 @@
       </div>
 
       <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Phone</label>
-          <input type="text" class="form-control" value="{{ Auth::user()->phone_country_code }} {{ Auth::user()->phone_number }}" readonly>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Head Office Address</label>
-          <input type="text" class="form-control" value="{{ Auth::user()->profile_data['head_office_address'] ?? 'Not Provided' }}" readonly>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Type of Mass Media Activities</label>
-          <input type="text" class="form-control" value="{{ Auth::user()->profile_data['mass_media_activities'] ?? 'Not Provided' }}" readonly>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Website</label>
-          <input type="text" class="form-control" value="{{ Auth::user()->profile_data['website'] ?? 'Not Provided' }}" readonly>
-        </div>
-      </div>
+         <div class="form-field">
+           <label class="form-label">Primary Phone</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->phone_country_code }} {{ Auth::user()->phone_number }}" readonly>
+         </div>
+         <div class="form-field">
+           <label class="form-label">Secondary Phone</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->profile_data['secondary_phone'] ?? 'Not Provided' }}" readonly>
+         </div>
+       </div>
+ 
+       <div class="form-row">
+         <div class="form-field">
+           <label class="form-label">Head Office Address</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->profile_data['head_office_address'] ?? 'Not Provided' }}" readonly>
+         </div>
+         <div class="form-field">
+           <label class="form-label">Website</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->profile_data['website'] ?? 'Not Provided' }}" readonly>
+         </div>
+       </div>
+ 
+       <div class="form-row">
+         <div class="form-field">
+           <label class="form-label">Social Media</label>
+           <div class="d-flex gap-2">
+             @if($user->profile_data['social']['twitter'] ?? false)
+               <span class="badge bg-light text-dark border"><i class="ri-twitter-x-line me-1"></i>{{ $user->profile_data['social']['twitter'] }}</span>
+             @endif
+             @if($user->profile_data['social']['facebook'] ?? false)
+               <span class="badge bg-light text-dark border"><i class="ri-facebook-box-line me-1"></i>Facebook</span>
+             @endif
+             @if($user->profile_data['social']['linkedin'] ?? false)
+               <span class="badge bg-light text-dark border"><i class="ri-linkedin-box-line me-1"></i>LinkedIn</span>
+             @endif
+             @if(!($user->profile_data['social'] ?? false))
+               <span class="text-muted small">None linked</span>
+             @endif
+           </div>
+         </div>
+         <div class="form-field">
+           <label class="form-label">Type of Mass Media Activities</label>
+           <input type="text" class="form-control" value="{{ Auth::user()->profile_data['mass_media_activities'] ?? 'Not Provided' }}" readonly>
+         </div>
+       </div>
     </div>
   </div>
 </div>

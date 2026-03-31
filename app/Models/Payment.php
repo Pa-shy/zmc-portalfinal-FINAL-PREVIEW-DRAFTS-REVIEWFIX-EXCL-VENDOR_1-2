@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Payment extends Model
 {
@@ -44,6 +45,20 @@ class Payment extends Model
         'reconciled_at' => 'datetime',
         'reconciled' => 'boolean',
     ];
+
+    /**
+     * Boot method to register model event listeners for cache invalidation.
+     */
+    protected static function booted(): void
+    {
+        // Invalidate director dashboard caches when payment is confirmed (status changes to 'paid')
+        static::updated(function (Payment $payment) {
+            if ($payment->isDirty('status') && $payment->status === 'paid') {
+                Cache::forget('director.kpis.executive_overview');
+                Cache::forget('director.charts.revenue_breakdown');
+            }
+        });
+    }
 
     public function application(): BelongsTo
     {

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 
 
@@ -48,6 +49,34 @@ class Application extends Model
     public const CERT_GENERATED       = 'certificate_generated';
     public const PRINTED              = 'printed';
     public const ISSUED               = 'issued';
+
+    // Waiver/Special Path (ZMC Flow Extensions)
+    public const FORWARDED_TO_REGISTRAR_NO_APPROVAL = 'forwarded_to_registrar_no_approval';
+    public const PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR = 'pending_accounts_review_from_registrar';
+
+    // Media House Two-Stage Payment Path (ZMC Flow Extensions)
+    public const SUBMITTED_WITH_APP_FEE = 'submitted_with_app_fee';
+    public const VERIFIED_BY_OFFICER_PENDING_REGISTRAR = 'verified_by_officer_pending_registrar';
+    public const REGISTRAR_APPROVED_PENDING_REG_FEE = 'registrar_approved_pending_reg_fee';
+    public const REG_FEE_SUBMITTED_AWAITING_VERIFICATION = 'reg_fee_submitted_awaiting_verification';
+
+    // Journalist Parallel Review Path (AO Approved -> Registrar & Accounts)
+    public const APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR = 'approved_by_ao_awaiting_payment_and_registrar';
+
+    // Common statuses (reused)
+    public const PAYMENT_VERIFIED = 'payment_verified';
+    public const PAYMENT_REJECTED = 'payment_rejected';
+
+    // NEW: Strict Workflow Enforcement Statuses (Master Enforcement)
+    public const SUBMITTED_TO_ACCREDITATION_OFFICER = 'submitted_to_accreditation_officer';
+    public const APPROVED_BY_ACCREDITATION_OFFICER_AWAITING_PAYMENT = 'approved_by_accreditation_officer_awaiting_payment';
+    public const APPROVED_BY_OFFICER_AWAITING_PAYMENT_AND_REGISTRAR_MASTER = 'approved_by_officer_awaiting_payment_and_registrar_master';
+    public const AWAITING_ACCOUNTS_VERIFICATION = 'awaiting_accounts_verification';
+    public const REGISTRAR_RAISED_FIX_REQUEST = 'registrar_raised_fix_request';
+    public const PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR_SPECIAL = 'pending_accounts_review_from_registrar_special';
+    public const REGISTRAR_APPROVED_PENDING_REGISTRATION_FEE_PAYMENT = 'registrar_approved_pending_registration_fee_payment';
+    public const REGISTRATION_FEE_AWAITING_VERIFICATION = 'registration_fee_awaiting_verification';
+    public const PRODUCED_READY_FOR_COLLECTION = 'produced_ready_for_collection';
 
     protected $fillable = [
         'reference',
@@ -126,6 +155,8 @@ class Application extends Model
         'printed_at',
         'issued_by',
         'issued_at',
+        'payment_submission_method',
+        'payment_submitted_at',
     ];
 
     protected $casts = [
@@ -143,7 +174,22 @@ class Application extends Model
         'form_data'      => 'array',
         'is_draft'       => 'boolean',
         'locked_at'      => 'datetime',
+        'payment_submitted_at' => 'datetime',
     ];
+
+    /**
+     * Boot method to register model event listeners for cache invalidation.
+     */
+    protected static function booted(): void
+    {
+        // Invalidate director dashboard caches when application status changes
+        static::updated(function (Application $application) {
+            if ($application->isDirty('status')) {
+                Cache::forget('director.kpis.executive_overview');
+                Cache::forget('director.charts.monthly_trends');
+            }
+        });
+    }
 
     /* =========================
      * Relationships
@@ -282,6 +328,84 @@ class Application extends Model
         return $this->belongsTo(User::class, 'last_action_by');
     }
 
+    /**
+     * Fix requests for this application (Registrar → Officer)
+     */
+    public function fixRequests(): HasMany
+    {
+        return $this->hasMany(FixRequest::class);
+    }
+
+    /**
+     * Pending fix requests
+     */
+    public function pendingFixRequests(): HasMany
+    {
+        return $this->hasMany(FixRequest::class)->where('status', 'pending');
+    }
+
+    /**
+     * Payment submissions (two-stage payment tracking)
+     */
+    public function paymentSubmissions(): HasMany
+    {
+        return $this->hasMany(PaymentSubmission::class);
+    }
+
+    /**
+     * Application fee payment (first stage for media house)
+     */
+    public function applicationFeePayment(): HasOne
+    {
+        return $this->hasOne(PaymentSubmission::class)
+            ->where('payment_stage', 'application_fee');
+    }
+
+    /**
+     * Registration fee payment (second stage for media house)
+     */
+    public function registrationFeePayment(): HasOne
+    {
+        return $this->hasOne(PaymentSubmission::class)
+            ->where('payment_stage', 'registration_fee');
+    }
+
+    /**
+     * Official letter uploaded by Registrar
+     */
+    public function officialLetter(): HasOne
+    {
+        return $this->hasOne(OfficialLetter::class);
+    }
+
+    /**
+     * Check if application requires application fee (media house only)
+     */
+    public function requiresApplicationFee(): bool
+    {
+        return $this->application_type === 'registration';
+    }
+
+    /**
+     * Check if application fee has been paid and verified
+     */
+    public function hasApplicationFeePaid(): bool
+    {
+        return $this->applicationFeePayment()
+            ->where('status', 'verified')
+            ->exists();
+    }
+
+    /**
+     * Check if registration fee has been paid and verified
+     */
+    public function hasRegistrationFeePaid(): bool
+    {
+        return $this->registrationFeePayment()
+            ->where('status', 'verified')
+            ->exists();
+    }
+
     // Optional: map status -> which staff stage "owns" it
     public static function stageForStatus(string $status): ?string
     {
@@ -292,15 +416,23 @@ class Application extends Model
             self::OFFICER_APPROVED,
             self::OFFICER_REJECTED,
             self::CORRECTION_REQUESTED,
-            self::RETURNED_TO_OFFICER => 'accreditation_officer',
+            self::RETURNED_TO_OFFICER,
+            self::SUBMITTED_WITH_APP_FEE,
+            self::VERIFIED_BY_OFFICER_PENDING_REGISTRAR => 'accreditation_officer',
 
             self::ACCOUNTS_REVIEW,
             self::PAID_CONFIRMED,
-            self::RETURNED_TO_ACCOUNTS => 'accounts_payments',
+            self::RETURNED_TO_ACCOUNTS,
+            self::PENDING_ACCOUNTS_REVIEW_FROM_REGISTRAR,
+            self::REG_FEE_SUBMITTED_AWAITING_VERIFICATION,
+            self::PAYMENT_VERIFIED,
+            self::PAYMENT_REJECTED => 'accounts_payments',
 
             self::REGISTRAR_REVIEW,
             self::REGISTRAR_APPROVED,
-            self::REGISTRAR_REJECTED => 'registrar',
+            self::REGISTRAR_REJECTED,
+            self::FORWARDED_TO_REGISTRAR_NO_APPROVAL,
+            self::REGISTRAR_APPROVED_PENDING_REG_FEE => 'registrar',
 
             self::PRODUCTION_QUEUE,
             self::CARD_GENERATED,
