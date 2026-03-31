@@ -12,7 +12,6 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Roles
         $roles = [
             'super_admin',
             'accreditation_officer',
@@ -23,57 +22,52 @@ class RolesAndPermissionsSeeder extends Seeder
             'auditor',
             'director',
             'complaints_officer',
+            'pr_officer',
+            'public_info_compliance',
+            'research_training',
+            'chief_accountant',
         ];
 
         foreach ($roles as $role) {
             Role::firstOrCreate(['name' => $role]);
         }
 
-        // Permissions
         $permissions = [
-            // Oversight
             'view_all_applications',
             'view_analytics',
             'view_audit_trail',
-
-            // Operational application workflow
             'approve_application',
             'reject_application',
             'request_correction',
             'confirm_payment',
             'generate_cards',
-
-            // User & access
             'manage_users',
             'approve_user_accounts',
-
-            // Content
             'view_content',
             'manage_content',
-
-            // News
             'view_news',
             'manage_news',
-
-            // Downloads / reports
             'download_reports',
-
-            // Complaints / appeals
             'receive_complaints_appeals',
             'manage_complaints_appeals',
+            'manage_notices_events',
+            'manage_downloads',
+            'view_financial_oversight',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Super admin gets everything
         Role::findByName('super_admin')->syncPermissions(Permission::all());
 
-        // Defaults (can be adjusted from UI)
-        Role::findByName('auditor')->syncPermissions(['view_audit_trail']);
+        Role::findByName('auditor')->syncPermissions([
+            'view_audit_trail',
+            'view_all_applications',
+            'view_analytics',
+            'view_financial_oversight',
+        ]);
 
-        // Director: oversight rights, but NOT operational workflow
         Role::findByName('director')->syncPermissions([
             'view_all_applications',
             'view_analytics',
@@ -83,15 +77,51 @@ class RolesAndPermissionsSeeder extends Seeder
             'view_news',
             'receive_complaints_appeals',
             'download_reports',
+            'view_financial_oversight',
         ]);
 
-        // IT Admin & Super Admin: grant everything
-        Role::findByName('super_admin')->syncPermissions(Permission::all());
-        Role::findByName('it_admin')->syncPermissions(Permission::all());
+        Role::findByName('it_admin')->syncPermissions([
+            'manage_users',
+            'approve_user_accounts',
+            'view_audit_trail',
+            'view_analytics',
+        ]);
 
         Role::findByName('complaints_officer')->syncPermissions([
             'receive_complaints_appeals',
             'manage_complaints_appeals',
+        ]);
+
+        Role::findByName('pr_officer')->syncPermissions([
+            'manage_content',
+            'manage_news',
+            'manage_notices_events',
+            'manage_downloads',
+            'view_content',
+            'view_news',
+        ]);
+
+        Role::findByName('public_info_compliance')->syncPermissions([
+            'receive_complaints_appeals',
+            'manage_complaints_appeals',
+            'view_content',
+            'view_news',
+        ]);
+
+        Role::findByName('research_training')->syncPermissions([
+            'view_content',
+            'view_news',
+            'view_all_applications',
+            'view_analytics',
+        ]);
+
+        Role::findByName('chief_accountant')->syncPermissions([
+            'view_all_applications',
+            'view_analytics',
+            'view_audit_trail',
+            'confirm_payment',
+            'download_reports',
+            'view_financial_oversight',
         ]);
     }
 }

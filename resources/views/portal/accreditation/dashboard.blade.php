@@ -46,6 +46,7 @@
           <div>
             <div class="text-muted small fw-bold">Drafts</div>
             <div class="h3 fw-black mb-0">{{ $stats['drafts'] ?? 0 }}</div>
+            <div class="text-muted smaller mt-1" style="font-size:11px;">Drafts expire after 14 days</div>
           </div>
           <div class="icon-box text-secondary"><i class="ri-draft-line"></i></div>
         </div>

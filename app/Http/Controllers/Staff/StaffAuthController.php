@@ -162,14 +162,20 @@ class StaffAuthController extends Controller
             return $this->redirectToRoleDashboard($active);
         }
 
-        // 4. Fallback: use first staff role if they reached here logged in but without selection
+        // 4. Auto-select if user has exactly one staff role (skip role selection)
+        if (count($staffRoles) === 1) {
+            $only = $staffRoles[0];
+            $request->session()->put('active_staff_role', $only);
+            return $this->redirectToRoleDashboard($only);
+        }
+
+        // 5. Fallback: use first staff role if they reached here logged in but without selection
         if (count($staffRoles) > 0) {
             $first = $staffRoles[0];
             $request->session()->put('active_staff_role', $first);
             return $this->redirectToRoleDashboard($first);
         }
 
-        // Otherwise force role selection
         return redirect()->route('staff.entry');
     }
 
@@ -179,18 +185,19 @@ class StaffAuthController extends Controller
             'super_admin'            => redirect()->route('admin.dashboard'),
             'accreditation_officer'  => redirect()->route('staff.officer.dashboard'),
             'registrar'              => redirect()->route('staff.registrar.dashboard'),
-            'accounts_payments'      => redirect()->route('staff.accounts.dashboard'),
+            'accounts_payments',
+            'chief_accountant'       => redirect()->route('staff.accounts.dashboard'),
             'production'             => redirect()->route('staff.production.dashboard'),
             'it_admin'               => redirect()->route('staff.it.dashboard'),
             'auditor'                => redirect()->route('staff.auditor.dashboard'),
             'director'               => redirect()->route('staff.director.dashboard'),
+            'pr_officer'             => redirect()->route((\Illuminate\Support\Facades\Route::has('staff.pr.dashboard') ? 'staff.pr.dashboard' : 'staff.officer.dashboard')),
+            'public_info_compliance' => redirect()->route((\Illuminate\Support\Facades\Route::has('staff.compliance.dashboard') ? 'staff.compliance.dashboard' : 'staff.officer.dashboard')),
+            'research_training'      => redirect()->route((\Illuminate\Support\Facades\Route::has('staff.research.dashboard') ? 'staff.research.dashboard' : 'staff.officer.dashboard')),
             default                  => redirect()->route('staff.entry'),
         };
     }
 
-    /**
-     * Staff roles permitted in the staff portal.
-     */
     private function staffAllowedRoles(): array
     {
         return [
@@ -202,6 +209,10 @@ class StaffAuthController extends Controller
             'it_admin',
             'auditor',
             'director',
+            'pr_officer',
+            'public_info_compliance',
+            'research_training',
+            'chief_accountant',
         ];
     }
 

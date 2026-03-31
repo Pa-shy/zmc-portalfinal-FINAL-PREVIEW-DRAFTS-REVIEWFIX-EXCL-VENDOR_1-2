@@ -8,5 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Accreditation expiry processing (creates follow-ups and notifies applicants)
 Schedule::command('accreditation:process-expiries')->dailyAt('08:00');
+Schedule::command('drafts:clean-expired')->dailyAt('02:00');

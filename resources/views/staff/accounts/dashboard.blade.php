@@ -66,7 +66,7 @@
       <div class="zmc-card h-100">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="text-muted small fw-bold">Total queue</div>
+            <div class="text-muted small fw-bold">Total Applications</div>
             <div class="h3 fw-black mb-0">{{ $summaryTotal }}</div>
           </div>
           <div class="icon-box text-primary"><i class="ri-folders-line"></i></div>

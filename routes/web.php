@@ -660,10 +660,17 @@ Route::middleware('auth')->group(function () {
             Route::get('/renewals/queue', [AccreditationOfficerController::class, 'renewalsQueue'])->name('renewals.queue');
             Route::post('/renewals/send-reminders', [AccreditationOfficerController::class, 'sendRenewalReminders'])->name('renewals.send-reminders');
 
+            // Physical Intake (walk-in)
+            Route::get('/physical-intake', [AccreditationOfficerController::class, 'physicalIntakeForm'])->name('physical-intake');
+            Route::post('/physical-intake', [AccreditationOfficerController::class, 'physicalIntakeProcess'])->name('physical-intake.process');
+
             // Records management
             Route::get('/records/accredited-journalists', [AccreditationOfficerController::class, 'accreditedJournalists'])->name('records.accredited-journalists');
             Route::get('/records/registered-mediahouses', [AccreditationOfficerController::class, 'registeredMediaHouses'])->name('records.registered-mediahouses');
             Route::post('/records/send-collection-notification', [AccreditationOfficerController::class, 'sendCollectionNotification'])->name('records.send-collection-notification');
+            Route::get('/records/export/{type}', [AccreditationOfficerController::class, 'recordsExport'])
+                ->whereIn('type', ['journalists','mediahouses'])
+                ->name('records.export');
 
             // Compliance
             Route::get('/compliance/monitoring', [AccreditationOfficerController::class, 'complianceMonitoring'])->name('compliance.monitoring');
@@ -739,6 +746,8 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/applications/{application}', [RegistrarController::class, 'show'])->name('applications.show');
             Route::post('/applications/{application}/approve', [RegistrarController::class, 'approve'])->name('applications.approve');
+            Route::post('/applications/{application}/mark-reviewed', [RegistrarController::class, 'markReviewed'])->name('applications.mark-reviewed');
+            Route::post('/applications/batch-mark-reviewed', [RegistrarController::class, 'batchMarkReviewed'])->name('applications.batch-mark-reviewed');
             Route::post('/applications/{application}/reject', [RegistrarController::class, 'reject'])->name('applications.reject');
             Route::post('/applications/{application}/return', [RegistrarController::class, 'returnToAccounts'])->name('applications.return');
             Route::post('/renewals/send-reminders', [RegistrarController::class, 'sendRenewalReminders'])->name('renewals.send-reminders');

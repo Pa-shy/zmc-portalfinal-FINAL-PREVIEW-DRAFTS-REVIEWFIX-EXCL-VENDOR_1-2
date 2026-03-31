@@ -79,6 +79,30 @@ class InitialDataSeeder extends Seeder
                 'role' => 'complaints_officer',
                 'designation' => 'Complaints Officer',
             ],
+            [
+                'name' => 'PR Officer',
+                'email' => 'pr@zmc.org.zw',
+                'role' => 'pr_officer',
+                'designation' => 'Public Relations Officer',
+            ],
+            [
+                'name' => 'Compliance Officer',
+                'email' => 'compliance@zmc.org.zw',
+                'role' => 'public_info_compliance',
+                'designation' => 'Public Information & Compliance Officer',
+            ],
+            [
+                'name' => 'Research Officer',
+                'email' => 'research@zmc.org.zw',
+                'role' => 'research_training',
+                'designation' => 'Research, Training & Standards Officer',
+            ],
+            [
+                'name' => 'Chief Accountant',
+                'email' => 'chiefaccountant@zmc.org.zw',
+                'role' => 'chief_accountant',
+                'designation' => 'Chief Accountant',
+            ],
         ];
 
         foreach ($staff as $s) {

@@ -35,7 +35,7 @@
     </div>
     <div class="col-md-3">
       <div class="zmc-card shadow-sm border-0 p-3">
-        <div class="text-muted small">Rejected</div>
+        <div class="text-muted small">Returned</div>
         <div class="fw-bold" style="font-size: var(--font-size-3xl);">{{ number_format($rejectedCount) }}</div>
       </div>
     </div>

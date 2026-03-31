@@ -150,6 +150,16 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - Used by Registrar to send notifications to portal users
 
 ## Recent Changes
+- March 31, 2026: B6-B8 feature implementation
+  - Records CSV export: officer can export journalists and media houses to CSV from records views
+  - Records analytics summary cards: total, collected, uncollected, expired counts on records views (DB-backed, not paginated)
+  - Registrar supervisory checkbox review: markReviewed/batchMarkReviewed with checkbox UI on incoming queue
+  - Batch review scoped to registrar queue statuses only (REGISTRAR_REVIEW, FORWARDED_TO_REGISTRAR, etc.)
+  - Physical intake route + controller: GET form and POST processing for walk-in applications
+  - New staff roles seeded: pr_officer, public_info_compliance, research_training, chief_accountant
+  - Auto-role selection: single-role users bypass role selection page on login
+  - Draft 2-week expiry: CleanExpiredDrafts command scheduled daily
+
 - March 31, 2026: Unified workflow enforcement & dashboard fixes
   - Consolidated Application model status constants with simplified naming (31 canonical statuses)
   - Legacy constant aliases for backward compatibility (old verbose names → new short string values)

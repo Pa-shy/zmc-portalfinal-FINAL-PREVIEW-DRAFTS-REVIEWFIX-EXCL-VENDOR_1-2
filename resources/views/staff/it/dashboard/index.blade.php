@@ -31,12 +31,10 @@
                     'drafts' => ['icon' => 'ri-draft-line', 'label' => 'Drafts'],
                     'files' => ['icon' => 'ri-file-cloud-line', 'label' => 'Files'],
                     'errors' => ['icon' => 'ri-bug-line', 'label' => 'Logs & Errors'],
-                    'payments' => ['icon' => 'ri-bank-card-line', 'label' => 'Payments'],
                     'security' => ['icon' => 'ri-shield-flash-line', 'label' => 'Security'],
                     'backup' => ['icon' => 'ri-database-2-line', 'label' => 'Backup'],
                     'audit' => ['icon' => 'ri-history-line', 'label' => 'Audit'],
                     'system' => ['icon' => 'ri-settings-5-line', 'label' => 'System'],
-                    'reports' => ['icon' => 'ri-file-chart-line', 'label' => 'Reporting'],
                 ];
             @endphp
 

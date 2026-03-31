@@ -314,7 +314,15 @@ public function approve(Request $request, Application $application)
 
         $journalists = $query->paginate(20)->appends($request->query());
 
-        return view('staff.officer.accredited_journalists', compact('journalists'));
+        $allRecords = \App\Models\AccreditationRecord::query();
+        $stats = [
+            'total' => $allRecords->count(),
+            'collected' => (clone $allRecords)->whereNotNull('collected_at')->count(),
+            'uncollected' => (clone $allRecords)->whereNull('collected_at')->count(),
+            'expired' => (clone $allRecords)->whereNotNull('expires_at')->where('expires_at', '<', now())->count(),
+        ];
+
+        return view('staff.officer.accredited_journalists', compact('journalists', 'stats'));
     }
 
     /**
@@ -360,12 +368,65 @@ public function approve(Request $request, Application $application)
 
         $mediaHouses = $query->paginate(20)->appends($request->query());
 
-        return view('staff.officer.registered_mediahouses', compact('mediaHouses'));
+        $allMH = \App\Models\RegistrationRecord::query();
+        $mhStats = [
+            'total' => $allMH->count(),
+            'collected' => (clone $allMH)->whereNotNull('collected_at')->count(),
+            'uncollected' => (clone $allMH)->whereNull('collected_at')->count(),
+            'expired' => (clone $allMH)->whereNotNull('expires_at')->where('expires_at', '<', now())->count(),
+        ];
+
+        return view('staff.officer.registered_mediahouses', compact('mediaHouses', 'mhStats'));
     }
 
     /**
      * Send collection notification to journalists/media houses
      */
+    public function physicalIntakeForm()
+    {
+        return view('staff.officer.physical_intake');
+    }
+
+    public function physicalIntakeProcess(Request $request)
+    {
+        $data = $request->validate([
+            'application_type' => ['required', 'in:accreditation,registration'],
+            'request_type' => ['required', 'in:new,renewal,replacement'],
+            'lookup_number' => ['required', 'string', 'max:50'],
+            'receipt_number' => ['required', 'string', 'max:100'],
+            'applicant_name' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $application = Application::create([
+            'application_type' => $data['application_type'],
+            'request_type' => $data['request_type'],
+            'reference' => $data['lookup_number'],
+            'receipt_number' => $data['receipt_number'],
+            'status' => Application::PRODUCTION_QUEUE,
+            'form_data' => json_encode([
+                'applicant_name' => $data['applicant_name'] ?? '',
+                'lookup_number' => $data['lookup_number'],
+                'notes' => $data['notes'] ?? '',
+                'intake_method' => 'physical',
+            ]),
+            'is_draft' => false,
+            'submitted_at' => now(),
+            'applicant_id' => null,
+            'assigned_officer_id' => auth()->id(),
+        ]);
+
+        if (class_exists(\App\Services\ActivityLogger::class)) {
+            \App\Services\ActivityLogger::log('physical_intake_created', $application, [
+                'receipt_number' => $data['receipt_number'],
+                'officer' => auth()->user()?->name,
+            ]);
+        }
+
+        return redirect()->route('staff.officer.physical-intake')
+            ->with('success', "Physical intake recorded (Ref: {$application->reference}). Application sent to production queue.");
+    }
+
     public function sendCollectionNotification(Request $request)
     {
         $data = $request->validate([
@@ -414,6 +475,64 @@ public function approve(Request $request, Application $application)
         }
 
         return back()->with('success', "Collection reminders sent to {$count} " . ($type === 'accreditation' ? 'media practitioners' : 'media houses') . ".");
+    }
+
+    public function recordsExport(Request $request, string $type)
+    {
+        $filename = $type . '_records_' . now()->format('Y-m-d') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        if ($type === 'journalists') {
+            $records = \App\Models\AccreditationRecord::query()->with('holder')->orderBy('issued_at', 'desc')->get();
+            $callback = function () use ($records) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['Media Number', 'Name', 'Organisation', 'Category', 'Valid From', 'Valid To', 'ID Number', 'Sex', 'Nationality', 'Phone', 'Email', 'Collection Status']);
+                foreach ($records as $r) {
+                    fputcsv($file, [
+                        $r->certificate_no ?? '',
+                        $r->holder?->name ?? '',
+                        $r->organisation ?? '',
+                        $r->category ?? '',
+                        optional($r->issued_at)->format('d/m/Y') ?? '',
+                        optional($r->expires_at)->format('d/m/Y') ?? '',
+                        $r->holder?->national_id ?? '',
+                        $r->holder?->gender ?? '',
+                        $r->holder?->nationality ?? '',
+                        $r->holder?->phone ?? '',
+                        $r->holder?->email ?? '',
+                        $r->collected_at ? 'Collected' : 'Uncollected',
+                    ]);
+                }
+                fclose($file);
+            };
+        } else {
+            $records = \App\Models\Application::where('application_type', 'registration')
+                ->whereNotNull('submitted_at')
+                ->orderBy('submitted_at', 'desc')
+                ->get();
+            $callback = function () use ($records) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['Reg Number', 'Organisation', 'Type', 'Status', 'Submitted', 'Region', 'Email']);
+                foreach ($records as $a) {
+                    $fd = is_array($a->form_data) ? $a->form_data : json_decode($a->form_data ?? '{}', true);
+                    fputcsv($file, [
+                        $a->reference ?? '',
+                        $fd['organisation_name'] ?? $fd['company_name'] ?? '',
+                        $a->request_type ?? 'new',
+                        $a->status ?? '',
+                        optional($a->submitted_at)->format('d/m/Y') ?? '',
+                        $a->collection_region ?? '',
+                        $fd['email'] ?? '',
+                    ]);
+                }
+                fclose($file);
+            };
+        }
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function sendMessage(Request $request, Application $application)

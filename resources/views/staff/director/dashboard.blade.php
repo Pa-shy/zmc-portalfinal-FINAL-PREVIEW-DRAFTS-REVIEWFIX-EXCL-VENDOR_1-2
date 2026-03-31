@@ -1,5 +1,5 @@
 @extends('layouts.portal')
-@section('title', 'Director Strategy Dashboard')
+@section('title', 'Director MDG Strategic Oversight')
 
 @section('content')
 <div class="zmc-dashboard-wrapper" style="font-family: var(--font-primary); color: var(--zmc-text-dark);">
@@ -7,10 +7,10 @@
     {{-- Header Section --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color:#1e293b;">Executive Intelligence Dashboard</h4>
+            <h4 class="fw-bold m-0" style="font-size: var(--font-size-2xl); color:#1e293b;">Director MDG Strategic Oversight</h4>
             <div class="text-muted mt-1" style="font-size: var(--font-size-base);">
                 <i class="ri-shield-user-line me-1"></i> 
-                Director/CEO Strategic Control Panel &bull; Strictly Read-Only Oversight &bull; Last Updated: {{ now()->format('d M Y, H:i') }}
+                Director Media Development &amp; Governance &bull; Read-Only Oversight &bull; Last Updated: {{ now()->format('d M Y, H:i') }}
             </div>
         </div>
         <div class="d-flex gap-2">
@@ -300,8 +300,6 @@
             {{-- Performance Tab --}}
             <div class="tab-pane fade {{ $activeTab === 'perf' ? 'show active' : '' }} p-4" id="perf" role="tabpanel">
                 @include('staff.director.partials.performance')
-                <hr class="my-5 opacity-5">
-                @include('staff.director.partials.staff_performance')
             </div>
             {{-- Financial Tab --}}
             <div class="tab-pane fade {{ $activeTab === 'fin' ? 'show active' : '' }} p-4" id="fin" role="tabpanel">
@@ -336,7 +334,7 @@
             </div>
         </div>
         <div class="fw-bold text-dark opacity-50 smaller">
-            <i class="ri-lock-2-line me-1"></i> CEO AUTHENTICATED ACCESS ONLY
+            <i class="ri-lock-2-line me-1"></i> DIRECTOR MDG AUTHENTICATED ACCESS ONLY
         </div>
     </div>
 

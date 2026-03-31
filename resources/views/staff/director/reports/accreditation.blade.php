@@ -34,7 +34,7 @@
                     </div>
                     <div>
                         <div class="d-flex justify-content-between mb-1">
-                            <span class="small">Registrar Approval</span>
+                            <span class="small">Registrar Review</span>
                             <span class="fw-bold">{{ round($efficiency['registrar'], 1) }}h</span>
                         </div>
                         <div class="progress" style="height: 8px;">

@@ -338,6 +338,48 @@ class RegistrarController extends Controller
     }
 
 
+    public function markReviewed(Request $request, Application $application)
+    {
+        $application->registrar_reviewed_at = now();
+        $application->registrar_reviewed_by = auth()->id();
+        $application->save();
+
+        if (class_exists(\App\Support\AuditTrail::class)) {
+            \App\Support\AuditTrail::log('registrar_reviewed', $application, [
+                'application_id' => $application->id,
+                'reviewed_by' => auth()->user()?->name,
+            ]);
+        }
+
+        return back()->with('success', 'Application marked as reviewed.');
+    }
+
+    public function batchMarkReviewed(Request $request)
+    {
+        $data = $request->validate([
+            'application_ids' => ['required', 'array'],
+            'application_ids.*' => ['integer'],
+        ]);
+
+        $registrarStatuses = [
+            Application::REGISTRAR_REVIEW,
+            Application::FORWARDED_TO_REGISTRAR,
+            Application::PENDING_ACCOUNTS_FROM_REGISTRAR,
+            Application::REGISTRAR_APPROVED,
+            Application::REGISTRAR_APPROVED_PENDING_REG_FEE,
+        ];
+
+        $count = Application::whereIn('id', $data['application_ids'])
+            ->whereNull('registrar_reviewed_at')
+            ->whereIn('status', $registrarStatuses)
+            ->update([
+                'registrar_reviewed_at' => now(),
+                'registrar_reviewed_by' => auth()->id(),
+            ]);
+
+        return back()->with('success', "{$count} application(s) marked as reviewed.");
+    }
+
     public function reject(Request $request, Application $application)
     {
         $data = $request->validate([
