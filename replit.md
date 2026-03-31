@@ -150,6 +150,13 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - Used by Registrar to send notifications to portal users
 
 ## Recent Changes
+- March 31, 2026: Post-merge deployment fixes
+  - Fixed TokenAuth middleware priority: TokenAuth now runs before Laravel's auth middleware via explicit priority chain
+  - Fixed all post-merge migration failures: handled existing tables (reminders), duplicate columns (users.passport_number), SQLite-style drop-recreate on Postgres (renewal_applications), and CHECK constraint blocking new workflow statuses
+  - Updated DeployMigrate command: added 14 new tables (fix_requests, payment_submissions, official_letters, renewal_applications, renewal_change_requests, portal_requirements, portal_requirement_items, application_categories, portal_requirements_audit, login_activities, cash_payments, physical_intakes, design_templates, system_logs), new user/application/payment columns, dropped overly-restrictive status CHECK constraint (validation enforced at app level)
+  - DeployMigrate table schemas now match actual migration definitions exactly (payment_submissions, official_letters)
+  - Build script (build.sh) runs clean: deploy-migrate, seed, storage:link, config/route/view cache all pass
+
 - February 26, 2026: Reduced green opacity system-wide
   - Lightened primary green from #1a3a1a to #2e7d32 (medium green)
   - Lightened dark green from #0d2810 to #1b5e20
