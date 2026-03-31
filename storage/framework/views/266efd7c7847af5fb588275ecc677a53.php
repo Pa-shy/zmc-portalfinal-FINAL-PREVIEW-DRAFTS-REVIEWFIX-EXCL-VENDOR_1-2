@@ -26,8 +26,9 @@
             line-height: var(--line-height-normal);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: #000 url('<?php echo e(asset("zmc_building.png")); ?>') no-repeat center center fixed;
+            background: #000 url('/zmc_building.png') no-repeat center center;
             background-size: cover;
+            background-attachment: scroll;
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -212,7 +213,7 @@
         }
     </style>
 </head>
-<body>
+<body class="landing-page">
 
 <div class="container">
     <div class="brand">

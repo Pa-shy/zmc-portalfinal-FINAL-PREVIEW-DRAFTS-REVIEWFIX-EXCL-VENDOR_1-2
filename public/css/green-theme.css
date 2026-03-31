@@ -61,8 +61,8 @@
   --zmc-accent-dark: var(--zmc-yellow-dark);
 }
 
-/* Global Body */
-body {
+/* Global Body - scoped to avoid overriding pages with custom backgrounds */
+body:not(.landing-page) {
   background: var(--zmc-gray-bg) !important;
   color: var(--zmc-text-dark) !important;
   font-family: var(--font-primary) !important;
