@@ -356,6 +356,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/portal/notices-events', [\App\Http\Controllers\Portal\NoticesEventsController::class, 'index'])
         ->name('portal.notices-events.index');
 
+    Route::get('/portal/receipt/{payment}/download', [\App\Http\Controllers\Portal\PortalReceiptController::class, 'download'])
+        ->name('portal.receipt.download');
+
     /*
     |--------------------------------------------------------------------------
     | PAYNOW PAYMENTS

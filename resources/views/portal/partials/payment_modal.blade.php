@@ -39,8 +39,18 @@
               </button>
             </li>
             <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-cash" data-bs-toggle="pill" data-bs-target="#pane-cash" type="button" role="tab">
+                <i class="ri-money-dollar-circle-line me-1"></i> Cash
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tab-transfer" data-bs-toggle="pill" data-bs-target="#pane-transfer" type="button" role="tab">
+                <i class="ri-exchange-line me-1"></i> Transfer
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
               <button class="nav-link" id="tab-waiver" data-bs-toggle="pill" data-bs-target="#pane-waiver" type="button" role="tab">
-                <i class="ri-coupon-3-line me-1"></i> Upload Waiver
+                <i class="ri-coupon-3-line me-1"></i> Waiver
               </button>
             </li>
           </ul>
@@ -144,6 +154,90 @@
               </form>
             </div>
 
+            {{-- CASH PAYMENT --}}
+            <div class="tab-pane fade" id="pane-cash" role="tabpanel">
+              <form id="cashForm" enctype="multipart/form-data">
+                <input type="hidden" name="payment_method" value="cash">
+                <div class="alert alert-light border mb-3">
+                  <div class="fw-bold mb-1"><i class="ri-information-line me-1"></i> Cash Payment</div>
+                  <div class="text-muted small">If you paid cash at a ZMC office, enter the receipt details below and upload a copy of the receipt.</div>
+                </div>
+                <div class="row g-2">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Name</label>
+                    <input type="text" class="form-control zmc-input" name="proof_first_name" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Surname</label>
+                    <input type="text" class="form-control zmc-input" name="proof_last_name" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Payment date</label>
+                    <input type="date" class="form-control zmc-input" name="proof_payment_date" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Amount paid</label>
+                    <input type="number" step="0.01" min="0" class="form-control zmc-input" name="proof_amount_paid" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small">Cash receipt number (if available)</label>
+                    <input type="text" class="form-control zmc-input" name="cash_receipt_ref" placeholder="e.g. CSH-001234">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small">Upload receipt copy (PDF/JPG/PNG)</label>
+                    <input type="file" class="form-control zmc-input" name="proof_file" accept=".pdf,.jpg,.jpeg,.png" required>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-3 fw-bold" id="btnSubmitCash">
+                  <i class="ri-money-dollar-circle-line me-1"></i> Submit Cash Payment
+                </button>
+              </form>
+            </div>
+
+            {{-- BANK TRANSFER --}}
+            <div class="tab-pane fade" id="pane-transfer" role="tabpanel">
+              <form id="transferForm" enctype="multipart/form-data">
+                <input type="hidden" name="payment_method" value="transfer">
+                <div class="alert alert-light border mb-3">
+                  <div class="fw-bold mb-1"><i class="ri-information-line me-1"></i> Bank Transfer</div>
+                  <div class="text-muted small">If you paid via bank transfer/EFT, enter the transfer details below and upload proof.</div>
+                </div>
+                <div class="row g-2">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Name</label>
+                    <input type="text" class="form-control zmc-input" name="proof_first_name" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Surname</label>
+                    <input type="text" class="form-control zmc-input" name="proof_last_name" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Transfer date</label>
+                    <input type="date" class="form-control zmc-input" name="proof_payment_date" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Amount transferred</label>
+                    <input type="number" step="0.01" min="0" class="form-control zmc-input" name="proof_amount_paid" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Bank used</label>
+                    <input type="text" class="form-control zmc-input" name="proof_bank_name" placeholder="e.g. CBZ / FBC / Stanbic" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label small">Transfer reference</label>
+                    <input type="text" class="form-control zmc-input" name="transfer_reference" placeholder="Bank reference number" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small">Upload transfer confirmation (PDF/JPG/PNG)</label>
+                    <input type="file" class="form-control zmc-input" name="proof_file" accept=".pdf,.jpg,.jpeg,.png" required>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-3 fw-bold" id="btnSubmitTransfer">
+                  <i class="ri-exchange-line me-1"></i> Submit Bank Transfer
+                </button>
+              </form>
+            </div>
+
             {{-- WAIVER UPLOAD --}}
             <div class="tab-pane fade" id="pane-waiver" role="tabpanel">
               <form id="waiverForm" enctype="multipart/form-data">
@@ -240,8 +334,9 @@
 
     if (pollingInterval) clearInterval(pollingInterval);
 
-    // reset forms
     document.getElementById('proofForm')?.reset();
+    document.getElementById('cashForm')?.reset();
+    document.getElementById('transferForm')?.reset();
     document.getElementById('waiverForm')?.reset();
 
     // ensure PayNow tab active
@@ -476,11 +571,22 @@
     }
   });
 
-  // Proof / waiver AJAX
   document.getElementById('proofForm')?.addEventListener('submit', function(ev) {
     ev.preventDefault();
     if (!currentAppId) return;
     postForm(`/payments/${currentAppId}/upload-proof`, this, document.getElementById('btnSubmitProof'));
+  });
+
+  document.getElementById('cashForm')?.addEventListener('submit', function(ev) {
+    ev.preventDefault();
+    if (!currentAppId) return;
+    postForm(`/payments/${currentAppId}/upload-proof`, this, document.getElementById('btnSubmitCash'));
+  });
+
+  document.getElementById('transferForm')?.addEventListener('submit', function(ev) {
+    ev.preventDefault();
+    if (!currentAppId) return;
+    postForm(`/payments/${currentAppId}/upload-proof`, this, document.getElementById('btnSubmitTransfer'));
   });
 
   document.getElementById('waiverForm')?.addEventListener('submit', function(ev) {

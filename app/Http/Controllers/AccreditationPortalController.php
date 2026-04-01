@@ -777,7 +777,14 @@ class AccreditationPortalController extends Controller
 
     public function payments()
     {
-        return view('portal.accreditation.payments');
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        $payments = \App\Models\Payment::where('payer_user_id', $user->id)
+            ->with('application')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('portal.accreditation.payments', compact('payments'));
     }
 
     public function notices()

@@ -891,6 +891,7 @@ class DeployMigrate extends Command
         $this->addColumnSafe('users', 'phone_number_2', 'VARCHAR(20) NULL');
 
         $this->addColumnSafe('applications', 'payment_submission_method', 'VARCHAR(50) NULL');
+        $this->addColumnSafe('applications', 'receipt_number', 'VARCHAR(100) NULL');
         $this->addColumnSafe('applications', 'forward_no_approval_reason', 'TEXT NULL');
         $this->addColumnSafe('applications', 'official_letter_id', 'BIGINT NULL');
         $this->addColumnSafe('applications', 'verification_notes', 'TEXT NULL');

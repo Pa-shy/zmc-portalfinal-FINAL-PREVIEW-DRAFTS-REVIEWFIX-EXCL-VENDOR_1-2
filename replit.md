@@ -150,6 +150,18 @@ Since Replit runs apps inside an iframe proxy, browser cookies often don't persi
 - Used by Registrar to send notifications to portal users
 
 ## Recent Changes
+- April 1, 2026: Comprehensive payment flow implementation
+  - Auto-generated receipt numbers: format `{PREFIX}-{YEAR}-{SEQUENCE}` (PN for PayNow, CSH for Cash, TRF for Transfer, POP for Proof, WVR for Waiver)
+  - Receipt sequence table (`receipt_sequences`) for atomic, gap-free numbering per year
+  - Receipt auto-generation on payment verification (approveProof, markPaid, verifyPaymentSubmission)
+  - Updated receipt PDF: shows receipt number, payment method, actual amount, payment date, payment reference
+  - Payment modal: added Cash and Bank Transfer tabs alongside existing PayNow, Proof, and Waiver
+  - Portal payment history: real data from `payments` table (replaces stub/demo data)
+  - Portal receipt download: applicants can download PDF receipts for confirmed payments
+  - New controller: `PortalReceiptController` for applicant receipt downloads with ownership check
+  - PaymentWorkflowService: creates Payment records + receipt numbers when verifying payments
+  - ManualPaymentController: accepts `payment_method` (cash/transfer/proof), `cash_receipt_ref`, `transfer_reference` fields
+
 - March 31, 2026: B6-B8 feature implementation
   - Records CSV export: officer can export journalists and media houses to CSV from records views
   - Records analytics summary cards: total, collected, uncollected, expired counts on records views (DB-backed, not paginated)

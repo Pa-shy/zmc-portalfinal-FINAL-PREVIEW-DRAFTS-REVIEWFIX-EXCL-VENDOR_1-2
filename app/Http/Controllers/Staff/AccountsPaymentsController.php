@@ -498,6 +498,12 @@ class AccountsPaymentsController extends Controller
         $from = $application->status;
 
         DB::transaction(function() use ($application, $data) {
+            $existingReceipt = Payment::where('application_id', $application->id)
+                ->where('status', 'paid')
+                ->whereNotNull('receipt_number')
+                ->first();
+            $receiptNumber = $existingReceipt->receipt_number ?? self::generateReceiptNumber('proof');
+
             $application->update([
                 'proof_status' => 'approved',
                 'proof_reviewed_by' => Auth::id(),
@@ -505,9 +511,9 @@ class AccountsPaymentsController extends Controller
                 'proof_review_notes' => $data['proof_review_notes'] ?? null,
                 'paynow_reference' => $data['paynow_reference'] ?? $application->paynow_reference,
                 'payment_status' => 'paid',
+                'receipt_number' => $receiptNumber,
             ]);
 
-            // Create record in payments table
             $payment = Payment::create([
                 'application_id' => $application->id,
                 'payer_user_id' => $application->applicant_user_id,
@@ -518,9 +524,11 @@ class AccountsPaymentsController extends Controller
                 'reference' => $data['paynow_reference'] ?? ('PROOF-' . $application->reference),
                 'status' => 'paid',
                 'confirmed_at' => now(),
+                'receipt_number' => $receiptNumber,
                 'applicant_category' => $application->accreditation_category_code ?? $application->media_house_category_code,
                 'service_type' => $application->application_type,
                 'residency' => $application->residency_type ?? 'local',
+                'recorded_by' => Auth::id(),
             ]);
 
             $this->logPaymentAction($payment, 'approved_proof', null, 'paid', $data['proof_review_notes'] ?? 'Payment proof approved.');
@@ -934,6 +942,59 @@ class AccountsPaymentsController extends Controller
         return redirect()->route('staff.accounts.dashboard')->with('success', 'Application released.');
     }
 
+    public static function normalizePaymentMethod(string $method): string
+    {
+        $map = [
+            'paynow_reference' => 'paynow',
+            'paynow_manual_reference' => 'paynow',
+            'proof_upload' => 'proof',
+        ];
+        return $map[$method] ?? $method;
+    }
+
+    public static function generateReceiptNumber(string $method = 'general'): string
+    {
+        $method = self::normalizePaymentMethod($method);
+        $year = (int) date('Y');
+        $prefixes = [
+            'paynow' => 'PN',
+            'cash' => 'CSH',
+            'transfer' => 'TRF',
+            'waiver' => 'WVR',
+            'proof' => 'POP',
+            'general' => 'RCT',
+        ];
+        $prefix = $prefixes[$method] ?? 'RCT';
+
+        $sequence = DB::table('receipt_sequences')
+            ->where('prefix', $prefix)
+            ->where('year', $year)
+            ->lockForUpdate()
+            ->first();
+
+        if ($sequence) {
+            $next = $sequence->last_number + 1;
+            DB::table('receipt_sequences')
+                ->where('prefix', $prefix)
+                ->where('year', $year)
+                ->update([
+                    'last_number' => $next,
+                    'updated_at' => now(),
+                ]);
+        } else {
+            $next = 1;
+            DB::table('receipt_sequences')->insert([
+                'prefix' => $prefix,
+                'year' => $year,
+                'last_number' => $next,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        return $prefix . '-' . $year . '-' . str_pad($next, 5, '0', STR_PAD_LEFT);
+    }
+
     public function generateReceipt(Application $application)
     {
         if ($application->status !== Application::PAID_CONFIRMED &&
@@ -944,60 +1005,131 @@ class AccountsPaymentsController extends Controller
 
         $application->load(['applicant']);
 
+        $payment = Payment::where('application_id', $application->id)
+            ->where('status', 'paid')
+            ->latest('confirmed_at')
+            ->first();
+
+        $receiptNumber = $payment->receipt_number ?? $application->receipt_number ?? null;
+        if (!$receiptNumber && $payment) {
+            $receiptNumber = self::generateReceiptNumber($payment->method ?? 'general');
+            $payment->update(['receipt_number' => $receiptNumber]);
+            if ($this->hasColumn('applications', 'receipt_number')) {
+                $application->update(['receipt_number' => $receiptNumber]);
+            }
+        }
+
+        $fee = $this->calculateApplicationFee($application);
+
         $data = [
             'application' => $application,
+            'payment' => $payment,
+            'receipt_number' => $receiptNumber ?? 'N/A',
+            'amount' => $payment->amount ?? $fee,
+            'payment_method' => $payment->method ?? $application->payment_submission_method ?? 'N/A',
+            'payment_date' => $payment->confirmed_at ?? $application->payment_paid_at ?? now(),
             'date' => now()->format('Y-m-d H:i'),
             'company_name' => 'Zimbabwe Media Commission',
             'company_address' => '109 Rotten Row, Harare, Zimbabwe',
             'company_email' => 'info@zmc.co.zw',
-            'company_phone' => '+263 242 703351'
+            'company_phone' => '+263 242 703351',
         ];
 
         $pdf = Pdf::loadView('staff.accounts.receipt_pdf', $data);
-        return $pdf->download('Receipt_' . $application->reference . '.pdf');
+        return $pdf->download('Receipt_' . ($receiptNumber ?: $application->reference) . '.pdf');
+    }
+
+    public function calculateApplicationFee(Application $application): float
+    {
+        if ($application->application_type === 'accreditation') {
+            $scope = $application->journalist_scope ?? 'local';
+            $requestType = $application->request_type ?? 'new';
+            if ($scope === 'foreign') {
+                return $requestType === 'new' ? 150.00 : 100.00;
+            }
+            return $requestType === 'new' ? 50.00 : 30.00;
+        }
+        $requestType = $application->request_type ?? 'new';
+        return $requestType === 'new' ? 500.00 : 300.00;
     }
 
     /**
      * Confirm paid -> push to production_queue
      */
     public function markPaid(Request $request, Application $application)
-{
-    $data = $request->validate([
-        'paynow_reference' => ['nullable', 'string', 'max:200'],
-        'payment_status'   => ['nullable', 'string', 'max:100'],
-        'decision_notes'   => ['nullable', 'string', 'max:5000'],
-    ]);
+    {
+        $data = $request->validate([
+            'paynow_reference' => ['nullable', 'string', 'max:200'],
+            'payment_status'   => ['nullable', 'string', 'max:100'],
+            'decision_notes'   => ['nullable', 'string', 'max:5000'],
+        ]);
 
-    $from = $application->status;
+        $from = $application->status;
 
-    // Save fields (only if columns exist)
-    foreach (['paynow_reference','payment_status','decision_notes'] as $col) {
-        if (!empty($data[$col]) && Schema::hasColumn('applications', $col)) {
-            $application->{$col} = $data[$col];
-        }
+        DB::transaction(function() use ($application, $data, $from) {
+            $method = $application->payment_submission_method ?? 'general';
+
+            $existingPayment = Payment::where('application_id', $application->id)
+                ->where('status', 'paid')
+                ->whereNotNull('receipt_number')
+                ->first();
+            $receiptNumber = $existingPayment->receipt_number ?? self::generateReceiptNumber($method);
+
+            foreach (['paynow_reference','payment_status','decision_notes'] as $col) {
+                if (!empty($data[$col]) && Schema::hasColumn('applications', $col)) {
+                    $application->{$col} = $data[$col];
+                }
+            }
+            if (!empty($data['payment_status']) && strtolower($data['payment_status']) === 'paid' && Schema::hasColumn('applications', 'payment_paid_at')) {
+                $application->payment_paid_at = now();
+            }
+            if ($this->hasColumn('applications', 'receipt_number')) {
+                $application->receipt_number = $receiptNumber;
+            }
+            $application->save();
+
+            $fee = $this->calculateApplicationFee($application);
+            $existingPayment = Payment::where('application_id', $application->id)
+                ->where('status', 'paid')
+                ->first();
+
+            if (!$existingPayment) {
+                Payment::create([
+                    'application_id' => $application->id,
+                    'payer_user_id' => $application->applicant_user_id,
+                    'method' => $method,
+                    'source' => 'offline',
+                    'amount' => $application->proof_amount_paid ?? $fee,
+                    'currency' => 'USD',
+                    'reference' => $data['paynow_reference'] ?? ($application->reference . '-PAID'),
+                    'status' => 'paid',
+                    'confirmed_at' => now(),
+                    'receipt_number' => $receiptNumber,
+                    'applicant_category' => $application->accreditation_category_code ?? $application->media_house_category_code,
+                    'service_type' => $application->application_type,
+                    'residency' => $application->residency_type ?? 'local',
+                    'recorded_by' => Auth::id(),
+                ]);
+            } else {
+                $existingPayment->update(['receipt_number' => $receiptNumber]);
+            }
+
+            ApplicationWorkflow::transition($application, Application::PAID_CONFIRMED, 'accounts_confirm_paid', $data);
+
+            ApplicationWorkflow::transition($application, Application::PRODUCTION_QUEUE, 'system_send_to_production', [
+                'region' => $application->collection_region ?? null,
+            ]);
+
+            ActivityLogger::log('accounts_confirm_paid', $application, $from, $application->status, [
+                'actor_role' => session('active_staff_role'),
+                'paynow_reference' => $data['paynow_reference'] ?? null,
+                'payment_status' => $data['payment_status'] ?? null,
+                'receipt_number' => $receiptNumber,
+            ]);
+        });
+
+        return back()->with('success', 'Payment confirmed and sent to Production.');
     }
-    // Store payment time if marked paid
-    if (!empty($data['payment_status']) && strtolower($data['payment_status']) === 'paid' && Schema::hasColumn('applications', 'payment_paid_at')) {
-        $application->payment_paid_at = now();
-    }
-    $application->save();
-
-    // Mark confirmed
-    ApplicationWorkflow::transition($application, Application::PAID_CONFIRMED, 'accounts_confirm_paid', $data);
-
-    // ✅ NEW ORDER: send to production (since Registrar already reviewed it before pushing to Accounts)
-    ApplicationWorkflow::transition($application, Application::PRODUCTION_QUEUE, 'system_send_to_production', [
-        'region' => $application->collection_region ?? null,
-    ]);
-
-    ActivityLogger::log('accounts_confirm_paid', $application, $from, $application->status, [
-        'actor_role' => session('active_staff_role'),
-        'paynow_reference' => $data['paynow_reference'] ?? null,
-        'payment_status' => $data['payment_status'] ?? null,
-    ]);
-
-    return back()->with('success', 'Payment confirmed and sent to Production.');
-}
 
 
     public function returnToOfficer(Request $request, Application $application)

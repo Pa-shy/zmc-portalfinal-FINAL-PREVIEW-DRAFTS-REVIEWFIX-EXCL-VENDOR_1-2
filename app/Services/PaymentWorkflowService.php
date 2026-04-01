@@ -251,14 +251,52 @@ class PaymentWorkflowService
                 }
             }
             
-            // Update application
-            $application->update([
+            $method = $application->payment_submission_method ?? 'general';
+
+            $existingReceipt = \App\Models\Payment::where('application_id', $application->id)
+                ->where('status', 'paid')
+                ->whereNotNull('receipt_number')
+                ->first();
+            $receiptNumber = $existingReceipt->receipt_number
+                ?? \App\Http\Controllers\Staff\AccountsPaymentsController::generateReceiptNumber($method);
+
+            $updateData = [
                 'status' => Application::PAYMENT_VERIFIED,
                 'current_stage' => 'payment_verified',
                 'payment_status' => 'paid',
                 'last_action_at' => now(),
                 'last_action_by' => Auth::id(),
-            ]);
+            ];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('applications', 'receipt_number')) {
+                $updateData['receipt_number'] = $receiptNumber;
+            }
+            $application->update($updateData);
+
+            $fee = (new \App\Http\Controllers\Staff\AccountsPaymentsController())->calculateApplicationFee($application);
+            $existingPayment = \App\Models\Payment::where('application_id', $application->id)
+                ->where('status', 'paid')
+                ->first();
+
+            if (!$existingPayment) {
+                \App\Models\Payment::create([
+                    'application_id' => $application->id,
+                    'payer_user_id' => $application->applicant_user_id,
+                    'method' => $method,
+                    'source' => 'offline',
+                    'amount' => $application->proof_amount_paid ?? $fee,
+                    'currency' => 'USD',
+                    'reference' => $application->paynow_ref_submitted ?? ($application->reference . '-VERIFIED'),
+                    'status' => 'paid',
+                    'confirmed_at' => now(),
+                    'receipt_number' => $receiptNumber,
+                    'applicant_category' => $application->accreditation_category_code ?? $application->media_house_category_code,
+                    'service_type' => $application->application_type,
+                    'residency' => $application->residency_type ?? 'local',
+                    'recorded_by' => Auth::id(),
+                ]);
+            } else {
+                $existingPayment->update(['receipt_number' => $receiptNumber]);
+            }
             
             // Update proof/waiver status if applicable
             if ($application->payment_submission_method === 'proof_upload') {
