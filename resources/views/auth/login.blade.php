@@ -263,7 +263,7 @@
                 <p class="staff-note">
                     Role selected: <strong>{{ $staffRoleLabel }}</strong>
                     &nbsp;•&nbsp;
-                    <a href="{{ url('/staff/select-role') }}" class="forgot">Change role</a>
+                    <a href="{{ url('/staff/login') }}" class="forgot">Staff Login</a>
                 </p>
             @endif
         </div>

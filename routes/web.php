@@ -19,7 +19,6 @@ use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\Portal\PortalApplicationDetailsController;
 
 use App\Http\Controllers\Staff\StaffAuthController;
-use App\Http\Controllers\Staff\RoleSelectController;
 use App\Http\Controllers\Staff\AccreditationOfficerController;
 use App\Http\Controllers\Staff\AccountsPaymentsController;
 use App\Http\Controllers\Staff\RegistrarController;
@@ -73,18 +72,22 @@ Route::post('/choose-portal', function (Request $request) {
 
 /*
 |--------------------------------------------------------------------------
-| STAFF ENTRY (STRICT)
+| STAFF AUTH
 |--------------------------------------------------------------------------
-| /staff is staff landing page (role tiles)
-| staff login is separate from public.
+| /staff goes directly to staff login (no role selection).
+| OTP verification after password. Account activation via token link.
 */
-Route::get('/staff', [RoleSelectController::class, 'index'])->name('staff.entry');
-Route::get('/staff/select-role', [RoleSelectController::class, 'index'])->name('staff.select_role');
-Route::post('/staff/select-role', [RoleSelectController::class, 'choose'])->name('staff.choose_role');
-
+Route::get('/staff', [StaffAuthController::class, 'show'])->name('staff.entry');
 Route::get('/staff/login', [StaffAuthController::class, 'show'])->name('staff.login');
-Route::post('/staff/login', [StaffAuthController::class, 'login'])->middleware('guest')->name('staff.login.store');
+Route::post('/staff/login', [StaffAuthController::class, 'login'])->middleware('throttle:5,1')->name('staff.login.store');
 Route::post('/staff/logout', [StaffAuthController::class, 'logout'])->middleware('auth')->name('staff.logout');
+
+Route::get('/staff/otp', [StaffAuthController::class, 'showOtp'])->name('staff.otp.show');
+Route::post('/staff/otp', [StaffAuthController::class, 'verifyOtp'])->middleware('throttle:10,1')->name('staff.otp.verify');
+Route::post('/staff/otp/resend', [StaffAuthController::class, 'resendOtp'])->middleware('throttle:3,5')->name('staff.otp.resend');
+
+Route::get('/staff/activate/{token}', [StaffAuthController::class, 'showActivation'])->name('staff.activate');
+Route::post('/staff/activate/{token}', [StaffAuthController::class, 'activate'])->name('staff.activate.store');
 
 /*
 |--------------------------------------------------------------------------

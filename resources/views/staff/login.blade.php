@@ -189,11 +189,14 @@
             @if ($errors->any())
                 <div class="error-box">{{ $errors->first() }}</div>
             @endif
+
+            @if (session('success'))
+                <div class="error-box" style="border-color:#bbf7d0;background:#f0fdf4;color:#166534;">{{ session('success') }}</div>
+            @endif
         </div>
 
         <form method="POST" action="{{ route('staff.login.store') }}">
             @csrf
-            <input type="hidden" name="role" value="{{ $selectedRole ?? '' }}">
 
             <div class="field">
                 <label for="email">Email / Username</label>
