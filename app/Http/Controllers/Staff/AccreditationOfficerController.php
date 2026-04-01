@@ -479,8 +479,10 @@ public function approve(Request $request, Application $application)
             }
 
             $photoPath = null;
+            $photoFile = null;
             if ($request->hasFile('applicant_photo')) {
-                $photoPath = $request->file('applicant_photo')->store('intake-photos', 'public');
+                $photoFile = $request->file('applicant_photo');
+                $photoPath = $photoFile->store('intake-photos', 'public');
             }
 
             $formData = [
@@ -517,6 +519,19 @@ public function approve(Request $request, Application $application)
                 'payment_status' => 'verified',
                 'payment_stage' => 'complete',
             ]);
+
+            if ($photoPath && $photoFile) {
+                \App\Models\ApplicationDocument::create([
+                    'application_id' => $application->id,
+                    'owner_id' => $user->id,
+                    'doc_type' => 'passport_photo',
+                    'file_path' => $photoPath,
+                    'original_name' => $photoFile->getClientOriginalName(),
+                    'mime' => $photoFile->getClientMimeType(),
+                    'size' => $photoFile->getSize(),
+                    'status' => 'uploaded',
+                ]);
+            }
 
         } elseif ($requestType === 'new' && $appType === 'registration') {
             $prefix = "ZMC-AP1-{$year}-";
