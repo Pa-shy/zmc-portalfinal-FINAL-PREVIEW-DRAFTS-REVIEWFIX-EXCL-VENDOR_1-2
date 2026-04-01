@@ -647,7 +647,7 @@ public function approve(Request $request, Application $application)
         }
 
         if (class_exists(\App\Services\ActivityLogger::class)) {
-            \App\Services\ActivityLogger::log('physical_intake_created', $application, [
+            \App\Services\ActivityLogger::log('physical_intake_created', $application, null, Application::PRODUCTION_QUEUE, [
                 'receipt_number' => $application->receipt_number,
                 'application_type' => $appType,
                 'request_type' => $requestType,
