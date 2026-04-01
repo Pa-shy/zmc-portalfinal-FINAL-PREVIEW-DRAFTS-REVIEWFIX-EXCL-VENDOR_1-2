@@ -105,66 +105,65 @@
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3 col-xl-2">
-            <div class="card border-0 shadow-sm h-100 bg-primary text-white">
+            <div class="card zmc-stat-card zmc-bg-dark border-0 shadow-sm h-100">
                 <div class="card-body text-center py-3">
-                    <i class="ri-user-line fs-2 mb-2"></i>
+                    <i class="ri-user-line fs-2 mb-2 d-block"></i>
                     <h3 class="mb-0 fw-bold" id="stat-total-users">{{ $stats['total_users'] }}</h3>
-                    <small>Total Users</small>
+                    <small class="opacity-75">Total Users</small>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-xl-2">
-            <div class="card border-0 shadow-sm h-100 bg-success text-white">
+            <div class="card zmc-stat-card zmc-bg-yellow border-0 shadow-sm h-100">
                 <div class="card-body text-center py-3">
-                    <i class="ri-shield-user-line fs-2 mb-2"></i>
+                    <i class="ri-shield-user-line fs-2 mb-2 d-block"></i>
                     <h3 class="mb-0 fw-bold" id="stat-staff-users">{{ $stats['staff_users'] }}</h3>
-                    <small>Staff Users</small>
+                    <small class="opacity-75">Staff Users</small>
                 </div>
             </div>
         </div>
-
         <div class="col-6 col-md-3 col-xl-2">
-            <div class="card border-0 shadow-sm h-100" style="background:#0ea5e9;color:#fff;">
+            <div class="card zmc-stat-card zmc-bg-sky border-0 shadow-sm h-100">
                 <div class="card-body text-center py-3">
-                    <i class="ri-user-smile-line fs-2 mb-2"></i>
+                    <i class="ri-user-smile-line fs-2 mb-2 d-block"></i>
                     <h3 class="mb-0 fw-bold" id="stat-public-users">{{ $stats['public_users'] ?? 0 }}</h3>
-                    <small>Public Users</small>
+                    <small class="opacity-75">Public Users</small>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-xl-2">
-            <div class="card border-0 shadow-sm h-100 bg-info text-white">
+            <div class="card zmc-stat-card zmc-bg-blue border-0 shadow-sm h-100">
                 <div class="card-body text-center py-3">
-                    <i class="ri-file-list-3-line fs-2 mb-2"></i>
+                    <i class="ri-file-list-3-line fs-2 mb-2 d-block"></i>
                     <h3 class="mb-0 fw-bold" id="stat-total-applications">{{ $stats['total_applications'] }}</h3>
-                    <small>Applications</small>
+                    <small class="opacity-75">Applications</small>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-xl-2">
-            <div class="card border-0 shadow-sm h-100 bg-warning text-dark">
+            <div class="card zmc-stat-card zmc-bg-amber border-0 shadow-sm h-100">
                 <div class="card-body text-center py-3">
-                    <i class="ri-time-line fs-2 mb-2"></i>
+                    <i class="ri-time-line fs-2 mb-2 d-block"></i>
                     <h3 class="mb-0 fw-bold" id="stat-pending-applications">{{ $stats['pending_applications'] }}</h3>
-                    <small>Pending</small>
+                    <small class="opacity-75">Pending</small>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-xl-2">
-            <div class="card border-0 shadow-sm h-100 bg-secondary text-white">
+            <div class="card zmc-stat-card zmc-bg-gray border-0 shadow-sm h-100">
                 <div class="card-body text-center py-3">
-                    <i class="ri-key-2-line fs-2 mb-2"></i>
+                    <i class="ri-key-2-line fs-2 mb-2 d-block"></i>
                     <h3 class="mb-0 fw-bold">{{ $stats['roles'] }}</h3>
-                    <small>Roles</small>
+                    <small class="opacity-75">Roles</small>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-xl-2">
-            <div class="card border-0 shadow-sm h-100 bg-dark text-white">
+            <div class="card zmc-stat-card zmc-bg-slate border-0 shadow-sm h-100">
                 <div class="card-body text-center py-3">
-                    <i class="ri-history-line fs-2 mb-2"></i>
+                    <i class="ri-history-line fs-2 mb-2 d-block"></i>
                     <h3 class="mb-0 fw-bold">{{ $stats['audit_entries'] }}</h3>
-                    <small>Audit Logs</small>
+                    <small class="opacity-75">Audit Logs</small>
                 </div>
             </div>
         </div>

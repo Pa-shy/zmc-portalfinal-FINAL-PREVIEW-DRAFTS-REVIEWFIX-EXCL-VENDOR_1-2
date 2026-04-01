@@ -409,6 +409,20 @@ a:hover {
   background: var(--zmc-white) !important;
 }
 
+.card.zmc-stat-card {
+  border-color: transparent !important;
+}
+.card.zmc-stat-card.zmc-bg-dark { background: #1a1a1a !important; color: #f5c518 !important; }
+.card.zmc-stat-card.zmc-bg-yellow { background: #f5c518 !important; color: #1a1a1a !important; }
+.card.zmc-stat-card.zmc-bg-sky { background: #0ea5e9 !important; color: #fff !important; }
+.card.zmc-stat-card.zmc-bg-blue { background: #2563eb !important; color: #fff !important; }
+.card.zmc-stat-card.zmc-bg-amber { background: #d97706 !important; color: #fff !important; }
+.card.zmc-stat-card.zmc-bg-gray { background: #6b7280 !important; color: #fff !important; }
+.card.zmc-stat-card.zmc-bg-slate { background: #374151 !important; color: #f5c518 !important; }
+.card.zmc-stat-card .card-body {
+  color: inherit !important;
+}
+
 .card-header {
   background: var(--zmc-dark-05) !important;
   border-bottom: 2px solid var(--zmc-dark-15) !important;
