@@ -296,8 +296,9 @@ class ProductionController extends Controller
         $template = $data['template'] ?? 'default';
         $template_data = $this->getCardTemplateData($template);
 
-        // Printable HTML (browser print)
-        return view('staff.production.card_print', compact('application', 'payload', 'template', 'template_data'));
+        $isForeign = strtoupper((string)($payload['scope'] ?? 'LOCAL')) === 'FOREIGN';
+
+        return view('staff.production.card_print', compact('application', 'payload', 'template', 'template_data', 'isForeign'));
     }
 
 
