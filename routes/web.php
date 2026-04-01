@@ -1056,7 +1056,7 @@ Route::middleware('auth')->group(function () {
     | STAFF - DIRECTOR (Executive Dashboard)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['staff.portal','role:director','director.view_only'])
+    Route::middleware(['staff.portal','role:director|super_admin','director.view_only'])
         ->prefix('staff/director')
         ->name('staff.director.')
         ->group(function () {

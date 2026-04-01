@@ -54,7 +54,7 @@ class DirectorController extends Controller
         private ReportGenerationService $reportService
     ) {
         // Ensure view-only access - directors can only view data and generate reports
-        $this->middleware(['auth', 'role:director', 'director.view_only']);
+        $this->middleware(['auth', 'role:director|super_admin', 'director.view_only']);
     }
 
     /**
