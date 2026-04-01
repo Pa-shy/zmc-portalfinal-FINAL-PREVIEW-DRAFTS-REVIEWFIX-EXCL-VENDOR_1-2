@@ -89,7 +89,19 @@ class AccreditationPortalController extends Controller
             ->limit(5)
             ->get();
 
-        return view('portal.accreditation.dashboard', compact('stats', 'recentApplications', 'notices', 'events'));
+        $reminders = collect();
+        if (Schema::hasTable('reminders')) {
+            $reminders = \App\Models\Reminder::active()
+                ->forUser($user->id)
+                ->whereDoesntHave('reads', function ($q) use ($user) {
+                    $q->where('user_id', $user->id)->whereNotNull('acknowledged_at');
+                })
+                ->latest()
+                ->limit(5)
+                ->get();
+        }
+
+        return view('portal.accreditation.dashboard', compact('stats', 'recentApplications', 'notices', 'events', 'reminders'));
     }
 
     public function new()
@@ -186,14 +198,41 @@ class AccreditationPortalController extends Controller
         $user = Auth::user();
         abort_unless($user, 403);
 
-        $payload = $request->validate([
-            'profile' => ['required', 'array'],
+        $data = $request->validate([
+            'id_number' => ['nullable', 'string', 'max:50'],
+            'passport_number' => ['nullable', 'string', 'max:50'],
+            'phone_number' => ['nullable', 'string', 'max:30'],
+            'phone2' => ['nullable', 'string', 'max:30'],
+            'nationality' => ['nullable', 'string', 'max:100'],
+            'profile' => ['nullable', 'array'],
         ]);
 
-        $profile = $user->profile_data ?? [];
-        $profile = array_merge($profile, $payload['profile']);
+        $updates = [];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'id_number')) {
+            $updates['id_number'] = $data['id_number'] ?? $user->id_number;
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'passport_number')) {
+            $updates['passport_number'] = $data['passport_number'] ?? $user->passport_number;
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone2')) {
+            $updates['phone2'] = $data['phone2'] ?? $user->phone2;
+        }
+        if (isset($data['phone_number'])) {
+            $updates['phone_number'] = $data['phone_number'];
+        }
 
-        $user->update(['profile_data' => $profile]);
+        $profile = $user->profile_data ?? [];
+        if (!empty($data['profile'])) {
+            $profile = array_merge($profile, $data['profile']);
+        }
+        if (isset($data['nationality'])) {
+            $profile['nationality'] = $data['nationality'];
+        }
+        if ($profile !== ($user->profile_data ?? [])) {
+            $updates['profile_data'] = $profile;
+        }
+
+        $user->update($updates);
 
         return back()->with('success', 'Profile updated successfully.');
     }
@@ -645,6 +684,46 @@ class AccreditationPortalController extends Controller
         ]);
     }
 
+    public function renewalForm(Request $request)
+    {
+        $user = Auth::user();
+        $ap5Type = 'renewal';
+
+        $drafts = Application::where('applicant_user_id', $user->id)
+            ->where('is_draft', true)
+            ->where('application_type', 'accreditation')
+            ->where('request_type', 'renewal')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $draft = null;
+        if ($request->filled('draft')) {
+            $draft = $drafts->firstWhere('reference', $request->input('draft'));
+        }
+
+        return view('portal.accreditation.renewals', compact('drafts', 'draft', 'ap5Type'));
+    }
+
+    public function replacementForm(Request $request)
+    {
+        $user = Auth::user();
+        $ap5Type = 'replacement';
+
+        $drafts = Application::where('applicant_user_id', $user->id)
+            ->where('is_draft', true)
+            ->where('application_type', 'accreditation')
+            ->where('request_type', 'replacement')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $draft = null;
+        if ($request->filled('draft')) {
+            $draft = $drafts->firstWhere('reference', $request->input('draft'));
+        }
+
+        return view('portal.accreditation.renewals', compact('drafts', 'draft', 'ap5Type'));
+    }
+
     public function renewals(Request $request)
     {
         $user = Auth::user();
@@ -661,7 +740,8 @@ class AccreditationPortalController extends Controller
             $draft = $drafts->firstWhere('reference', $request->input('draft'));
         }
 
-        return view('portal.accreditation.renewals', compact('drafts', 'draft'));
+        $ap5Type = null;
+        return view('portal.accreditation.renewals', compact('drafts', 'draft', 'ap5Type'));
     }
 
     /**
@@ -678,9 +758,8 @@ class AccreditationPortalController extends Controller
             'practitioner_type' => 'nullable|in:employed,freelancer',
             'draft_reference' => 'nullable|string|max:64',
             'current_step' => 'nullable|integer|min:1|max:4',
-            'declaration_confirmed' => 'required|in:1',
+            'declaration_confirmed' => 'nullable|in:1',
  
-             // docs (optional for draft)
              'renewal_employer_letter'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
              'replacement_affidavit'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
              'replacement_employer_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
@@ -741,7 +820,9 @@ class AccreditationPortalController extends Controller
             'gender' => 'required|in:male,female',
             'dob' => 'required|date',
             'nationality' => 'required|string|max:120',
-            'id_or_passport' => 'required|string|max:120',
+            'national_id' => 'nullable|string|max:120',
+            'passport_number' => 'nullable|string|max:120',
+            'id_or_passport' => 'nullable|string|max:120',
             'accreditation_number' => 'required|string|max:120',
 
             // docs required based on type
@@ -862,6 +943,67 @@ class AccreditationPortalController extends Controller
         return view('portal.accreditation.notices', compact('notices', 'events'));
     }
 
+    public function lookupAccreditation(string $accreditationNumber)
+    {
+        $user = Auth::user();
+        abort_unless($user, 403);
+
+        $record = null;
+        if (class_exists(\App\Models\AccreditationRecord::class) && \Illuminate\Support\Facades\Schema::hasTable('accreditation_records')) {
+            $record = \App\Models\AccreditationRecord::where('accreditation_no', $accreditationNumber)
+                ->orWhere('certificate_no', $accreditationNumber)
+                ->first();
+        }
+
+        if (!$record) {
+            return response()->json(['found' => false, 'message' => 'No record found for this accreditation number.']);
+        }
+
+        return response()->json([
+            'found' => true,
+            'record' => [
+                'accreditation_no' => $record->accreditation_no ?? $record->certificate_no,
+                'holder_name' => $record->holder?->name ?? $record->holder_name ?? '',
+                'category' => $record->category ?? '',
+                'issued_at' => optional($record->issued_at)->format('d M Y'),
+                'expires_at' => optional($record->expires_at)->format('d M Y'),
+                'status' => $record->status ?? '',
+                'media_house' => $record->media_house_name ?? '',
+            ],
+        ]);
+    }
+
+    public function acknowledgeReminder(Request $request, $reminderId)
+    {
+        $user = Auth::user();
+        abort_unless($user, 403);
+
+        $reminder = \App\Models\Reminder::where('id', $reminderId)
+            ->where(function ($q) use ($user) {
+                $q->where(function ($sub) use ($user) {
+                    $sub->where('target_type', 'media_practitioner')
+                        ->where('target_id', $user->id);
+                })->orWhere('target_type', 'bulk');
+            })
+            ->firstOrFail();
+
+        \App\Models\ReminderRead::updateOrCreate(
+            ['reminder_id' => $reminder->id, 'user_id' => $user->id],
+            ['read_at' => now(), 'acknowledged_at' => now()]
+        );
+
+        \App\Services\ActivityLogger::log('reminder_acknowledged', null, null, null, [
+            'reminder_id' => $reminder->id,
+            'actor_user_id' => $user->id,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back()->with('success', 'Reminder acknowledged.');
+    }
+
     public function howto()
     {
         return view('portal.accreditation.howto');
@@ -869,7 +1011,8 @@ class AccreditationPortalController extends Controller
 
     public function profile()
     {
-        return view('portal.accreditation.profile');
+        $user = Auth::user();
+        return view('portal.accreditation.profile', compact('user'));
     }
 
     public function communication()

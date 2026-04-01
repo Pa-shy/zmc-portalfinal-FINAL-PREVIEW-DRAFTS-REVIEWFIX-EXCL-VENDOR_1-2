@@ -30,14 +30,38 @@
       <button type="button" class="btn btn-outline-success border shadow-sm btn-sm px-3" onclick="showRequirementsModal()">
         <i class="ri-file-list-3-line me-1"></i> View Requirements
       </button>
-      <a href="{{ route('accreditation.renewals.index') }}" class="btn btn-white border shadow-sm btn-sm px-3">
-        <i class="ri-refresh-line me-1"></i> Renew / Replace
+      <a href="{{ route('accreditation.renewal') }}" class="btn btn-white border shadow-sm btn-sm px-3">
+        <i class="ri-refresh-line me-1"></i> Renew
+      </a>
+      <a href="{{ route('accreditation.replacement') }}" class="btn btn-outline-warning border shadow-sm btn-sm px-3">
+        <i class="ri-exchange-line me-1"></i> Replace
       </a>
       <a href="{{ route('accreditation.new') }}" class="btn btn-dark btn-sm px-3">
         <i class="ri-file-add-line me-1"></i> New Accreditation (AP3)
       </a>
     </div>
   </div>
+
+  @if(isset($reminders) && $reminders->count())
+    <div class="mb-4">
+      @foreach($reminders as $reminder)
+        <div class="alert alert-warning alert-dismissible fade show d-flex align-items-start gap-2 shadow-sm" role="alert" id="reminder-{{ $reminder->id }}">
+          <i class="ri-alarm-warning-line" style="font-size:20px; color:#b45309;"></i>
+          <div class="flex-grow-1">
+            <strong>{{ ucfirst(str_replace('_', ' ', $reminder->reminder_type)) }}</strong>
+            <div class="small mt-1">{{ $reminder->message }}</div>
+            <div class="text-muted smaller mt-1">From: {{ $reminder->creator?->name ?? 'ZMC' }} &bull; {{ $reminder->created_at?->diffForHumans() }}</div>
+          </div>
+          <form method="POST" action="{{ route('accreditation.reminders.acknowledge', $reminder->id) }}" class="d-inline">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-outline-warning">
+              <i class="ri-check-line"></i> Acknowledge
+            </button>
+          </form>
+        </div>
+      @endforeach
+    </div>
+  @endif
 
   <div class="row g-3 mb-4">
     <div class="col-12 col-md-3">

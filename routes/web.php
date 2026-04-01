@@ -200,7 +200,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/applications/{application}/resubmit', [AccreditationPortalController::class, 'resubmitCorrection'])
                 ->name('applications.resubmit');
 
-            // AP5
+            // AP5 — separate renewal / replacement
+            Route::get('/renewal',           [AccreditationPortalController::class, 'renewalForm'])->name('renewal');
+            Route::get('/replacement',       [AccreditationPortalController::class, 'replacementForm'])->name('replacement');
             Route::get('/renewals',          [AccreditationPortalController::class, 'renewals'])->name('renewals');
             Route::post('/renewals/save-draft', [AccreditationPortalController::class, 'saveDraftAp5'])->name('renewals.saveDraft');
             Route::post('/renewals/submit',  [AccreditationPortalController::class, 'submitAp5'])->name('submitAp5');
@@ -208,6 +210,8 @@ Route::middleware('auth')->group(function () {
             // Lookup by accreditation number for renewals/replacements
             Route::get('/lookup/{accreditationNumber}', [AccreditationPortalController::class, 'lookupAccreditation'])
                 ->name('lookup');
+
+            Route::post('/reminders/{reminder}/acknowledge', [AccreditationPortalController::class, 'acknowledgeReminder'])->name('reminders.acknowledge');
 
             Route::get('/payments',  [AccreditationPortalController::class, 'payments'])->name('payments');
             Route::get('/notices',   [AccreditationPortalController::class, 'notices'])->name('notices');
@@ -765,6 +769,10 @@ Route::middleware('auth')->group(function () {
             // Media House Two-Stage Payment: Official Letter Upload
             Route::post('/applications/{application}/approve-with-letter', [RegistrarController::class, 'approveWithOfficialLetter'])->name('applications.approve-with-letter');
             
+            // Reminders
+            Route::get('/reminders', [RegistrarController::class, 'remindersIndex'])->name('reminders.index');
+            Route::post('/reminders', [RegistrarController::class, 'storeReminder'])->name('reminders.store');
+
             // Payment Oversight (Read-Only)
             Route::get('/payment-oversight', [RegistrarController::class, 'paymentOversight'])->name('payment-oversight');
             Route::get('/payment-oversight/{paymentSubmission}', [RegistrarController::class, 'paymentDetail'])->name('payment-detail');

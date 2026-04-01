@@ -33,9 +33,15 @@
         </a>
       </li>
 
-      <li class="{{ request()->routeIs('accreditation.renewals*') ? 'active' : '' }}">
-        <a href="{{ route('accreditation.renewals.index') }}">
-          <i class="ri-refresh-line"></i><span>Renewal / Replacement (AP5)</span>
+      <li class="{{ request()->routeIs('accreditation.renewal') ? 'active' : '' }}">
+        <a href="{{ route('accreditation.renewal') }}">
+          <i class="ri-refresh-line"></i><span>Renewal (AP5)</span>
+        </a>
+      </li>
+
+      <li class="{{ request()->routeIs('accreditation.replacement') ? 'active' : '' }}">
+        <a href="{{ route('accreditation.replacement') }}">
+          <i class="ri-exchange-line"></i><span>Replacement (AP5)</span>
         </a>
       </li>
 

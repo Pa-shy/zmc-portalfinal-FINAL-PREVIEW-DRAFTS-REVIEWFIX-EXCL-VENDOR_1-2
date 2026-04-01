@@ -559,10 +559,11 @@
        const isDark = body.classList.contains('theme-dark');
        const newTheme = isDark ? 'light' : 'dark';
  
-       // Optimistic UI update
        body.classList.remove('theme-light', 'theme-dark');
        body.classList.add('theme-' + newTheme);
        updateThemeIcon(newTheme);
+
+       try { localStorage.setItem('zmc_theme', newTheme); } catch(e) {}
  
        try {
          const res = await fetch("{{ route('settings.theme') }}", {
@@ -576,14 +577,23 @@
          });
          
          if (!res.ok) {
-           // If backend fails, fallback is handled on next reload, 
-           // but we could revert here if needed.
            console.error('Failed to sync theme with server');
          }
        } catch (e) {
          console.error('Error toggling theme:', e);
        }
      }
+
+     (function() {
+       try {
+         var saved = localStorage.getItem('zmc_theme');
+         if (saved && !document.body.classList.contains('theme-' + saved)) {
+           document.body.classList.remove('theme-light', 'theme-dark');
+           document.body.classList.add('theme-' + saved);
+           updateThemeIcon(saved);
+         }
+       } catch(e) {}
+     })();
  
      document.addEventListener('DOMContentLoaded', function(){
        // Init Theme Icon

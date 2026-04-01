@@ -488,6 +488,45 @@ class RegistrarController extends Controller
         return back()->with('success', "Renewal reminders sent to {$count} " . ($type === 'accreditation' ? 'media practitioners' : 'media houses') . ".");
     }
 
+    public function remindersIndex(Request $request)
+    {
+        $reminders = \App\Models\Reminder::query()
+            ->with('creator')
+            ->latest()
+            ->paginate(20);
+
+        return view('staff.registrar.reminders', compact('reminders'));
+    }
+
+    public function storeReminder(Request $request)
+    {
+        $data = $request->validate([
+            'target_type' => ['required', 'in:media_practitioner,media_house,bulk'],
+            'target_id' => ['required', 'integer', 'min:1'],
+            'reminder_type' => ['required', 'string', 'max:50'],
+            'title' => ['nullable', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        \App\Models\Reminder::create([
+            'target_type' => $data['target_type'],
+            'target_id' => $data['target_id'],
+            'reminder_type' => $data['reminder_type'],
+            'title' => $data['title'] ?? ucfirst(str_replace('_', ' ', $data['reminder_type'])),
+            'message' => $data['message'],
+            'created_by' => Auth::id(),
+        ]);
+
+        ActivityLogger::log('reminder_created', null, null, null, [
+            'target_type' => $data['target_type'],
+            'target_id' => $data['target_id'],
+            'reminder_type' => $data['reminder_type'],
+            'actor_user_id' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Reminder created successfully.');
+    }
+
     /* helpers */
     private function audit(string $action, Application $application, ?string $from, ?string $to, array $meta = []): void
     {
