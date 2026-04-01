@@ -10,6 +10,7 @@ use App\Models\AuditLog;
 use App\Models\SystemConfig;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
