@@ -266,7 +266,7 @@
                   <div style="text-align: right;">
                     <div class="org-name">
                       <div style="color:#000;">ZIMBABWE</div>
-                      <div style="color:#f5c518;">MEDIA</div>
+                      <div style="color:#228B22;">MEDIA</div>
                       <div style="color:#000;">COMMISSION</div>
                     </div>
                     <div class="org-sub">Accreditation Card (Back)</div>
@@ -440,7 +440,7 @@
     text-align: center;
   }
 
-  .header-title .highlight { color: #f5c518; }
+  .header-title .highlight { color: #228B22; }
 
   .header-title .sub{
     font-size: 10px; /* Increased from 7.5px */

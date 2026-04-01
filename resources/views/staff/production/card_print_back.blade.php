@@ -102,7 +102,7 @@
     }
 
     .header-text .org span.media {
-      color: #f5c518;
+      color: #228B22;
     }
 
     .header-text .sub {
@@ -199,7 +199,7 @@
         <div class="header-text">
           <div class="org">
             <div style="color:#000;">ZIMBABWE</div>
-            <div class="media" style="color: #f5c518;">MEDIA</div>
+            <div class="media" style="color: #228B22;">MEDIA</div>
             <div style="color:#000;">COMMISSION</div>
           </div>
           <div class="sub">Accreditation Card (Back)</div>

@@ -86,7 +86,7 @@
     }
 
     .header-title .main .highlight {
-      color: #f5c518;
+      color: #228B22;
     }
 
     .header-title .sub {
