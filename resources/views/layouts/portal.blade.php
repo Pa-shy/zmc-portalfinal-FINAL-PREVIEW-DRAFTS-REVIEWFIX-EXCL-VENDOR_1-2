@@ -536,8 +536,9 @@
         @yield('content')
       </section>
 
-      {{-- Floating Chatbot (bottom-right) --}}
+      @if(!auth()->user() || !in_array(auth()->user()->account_type, ['staff']))
       @include('layouts.chatbot')
+      @endif
     </main>
   </div>
 
