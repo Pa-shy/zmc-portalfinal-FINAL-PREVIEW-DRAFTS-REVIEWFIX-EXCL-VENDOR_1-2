@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -80,29 +82,53 @@ class UserAccessController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6'],
             'designation' => ['nullable', 'string', 'max:255'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['string'],
         ]);
 
+        $activationToken = Str::random(64);
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => Hash::make(Str::random(32)),
             'designation' => $data['designation'] ?? null,
             'approved_at' => now(),
             'approved_by' => auth()->id(),
-            'account_status' => 'active',
-            // Accounts created by Super Admin are STAFF users
+            'account_status' => 'pending',
             'account_type' => 'staff',
+            'activation_token' => $activationToken,
         ]);
 
         $user->syncRoles($data['roles'] ?? []);
 
+        $roleNames = implode(', ', $data['roles'] ?? []);
+        $activationUrl = route('staff.activate', $activationToken);
+
+        try {
+            Mail::raw(
+                "Hello {$user->name},\n\n"
+                . "Your ZMC Staff account has been created with the role(s): {$roleNames}.\n\n"
+                . "Please activate your account by clicking the link below and setting your password:\n\n"
+                . "{$activationUrl}\n\n"
+                . "This link is valid for one-time use.\n\n"
+                . "Regards,\nZimbabwe Media Commission",
+                function ($message) use ($user) {
+                    $message->to($user->email)
+                        ->subject('ZMC Staff Account - Activate Your Account');
+                }
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('Activation email failed for ' . $user->email . ': ' . $e->getMessage());
+            return redirect()->route('admin.users.staff')
+                ->with('success', "User created but activation email could not be sent. You can resend it from User Management.")
+                ->with('error', 'Email delivery failed: ' . $e->getMessage());
+        }
+
         \App\Support\AuditTrail::log('account_created_by_superadmin', $user, ['roles' => $data['roles'] ?? []]);
 
-        return redirect()->route('admin.users.staff')->with('success', 'User created.');
+        return redirect()->route('admin.users.staff')->with('success', "Staff account created. Activation link sent to {$user->email}.");
     }
 
     public function editAccess(User $user)

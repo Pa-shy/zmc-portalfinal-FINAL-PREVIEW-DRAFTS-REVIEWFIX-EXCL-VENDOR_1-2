@@ -43,11 +43,7 @@
         <div class="col-md-6">
           <label class="form-label fw-bold">Email</label>
           <input name="email" value="{{ old('email') }}" type="email" class="form-control" required>
-        </div>
-
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Password</label>
-          <input type="password" name="password" class="form-control" required>
+          <div class="text-muted small mt-1">An activation link will be emailed so the user can set their own password.</div>
         </div>
 
         <div class="col-12">

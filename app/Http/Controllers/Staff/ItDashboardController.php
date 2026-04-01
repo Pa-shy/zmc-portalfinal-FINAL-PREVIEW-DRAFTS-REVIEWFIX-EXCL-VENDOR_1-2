@@ -636,7 +636,7 @@ class ItDashboardController extends Controller
             'account_status' => 'pending',
         ])->save();
 
-        $activationUrl = url("/staff/activate?token={$token}");
+        $activationUrl = route('staff.activate', $token);
 
         try {
             \Illuminate\Support\Facades\Mail::raw(
