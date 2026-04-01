@@ -100,7 +100,7 @@ class AdminDashboardController extends Controller
             ->where('status', Application::ISSUED)
             ->when($isCurrentYear, fn($q) => $q->where('updated_at', '>=', Carbon::now()->subDays(30)))
             ->when(!$isCurrentYear, fn($q) => $q->whereBetween('updated_at', [$yearStart, $yearEnd]))
-            ->selectRaw('AVG((julianday(updated_at) - julianday(created_at)) * 24) as avg_hours')
+            ->selectRaw('AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 3600) as avg_hours')
             ->value('avg_hours');
 
         // System health quick stats
