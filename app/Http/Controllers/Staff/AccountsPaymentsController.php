@@ -1044,9 +1044,9 @@ class AccountsPaymentsController extends Controller
             'payment_date' => $payment->confirmed_at ?? $application->payment_paid_at ?? now(),
             'date' => now()->format('Y-m-d H:i'),
             'company_name' => 'Zimbabwe Media Commission',
-            'company_address' => '109 Rotten Row, Harare, Zimbabwe',
-            'company_email' => 'info@zmc.co.zw',
-            'company_phone' => '+263 242 703351',
+            'company_address' => '108 Swan Drive, Alexandra Park, Harare',
+            'company_email' => 'zmcaccreditation@gmail.com',
+            'company_phone' => '253509/10 or 253572/5/6',
         ];
 
         $pdf = Pdf::loadView('staff.accounts.receipt_pdf', $data);

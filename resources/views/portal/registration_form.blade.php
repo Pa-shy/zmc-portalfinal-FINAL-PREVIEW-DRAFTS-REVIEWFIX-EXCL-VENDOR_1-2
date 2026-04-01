@@ -1742,7 +1742,7 @@
             <div class="form-steps-container">
               <div class="form-field">
                 <label class="form-label required">To</label>
-                <input type="email" class="form-control" id="emailTo" value="info@zmc.co.zw" required>
+                <input type="email" class="form-control" id="emailTo" value="zmcaccreditation@gmail.com" required>
               </div>
               <div class="form-field">
                 <label class="form-label required">Subject</label>
