@@ -167,23 +167,111 @@
   </div>
 
   <div class="zmc-card p-0 shadow-sm border-0">
-    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-      <h6 class="fw-bold m-0"><i class="ri-list-check-2 me-2" style="color:var(--zmc-accent)"></i>Recent applications</h6>
+    <div class="p-3 border-bottom">
+      <ul class="nav nav-tabs mb-0" id="appTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active fw-bold" id="drafts-tab" data-bs-toggle="tab" data-bs-target="#drafts-pane" type="button" role="tab">
+            <i class="ri-draft-line me-1"></i>Drafts
+            @if(isset($drafts) && $drafts->count())
+              <span class="badge bg-warning text-dark ms-1">{{ $drafts->count() }}</span>
+            @endif
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link fw-bold" id="all-apps-tab" data-bs-toggle="tab" data-bs-target="#all-apps-pane" type="button" role="tab">
+            <i class="ri-list-check-2 me-1"></i>All Applications
+          </button>
+        </li>
+      </ul>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 zmc-mini-table">
-        <thead>
-          <tr>
-            <th><i class="ri-hashtag me-1"></i> Ref</th>
-            <th><i class="ri-file-text-line me-1"></i> Type</th>
-            <th><i class="ri-calendar-line me-1"></i> Date</th>
-            <th><i class="ri-flag-line me-1"></i> Status</th>
-            <th class="text-end" style="min-width:140px;">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          @forelse($apps as $app)
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="drafts-pane" role="tabpanel">
+        @if(isset($drafts) && $drafts->count())
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 zmc-mini-table">
+              <thead>
+                <tr>
+                  <th><i class="ri-hashtag me-1"></i> Ref</th>
+                  <th><i class="ri-file-text-line me-1"></i> Type</th>
+                  <th><i class="ri-time-line me-1"></i> Last Updated</th>
+                  <th><i class="ri-percent-line me-1"></i> Progress</th>
+                  <th class="text-end" style="min-width:140px;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($drafts as $draft)
+                  @php
+                    $draftType = $draft->request_type === 'new'
+                      ? 'New Accreditation (AP3)'
+                      : ($draft->request_type === 'renewal' ? 'Renewal (AP5)' : 'Replacement (AP5)');
+
+                    $formData = $draft->form_data ?? [];
+                    $filledFields = collect($formData)->filter(fn($v) => !empty($v) && $v !== 'N/A')->count();
+                    $totalExpected = $draft->request_type === 'new' ? 25 : 15;
+                    $progress = min(100, round(($filledFields / max(1, $totalExpected)) * 100));
+
+                    $continueRoute = $draft->request_type === 'new'
+                      ? route('accreditation.new')
+                      : ($draft->request_type === 'replacement'
+                        ? route('accreditation.replacement', ['draft' => $draft->reference])
+                        : route('accreditation.renewal', ['draft' => $draft->reference]));
+                  @endphp
+                  <tr>
+                    <td class="fw-bold text-dark">{{ $draft->reference }}</td>
+                    <td>
+                      <span class="badge bg-light text-dark border">{{ $draftType }}</span>
+                    </td>
+                    <td class="small text-muted">{{ $draft->updated_at?->diffForHumans() ?? '—' }}</td>
+                    <td style="min-width:120px;">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="height:6px;">
+                          <div class="progress-bar bg-{{ $progress >= 75 ? 'success' : ($progress >= 40 ? 'warning' : 'secondary') }}" style="width:{{ $progress }}%"></div>
+                        </div>
+                        <span class="small text-muted">{{ $progress }}%</span>
+                      </div>
+                    </td>
+                    <td class="text-end">
+                      <div class="d-flex justify-content-end gap-1">
+                        <a class="btn btn-sm btn-outline-primary" href="{{ $continueRoute }}" title="Continue Editing">
+                          <i class="ri-edit-line me-1"></i>Continue
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger js-delete-draft" data-app-id="{{ $draft->id }}" title="Delete Draft">
+                          <i class="ri-delete-bin-line"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        @else
+          <div class="text-center py-5">
+            <i class="ri-draft-line" style="font-size:48px; color:#cbd5e1;"></i>
+            <h6 class="mt-3 text-muted">No drafts in progress</h6>
+            <p class="text-muted small">Start a new application and save as draft to see it here.</p>
+            <a href="{{ route('accreditation.new') }}" class="btn btn-dark btn-sm mt-2">
+              <i class="ri-file-add-line me-1"></i>New Accreditation (AP3)
+            </a>
+          </div>
+        @endif
+      </div>
+
+      <div class="tab-pane fade" id="all-apps-pane" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 zmc-mini-table">
+            <thead>
+              <tr>
+                <th><i class="ri-hashtag me-1"></i> Ref</th>
+                <th><i class="ri-file-text-line me-1"></i> Type</th>
+                <th><i class="ri-calendar-line me-1"></i> Date</th>
+                <th><i class="ri-flag-line me-1"></i> Status</th>
+                <th class="text-end" style="min-width:140px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse($apps as $app)
             @php
               $status = strtolower((string)($app->status ?? ''));
               $badge = match(true) {
@@ -268,13 +356,15 @@
                 </div>
               </td>
             </tr>
-          @empty
-            <tr>
-              <td colspan="5" class="text-center py-5 text-muted">No applications found.</td>
-            </tr>
-          @endforelse
-        </tbody>
-      </table>
+              @empty
+                <tr>
+                  <td colspan="5" class="text-center py-5 text-muted">No submitted applications yet.</td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 

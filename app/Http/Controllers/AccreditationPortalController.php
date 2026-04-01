@@ -73,8 +73,14 @@ class AccreditationPortalController extends Controller
         ];
 
         $recentApplications = (clone $baseQuery)
+            ->where('is_draft', false)
             ->orderBy('created_at', 'desc')
             ->take(10)
+            ->get();
+
+        $drafts = (clone $baseQuery)
+            ->where('is_draft', true)
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $notices = \App\Models\Notice::where('is_published', true)
@@ -101,7 +107,7 @@ class AccreditationPortalController extends Controller
                 ->get();
         }
 
-        return view('portal.accreditation.dashboard', compact('stats', 'recentApplications', 'notices', 'events', 'reminders'));
+        return view('portal.accreditation.dashboard', compact('stats', 'recentApplications', 'drafts', 'notices', 'events', 'reminders'));
     }
 
     public function new()
