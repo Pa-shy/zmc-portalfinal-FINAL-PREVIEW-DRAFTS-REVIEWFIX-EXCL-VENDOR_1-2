@@ -509,19 +509,52 @@ class AccreditationPortalController extends Controller
 
         $collectionRegion = $request->input('collection_region') ?: ($formData['collection_region'] ?? 'harare');
 
+        $paymentMethod = $request->input('payment_payment_method') ?: $request->input('payment_method');
+        $hasPayment = !empty($paymentMethod) || $request->hasFile('payment_proof_file') || $request->hasFile('payment_waiver_file');
+        $initialStatus = $hasPayment ? Application::AWAITING_ACCOUNTS_VERIFICATION : Application::SUBMITTED;
+
+        $paymentFields = [];
+        if ($hasPayment) {
+            $paymentFields = [
+                'payment_submission_method' => $paymentMethod ?? 'proof_upload',
+                'payment_submitted_at' => now(),
+                'proof_status' => 'submitted',
+                'payment_status' => 'pending',
+            ];
+            if ($request->input('payment_paynow_reference')) {
+                $paymentFields['paynow_ref_submitted'] = $request->input('payment_paynow_reference');
+                $paymentFields['payment_submission_method'] = 'paynow_reference';
+            }
+            if ($request->input('payment_proof_amount_paid')) {
+                $paymentFields['proof_amount_paid'] = $request->input('payment_proof_amount_paid');
+            }
+            if ($request->input('payment_proof_bank_name')) {
+                $paymentFields['proof_bank_name'] = $request->input('payment_proof_bank_name');
+            }
+            if ($request->input('payment_proof_payment_date')) {
+                $paymentFields['proof_payment_date'] = $request->input('payment_proof_payment_date');
+            }
+            if ($request->input('payment_proof_first_name')) {
+                $paymentFields['proof_payer_first_name'] = $request->input('payment_proof_first_name');
+            }
+            if ($request->input('payment_proof_last_name')) {
+                $paymentFields['proof_payer_last_name'] = $request->input('payment_proof_last_name');
+            }
+        }
+
         if ($existingDraft) {
-            $existingDraft->update([
+            $existingDraft->update(array_merge([
                 'reference'         => $reference,
                 'journalist_scope'  => $scope,
                 'collection_region' => $collectionRegion,
                 'form_data'         => $formData,
                 'is_draft'          => false,
-                'status'            => Application::SUBMITTED,
+                'status'            => $initialStatus,
                 'submitted_at'      => now(),
-            ]);
+            ], $paymentFields));
             $application = $existingDraft;
         } else {
-            $application = Application::create([
+            $application = Application::create(array_merge([
                 'reference'         => $reference,
                 'applicant_user_id' => $user->id,
                 'application_type'  => 'accreditation',
@@ -530,8 +563,33 @@ class AccreditationPortalController extends Controller
                 'collection_region' => $collectionRegion,
                 'form_data'         => $formData,
                 'is_draft'          => false,
-                'status'            => Application::SUBMITTED,
+                'status'            => $initialStatus,
                 'submitted_at'      => now(),
+            ], $paymentFields));
+        }
+
+        if ($hasPayment && $request->hasFile('payment_proof_file')) {
+            $request->validate(['payment_proof_file' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240']]);
+            $proofFile = $request->file('payment_proof_file');
+            $proofPath = $proofFile->store('payment_proofs', 'public');
+            $application->update([
+                'payment_proof_path' => $proofPath,
+                'payment_proof_uploaded_at' => now(),
+                'proof_original_name' => $proofFile->getClientOriginalName(),
+                'proof_mime' => $proofFile->getMimeType(),
+            ]);
+        }
+
+        if ($hasPayment && $request->hasFile('payment_waiver_file')) {
+            $request->validate(['payment_waiver_file' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:10240']]);
+            $waiverFile = $request->file('payment_waiver_file');
+            $waiverPath = $waiverFile->store('waivers', 'public');
+            $application->update([
+                'waiver_path' => $waiverPath,
+                'waiver_status' => 'submitted',
+                'waiver_original_name' => $waiverFile->getClientOriginalName(),
+                'waiver_mime' => $waiverFile->getMimeType(),
+                'payment_submission_method' => 'waiver',
             ]);
         }
 

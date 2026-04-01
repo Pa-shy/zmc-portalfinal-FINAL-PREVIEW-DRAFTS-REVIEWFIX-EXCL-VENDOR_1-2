@@ -93,11 +93,11 @@ class ApplicationWorkflow
                 Application::AWAITING_ACCOUNTS_VERIFICATION,
             ],
 
-            // Awaiting accounts verification → verify or reject
             Application::AWAITING_ACCOUNTS_VERIFICATION => [
                 Application::PAYMENT_VERIFIED,
                 Application::PAYMENT_REJECTED,
                 Application::PAID_CONFIRMED,
+                Application::SUBMITTED,
             ],
 
             // Payment verified → production

@@ -497,7 +497,7 @@ class AccountsPaymentsController extends Controller
 
         $from = $application->status;
 
-        DB::transaction(function() use ($application, $data) {
+        DB::transaction(function() use ($application, $data, $from) {
             $existingReceipt = Payment::where('application_id', $application->id)
                 ->where('status', 'paid')
                 ->whereNotNull('receipt_number')
@@ -533,7 +533,11 @@ class AccountsPaymentsController extends Controller
 
             $this->logPaymentAction($payment, 'approved_proof', null, 'paid', $data['proof_review_notes'] ?? 'Payment proof approved.');
 
-            ApplicationWorkflow::transition($application, Application::PAID_CONFIRMED, 'accounts_approve_proof', [
+            $isPreSubmission = ($from === Application::AWAITING_ACCOUNTS_VERIFICATION &&
+                !$application->approved_at);
+            $nextStatus = $isPreSubmission ? Application::SUBMITTED : Application::PAID_CONFIRMED;
+
+            ApplicationWorkflow::transition($application, $nextStatus, 'accounts_approve_proof', [
                 'notes' => $data['proof_review_notes'] ?? null,
             ]);
         });
@@ -542,7 +546,10 @@ class AccountsPaymentsController extends Controller
             'notes' => $data['proof_review_notes'] ?? null,
         ]);
 
-        return back()->with('success', 'Payment proof approved and application confirmed.');
+        $msg = $application->status === Application::SUBMITTED
+            ? 'Payment verified. Application forwarded to accreditation officer for review.'
+            : 'Payment proof approved and application confirmed.';
+        return back()->with('success', $msg);
     }
 
     /** Reject a payment proof */
@@ -1114,11 +1121,17 @@ class AccountsPaymentsController extends Controller
                 $existingPayment->update(['receipt_number' => $receiptNumber]);
             }
 
-            ApplicationWorkflow::transition($application, Application::PAID_CONFIRMED, 'accounts_confirm_paid', $data);
+            $isPreSubmission = ($from === Application::AWAITING_ACCOUNTS_VERIFICATION &&
+                !$application->approved_at);
+            $nextStatus = $isPreSubmission ? Application::SUBMITTED : Application::PAID_CONFIRMED;
 
-            ApplicationWorkflow::transition($application, Application::PRODUCTION_QUEUE, 'system_send_to_production', [
-                'region' => $application->collection_region ?? null,
-            ]);
+            ApplicationWorkflow::transition($application, $nextStatus, 'accounts_confirm_paid', $data);
+
+            if (!$isPreSubmission) {
+                ApplicationWorkflow::transition($application, Application::PRODUCTION_QUEUE, 'system_send_to_production', [
+                    'region' => $application->collection_region ?? null,
+                ]);
+            }
 
             ActivityLogger::log('accounts_confirm_paid', $application, $from, $application->status, [
                 'actor_role' => session('active_staff_role'),
@@ -1128,7 +1141,10 @@ class AccountsPaymentsController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Payment confirmed and sent to Production.');
+        $msg = $application->status === Application::SUBMITTED
+            ? 'Payment confirmed. Application forwarded to accreditation officer for review.'
+            : 'Payment confirmed and sent to Production.';
+        return back()->with('success', $msg);
     }
 
 
@@ -1169,15 +1185,18 @@ class AccountsPaymentsController extends Controller
         // Use new workflow service - enforces strict transitions
         try {
             if ($data['action'] === 'verify') {
-                // Verify payment - automatically sends to production
+                $fromStatus = $application->status;
                 $application = PaymentWorkflowService::verifyPayment($application, [
                     'notes' => $data['notes'] ?? null,
                     'payment_submission_id' => $data['payment_submission_id'] ?? null,
                 ]);
 
-                $message = 'Payment verified and application sent to Production.';
+                if ($application->status === Application::SUBMITTED) {
+                    $message = 'Payment verified. Application forwarded to accreditation officer for review.';
+                } else {
+                    $message = 'Payment verified and application sent to Production.';
+                }
                 
-                // Check if two-stage payment
                 if ($application->requiresApplicationFee()) {
                     $bothVerified = PaymentWorkflowService::areBothPaymentStagesVerified($application);
                     if (!$bothVerified) {

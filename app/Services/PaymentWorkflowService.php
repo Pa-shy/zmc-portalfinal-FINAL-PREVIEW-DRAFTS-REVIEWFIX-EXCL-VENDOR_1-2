@@ -232,15 +232,19 @@ class PaymentWorkflowService
         return DB::transaction(function () use ($application, $data) {
             $fromStatus = $application->status;
             
-            // Validate transition
+            $isPreSubmission = ($fromStatus === Application::AWAITING_ACCOUNTS_VERIFICATION &&
+                !$application->approved_at);
+            $targetStatus = $isPreSubmission ? Application::SUBMITTED : Application::PAYMENT_VERIFIED;
+
             StatusTransitionValidator::validateOrFail(
                 $application,
-                Application::PAYMENT_VERIFIED
+                $targetStatus
             );
             
-            // Update payment submission if provided
             if (isset($data['payment_submission_id'])) {
-                $paymentSubmission = PaymentSubmission::find($data['payment_submission_id']);
+                $paymentSubmission = PaymentSubmission::where('id', $data['payment_submission_id'])
+                    ->where('application_id', $application->id)
+                    ->first();
                 if ($paymentSubmission) {
                     $paymentSubmission->update([
                         'status' => 'verified',
@@ -261,8 +265,8 @@ class PaymentWorkflowService
                 ?? \App\Http\Controllers\Staff\AccountsPaymentsController::generateReceiptNumber($method);
 
             $updateData = [
-                'status' => Application::PAYMENT_VERIFIED,
-                'current_stage' => 'payment_verified',
+                'status' => $targetStatus,
+                'current_stage' => $isPreSubmission ? 'officer_queue' : 'payment_verified',
                 'payment_status' => 'paid',
                 'last_action_at' => now(),
                 'last_action_by' => Auth::id(),
@@ -327,8 +331,10 @@ class PaymentWorkflowService
                 ], $data)
             );
             
-            // Automatically send to production
-            return ApplicationWorkflowService::sendToProduction($application, $data);
+            if (!$isPreSubmission) {
+                return ApplicationWorkflowService::sendToProduction($application, $data);
+            }
+            return $application;
         });
     }
 

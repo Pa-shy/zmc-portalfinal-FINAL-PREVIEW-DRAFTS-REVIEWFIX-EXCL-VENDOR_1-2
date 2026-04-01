@@ -362,6 +362,14 @@
       const fd = new FormData(formEl);
       setBusy(btnEl, true, 'Submitting...');
 
+      if (!currentAppId && typeof ap3PaymentData !== 'undefined') {
+        ap3PaymentData = fd;
+        showPaySuccess('Payment info captured. Submitting your application...');
+        setBusy(btnEl, false);
+        setTimeout(() => { submitApplication(); }, 500);
+        return;
+      }
+
       const res = await fetch(url, {
         method: 'POST',
         headers: {
@@ -373,7 +381,6 @@
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.ok === false) {
-        // Laravel validation returns {errors:{...}}
         if (data.errors) {
           const first = Object.values(data.errors)[0];
           throw new Error(Array.isArray(first) ? first[0] : String(first));
@@ -383,7 +390,6 @@
 
       showPaySuccess(data.message || 'Submitted successfully');
 
-      // Optional: mark current row button as "Submitted" without reloading
       const rowBtn = document.querySelector(`.js-pay-now[data-app-id="${currentAppId}"]`);
       if (rowBtn) {
         rowBtn.classList.remove('btn-success');
@@ -392,7 +398,6 @@
         rowBtn.disabled = true;
       }
 
-      // Close modal after short delay (no page reload)
       setTimeout(() => {
         const modalEl = document.getElementById('paymentModal');
         const inst = window.bootstrap?.Modal?.getInstance(modalEl) || window.bootstrap?.Modal?.getOrCreateInstance(modalEl);
@@ -529,6 +534,17 @@
 
     setBusy(this, true, 'Submitting...');
     try {
+      if (!currentAppId && typeof ap3PaymentData !== 'undefined') {
+        const fd = new FormData();
+        fd.append('payment_method', 'paynow_reference');
+        fd.append('paynow_reference', ref);
+        ap3PaymentData = fd;
+        showPaySuccess('PayNow reference captured. Submitting your application...');
+        setBusy(this, false);
+        setTimeout(() => { submitApplication(); }, 500);
+        return;
+      }
+
       const res = await fetch(`/payments/${currentAppId}/submit-reference`, {
         method: 'POST',
         headers: {
@@ -573,26 +589,22 @@
 
   document.getElementById('proofForm')?.addEventListener('submit', function(ev) {
     ev.preventDefault();
-    if (!currentAppId) return;
-    postForm(`/payments/${currentAppId}/upload-proof`, this, document.getElementById('btnSubmitProof'));
+    postForm(currentAppId ? `/payments/${currentAppId}/upload-proof` : '', this, document.getElementById('btnSubmitProof'));
   });
 
   document.getElementById('cashForm')?.addEventListener('submit', function(ev) {
     ev.preventDefault();
-    if (!currentAppId) return;
-    postForm(`/payments/${currentAppId}/upload-proof`, this, document.getElementById('btnSubmitCash'));
+    postForm(currentAppId ? `/payments/${currentAppId}/upload-proof` : '', this, document.getElementById('btnSubmitCash'));
   });
 
   document.getElementById('transferForm')?.addEventListener('submit', function(ev) {
     ev.preventDefault();
-    if (!currentAppId) return;
-    postForm(`/payments/${currentAppId}/upload-proof`, this, document.getElementById('btnSubmitTransfer'));
+    postForm(currentAppId ? `/payments/${currentAppId}/upload-proof` : '', this, document.getElementById('btnSubmitTransfer'));
   });
 
   document.getElementById('waiverForm')?.addEventListener('submit', function(ev) {
     ev.preventDefault();
-    if (!currentAppId) return;
-    postForm(`/payments/${currentAppId}/upload-waiver`, this, document.getElementById('btnSubmitWaiver'));
+    postForm(currentAppId ? `/payments/${currentAppId}/upload-waiver` : '', this, document.getElementById('btnSubmitWaiver'));
   });
 
 })();

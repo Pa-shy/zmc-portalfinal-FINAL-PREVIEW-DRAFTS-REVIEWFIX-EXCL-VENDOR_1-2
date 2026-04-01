@@ -639,13 +639,15 @@
         <div class="modal-body" id="ap3ReviewContent"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Edit Application</button>
-          <button type="button" class="btn btn-primary" id="ap3ConfirmSubmitBtn">
-            <i class="ri-send-plane-line me-2"></i>Confirm & Submit
+          <button type="button" class="btn btn-primary" id="ap3ProceedToPayBtn">
+            <i class="ri-bank-card-line me-2"></i>Proceed to Payment
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  @include('portal.partials.payment_modal')
 
   {{-- Camera Modal --}}
   <div class="modal fade" id="ap3CameraModal" tabindex="-1">
@@ -1305,12 +1307,12 @@
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  let ap3PaymentData = null;
+
   async function submitApplication() {
     const textFormData = getFormData();
     const scope = document.getElementById('ap3_scope').value;
     const region = document.querySelector('select[name="collection_region"]')?.value || 'harare';
-
-    const confirmBtn = document.getElementById('ap3ConfirmSubmitBtn');
 
     const submitData = new FormData();
     submitData.append('journalist_scope', scope);
@@ -1319,15 +1321,17 @@
 
     const fileInputs = document.querySelectorAll('#ap3Form input[type="file"]');
     fileInputs.forEach(input => {
-      // Use the improved visible check that handles hidden file inputs
       if (!visible(input)) return;
       if (input.files && input.files[0]) submitData.append(input.name, input.files[0]);
     });
 
-    try {
-      confirmBtn.disabled = true;
-      confirmBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Submitting...';
+    if (ap3PaymentData) {
+      for (const [key, value] of ap3PaymentData.entries()) {
+        submitData.append('payment_' + key, value);
+      }
+    }
 
+    try {
       const submitUrl = @json(isset($draft) && !$draft->is_draft && ($draft->status ?? null) === \App\Models\Application::CORRECTION_REQUESTED
         ? route('accreditation.applications.resubmit', $draft)
         : route('accreditation.submit'));
@@ -1348,20 +1352,20 @@
       }
 
       if (response.ok && result.success) {
-        bootstrap.Modal.getInstance(document.getElementById('ap3ReviewModal')).hide();
-        alert('Application submitted successfully! Reference: ' + result.reference);
+        const bs = window.bootstrap || (typeof bootstrap !== 'undefined' ? bootstrap : null);
+        const payModal = bs?.Modal?.getInstance(document.getElementById('paymentModal'));
+        if (payModal) payModal.hide();
+        const reviewModal = bs?.Modal?.getInstance(document.getElementById('ap3ReviewModal'));
+        if (reviewModal) reviewModal.hide();
+        alert('Application submitted successfully! Reference: ' + result.reference + '\nYour payment will be verified by Accounts.');
         window.location.href = "{{ route('accreditation.home') }}";
       } else {
-        // Handle Laravel validation errors or manual 422s
         const msg = result.message || (result.errors ? Object.values(result.errors).flat().join('\n') : 'Please check all required fields.');
         alert('Submission failed: ' + msg);
       }
     } catch (error) {
       console.error(error);
       alert('An error occurred while submitting the application: ' + error.message);
-    } finally {
-      confirmBtn.disabled = false;
-      confirmBtn.innerHTML = '<i class="ri-send-plane-line me-2"></i>Confirm & Submit';
     }
   }
 
@@ -1430,7 +1434,19 @@
   });
 
   ap3SaveDraftBtn.addEventListener('click', saveDraft);
-  document.getElementById('ap3ConfirmSubmitBtn').addEventListener('click', submitApplication);
+  document.getElementById('ap3ProceedToPayBtn').addEventListener('click', function() {
+    const bs = window.bootstrap || (typeof bootstrap !== 'undefined' ? bootstrap : null);
+    const reviewModal = bs?.Modal?.getInstance(document.getElementById('ap3ReviewModal'));
+    if (reviewModal) reviewModal.hide();
+
+    setTimeout(() => {
+      document.getElementById('pay_meta').textContent = 'Pay before submitting your application';
+      const payModal = document.getElementById('paymentModal');
+      if (payModal && bs?.Modal) {
+        bs.Modal.getOrCreateInstance(payModal).show();
+      }
+    }, 400);
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
     ap3ShowStep(1);
