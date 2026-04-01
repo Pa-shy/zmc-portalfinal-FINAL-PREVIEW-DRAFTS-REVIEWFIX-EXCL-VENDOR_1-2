@@ -106,6 +106,14 @@
             </select>
           </div>
           <div class="col-md-6">
+            <label class="form-label small fw-bold">Organisation/Media House <span class="text-danger">*</span></label>
+            <input type="text" name="employer_name" class="form-control" placeholder="Organisation or media house name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold">Designation/Position</label>
+            <input type="text" name="designation" class="form-control" placeholder="e.g., Reporter, Editor, Cameraman">
+          </div>
+          <div class="col-md-6">
             <label class="form-label small fw-bold">Receipt Number <span class="text-danger">*</span></label>
             <input type="text" name="receipt_number" class="form-control" placeholder="Receipt number">
           </div>
@@ -474,7 +482,8 @@ document.addEventListener('DOMContentLoaded', function() {
         mediaHouseFields.style.display = 'none';
         
         const allClearFields = [
-            'first_name', 'surname', 'id_number', 'category', 'email', 'phone',
+            'first_name', 'surname', 'id_number', 'category', 'employer_name',
+            'designation', 'email', 'phone',
             'physical_address', 'city', 'province', 'applicant_photo', 'receipt_number',
             'entity_name', 'trading_name', 'business_registration', 'tax_number',
             'business_type', 'ownership_type', 'local_ownership', 'postal_address',
@@ -516,8 +525,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const practRequired = [
                     'first_name', 'surname', 'id_number', 'category',
-                    'physical_address', 'applicant_photo', 'email', 'phone',
-                    'province', 'city', 'receipt_number'
+                    'employer_name', 'physical_address', 'applicant_photo',
+                    'email', 'phone', 'province', 'city', 'receipt_number'
                 ];
                 practRequired.forEach(fieldName => {
                     const field = document.querySelector(`[name="${fieldName}"]`);
