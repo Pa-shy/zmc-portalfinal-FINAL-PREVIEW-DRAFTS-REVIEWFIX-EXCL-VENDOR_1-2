@@ -268,7 +268,7 @@
         </a>
       </li>
       <li>
-        <a class="{{ request()->routeIs('accreditation.communication') ? 'active' : '' }}" href="{{ route('accreditation.communication') }}">
+        <a class="{{ request()->routeIs('accreditation.communication') ? 'active' : '' }}" href="{{ Route::has('accreditation.communication') ? route('accreditation.communication') : '#' }}">
           <i class="ri-mail-line"></i> Communication
         </a>
       </li>
@@ -293,7 +293,7 @@
       <span class="topbar-title">@yield('page_title', 'APPLICATION PORTAL')</span>
     </div>
     <div class="topbar-right">
-      <a href="{{ route('accreditation.communication') }}" class="btn btn-secondary btn-sm">
+      <a href="{{ Route::has('accreditation.communication') ? route('accreditation.communication') : '#' }}" class="btn btn-secondary btn-sm">
         <i class="ri-mail-line me-1"></i> Email
       </a>
     </div>

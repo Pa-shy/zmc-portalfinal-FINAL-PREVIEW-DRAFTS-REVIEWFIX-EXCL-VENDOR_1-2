@@ -586,6 +586,8 @@ Route::middleware('auth')->group(function () {
                 ->name('approvals.index');
             Route::post('/user-approvals/{user}/approve', [UserApprovalController::class, 'approve'])
                 ->name('approvals.approve');
+            Route::post('/user-approvals/{user}/reject', [UserApprovalController::class, 'reject'])
+                ->name('approvals.reject');
         });
 
 
@@ -905,6 +907,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/batch/print', [ProductionController::class, 'printBatch'])->name('batch.print');
             Route::post('/applications/{application}/issue', [ProductionController::class, 'markIssued'])->name('applications.issue');
             Route::post('/applications/{application}/unlock', [ProductionController::class, 'unlock'])->name('applications.unlock');
+
+            Route::get('/templates', [ProductionController::class, 'templates'])->name('templates');
+            Route::get('/designer', [ProductionController::class, 'designer'])->name('designer');
+            Route::post('/templates', [ProductionController::class, 'storeTemplate'])->name('templates.store');
+            Route::put('/templates/{template}', [ProductionController::class, 'updateTemplate'])->name('templates.update');
+            Route::post('/templates/{template}/activate', [ProductionController::class, 'activateTemplate'])->name('templates.activate');
         });
 
     /*
