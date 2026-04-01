@@ -79,7 +79,12 @@
       <div class="zmc-card h-100 border-success">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-        <div class="mt-2 small text-muted">Total Approved: {{ $k['approved_this_week'] ?? 0 }}</div>
+            <div class="text-muted small fw-bold">Approved Today</div>
+            <div class="h3 fw-black mb-0 text-success">{{ $k['approved_today'] ?? 0 }}</div>
+          </div>
+          <div class="icon-box text-success"><i class="ri-checkbox-circle-line"></i></div>
+        </div>
+        <div class="mt-2 small text-muted">This week: {{ $k['approved_this_week'] ?? 0 }}</div>
       </div>
     </div>
 
