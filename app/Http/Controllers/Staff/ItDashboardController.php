@@ -311,6 +311,13 @@ class ItDashboardController extends Controller
             'uploads' => shell_exec('du -sh storage/app/uploads') ?: 'N/A',
         ];
 
+        $isDbUp = $health['database'];
+        $maintenanceMode = app()->isDownForMaintenance();
+        $driveSpace = round(($storageUsage['free'] / max($storageUsage['total'], 1)) * 100, 1) . '% free';
+        $lastBackup = 'N/A';
+        $envData = $systemEnv;
+        $activeTab = $request->input('tab', 'overview');
+
         return view('staff.it.dashboard.index', compact(
             'totalUsers', 'usersByRole', 'appStats', 'approvedCount', 'rejectedCount', 
             'pendingCount', 'approvalRatio', 'approvalTrend', 'paymentSummary', 'isDbUp', 'maintenanceMode',
