@@ -49,6 +49,12 @@
   </a>
 
   <div class="nav-section">Users & Roles</div>
+  @hasanyrole('super_admin|it_admin')
+  <a class="nav-link {{ $is('staff.it.users-mgmt') ? 'active' : '' }}" href="{{ Route::has('staff.it.users-mgmt') ? route('staff.it.users-mgmt') : '#' }}">
+    <span class="nav-icon"><i class="ri-group-line"></i></span>
+    <span>User Account Management</span>
+  </a>
+  @endhasanyrole
   <a class="nav-link {{ $is('admin.roles') ? 'active' : '' }}" href="{{ Route::has('admin.roles.index') ? route('admin.roles.index') : '#' }}">
     <span class="nav-icon"><i class="ri-shield-keyhole-line"></i></span>
     <span>Roles</span>

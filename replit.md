@@ -38,6 +38,8 @@ No explicit user preferences were provided in the original document.
 ### Key Routes & Controllers
 -   **Portal**: `AccreditationPortalController` handles dashboard, new/renewal/replacement forms, payments, profile, reminders acknowledgment, accreditation lookup
 -   **Staff**: `AccreditationOfficerController`, `RegistrarController`, `AccountsPaymentsController`, `ProductionController`
+-   **IT Admin**: `ItDashboardController` — comprehensive IT admin dashboard with user management (CRUD, role change, suspend/activate, resend activation, force password reset, delete), system monitoring, config management
+-   **User Account Management**: `/staff/it/users-mgmt` — full user CRUD with search/filter by name, type, status, role; stat cards; role change modal; accessible from both IT admin and super admin sidebar
 -   **Renewal**: Separate `/renewal` and `/replacement` routes with preset `$ap5Type`
 -   **Lookup API**: `GET /portal/accreditation/lookup/{accreditationNumber}` returns JSON
 -   **Reminders**: `POST /portal/accreditation/reminders/{id}/acknowledge`

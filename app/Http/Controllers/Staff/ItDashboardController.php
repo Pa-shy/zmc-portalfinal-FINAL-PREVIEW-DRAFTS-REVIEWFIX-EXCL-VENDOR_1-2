@@ -544,7 +544,113 @@ class ItDashboardController extends Controller
     public function suspendUser(User $user)
     {
         $user->update(['account_status' => $user->account_status === 'suspended' ? 'active' : 'suspended']);
-        return back()->with('success', 'User status updated.');
+        AuditTrailSupport::log('it_admin.toggle_user_status', $user, ['new_status' => $user->account_status]);
+        return back()->with('success', 'User status updated to ' . $user->account_status . '.');
+    }
+
+    public function users(Request $request)
+    {
+        $query = User::with('roles');
+
+        if ($search = $request->get('q')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('email', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($type = $request->get('type')) {
+            $query->where('account_type', $type);
+        }
+
+        if ($status = $request->get('status')) {
+            $query->where('account_status', $status);
+        }
+
+        if ($role = $request->get('role')) {
+            $query->whereHas('roles', fn($q) => $q->where('name', $role));
+        }
+
+        $users = $query->latest()->paginate(20)->withQueryString();
+        $roles = \Spatie\Permission\Models\Role::orderBy('name')->get();
+        $totalUsers = User::count();
+        $staffCount = User::where('account_type', 'staff')->count();
+        $publicCount = User::where('account_type', 'public')->count();
+        $activeCount = User::where('account_status', 'active')->count();
+        $suspendedCount = User::where('account_status', 'suspended')->count();
+        $pendingCount = User::whereIn('account_status', ['pending', 'pending_setup'])->count();
+
+        return view('staff.it.users-management', compact(
+            'users', 'roles', 'totalUsers', 'staffCount', 'publicCount',
+            'activeCount', 'suspendedCount', 'pendingCount'
+        ));
+    }
+
+    public function editUserRole(Request $request, User $user)
+    {
+        $request->validate(['role' => 'required|string|exists:roles,name']);
+
+        $user->syncRoles([$request->role]);
+
+        $newType = in_array($request->role, ['super_admin', 'it_admin', 'director', 'registrar', 'accreditation_officer', 'accounts_payments', 'production', 'auditor', 'complaints_officer'])
+            ? 'staff' : 'public';
+        $user->update(['account_type' => $newType]);
+
+        AuditTrailSupport::log('it_admin.change_user_role', $user, ['new_role' => $request->role]);
+        return back()->with('success', "Role updated to {$request->role} for {$user->name}.");
+    }
+
+    public function activateUser(User $user)
+    {
+        $user->update(['account_status' => 'active']);
+        AuditTrailSupport::log('it_admin.activate_user', $user);
+        return back()->with('success', "{$user->name}'s account has been activated.");
+    }
+
+    public function deleteUser(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+
+        $userName = $user->name;
+        $userEmail = $user->email;
+
+        AuditTrailSupport::log('it_admin.delete_user', $user, [
+            'deleted_name' => $userName,
+            'deleted_email' => $userEmail,
+        ]);
+
+        $user->roles()->detach();
+        $user->permissions()->detach();
+        $user->delete();
+
+        return back()->with('success', "User \"{$userName}\" ({$userEmail}) has been permanently deleted.");
+    }
+
+    public function resendActivation(User $user)
+    {
+        $token = \Illuminate\Support\Str::random(64);
+        $user->forceFill([
+            'activation_token' => $token,
+            'account_status' => 'pending',
+        ])->save();
+
+        $activationUrl = url("/staff/activate?token={$token}");
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                "Hello {$user->name},\n\nYour account activation link has been resent.\n\nPlease click the link below to set your password and activate your account:\n\n{$activationUrl}\n\nThis link is valid until used.\n\nRegards,\nZimbabwe Media Commission",
+                function ($message) use ($user) {
+                    $message->to($user->email)
+                        ->subject('ZMC Portal - Account Activation');
+                }
+            );
+            AuditTrailSupport::log('it_admin.resend_activation', $user);
+            return back()->with('success', "Activation link resent to {$user->email}.");
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Failed to send activation email: ' . $e->getMessage());
+        }
     }
 
 

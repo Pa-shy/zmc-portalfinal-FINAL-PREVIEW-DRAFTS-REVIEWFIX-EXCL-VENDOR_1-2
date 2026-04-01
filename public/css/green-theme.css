@@ -419,6 +419,7 @@ a:hover {
 .card.zmc-stat-card.zmc-bg-amber { background: #d97706 !important; color: #fff !important; }
 .card.zmc-stat-card.zmc-bg-gray { background: #6b7280 !important; color: #fff !important; }
 .card.zmc-stat-card.zmc-bg-slate { background: #374151 !important; color: #f5c518 !important; }
+.card.zmc-stat-card.zmc-bg-red { background: #dc2626 !important; color: #fff !important; }
 .card.zmc-stat-card .card-body {
   color: inherit !important;
 }
