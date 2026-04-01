@@ -317,6 +317,7 @@ class AccountsPaymentsController extends Controller
     public function dashboard(Request $request)
     {
         $user = Auth::user();
+        $year = $request->input('year', now()->year);
         
         $query = Application::query()
             ->with('applicant', 'paymentSubmissions')
@@ -336,14 +337,16 @@ class AccountsPaymentsController extends Controller
                   ->orWhere('locked_by', $user->id);
             });
 
-        // Filter by payment submission method
+        if ((int)$year !== now()->year) {
+            $query->whereYear('created_at', $year);
+        }
+
         if (request()->filled('submission_method')) {
             $query->where('payment_submission_method', request('submission_method'));
         }
 
         $applications = $query->latest()->paginate(20)->withQueryString();
 
-        // KPIs by submission method
         $pendingStatuses = [
             Application::ACCOUNTS_REVIEW,
             Application::AWAITING_ACCOUNTS_VERIFICATION,
@@ -357,11 +360,15 @@ class AccountsPaymentsController extends Controller
             'paynow_submissions' => Application::whereIn('status', $pendingStatuses)->where('payment_submission_method', 'paynow_reference')->count(),
             'proof_submissions' => Application::whereIn('status', $pendingStatuses)->where('payment_submission_method', 'proof_upload')->count(),
             'waiver_submissions' => Application::whereIn('status', $pendingStatuses)->where('payment_submission_method', 'waiver')->count(),
+            'no_submission' => Application::whereIn('status', $pendingStatuses)->whereNull('payment_submission_method')->count(),
             'verified_today' => Application::where('status', Application::PAYMENT_VERIFIED)->where('last_action_at', '>=', now()->startOfDay())->count(),
             'rejected_today' => Application::where('status', Application::PAYMENT_REJECTED)->where('last_action_at', '>=', now()->startOfDay())->count(),
         ];
 
-        return view('staff.accounts.dashboard', compact('applications', 'kpis'));
+        $currentYear = (int)now()->year;
+        $availableYears = range($currentYear, $currentYear - 3);
+
+        return view('staff.accounts.dashboard', compact('applications', 'kpis', 'year', 'availableYears'));
     }
 
     /**

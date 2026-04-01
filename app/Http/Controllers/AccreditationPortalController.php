@@ -535,7 +535,7 @@ class AccreditationPortalController extends Controller
 
         $lastRef = Application::where('reference', 'like', $prefix . '%')
             ->where('reference', 'not like', 'DRAFT%')
-            ->orderByRaw("CAST(RIGHT(reference, 4) AS INTEGER) DESC")
+            ->orderByRaw("reference DESC")
             ->value('reference');
 
         $nextNum = 1;
