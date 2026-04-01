@@ -964,7 +964,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/users-mgmt', [ItDashboardController::class, 'users'])->name('users-mgmt');
             Route::post('/user/{user}/role', [ItDashboardController::class, 'editUserRole'])->name('user.role');
             Route::post('/user/{user}/activate', [ItDashboardController::class, 'activateUser'])->name('user.activate');
-            Route::delete('/user/{user}/delete', [ItDashboardController::class, 'deleteUser'])->name('user.delete');
+            Route::post('/user/{user}/delete', [ItDashboardController::class, 'deleteUser'])->name('user.delete');
             Route::post('/user/{user}/resend-activation', [ItDashboardController::class, 'resendActivation'])->name('user.resend_activation');
             Route::get('/workflow-mgmt', [ItDashboardController::class, 'workflow'])->name('workflow-mgmt');
             Route::get('/accreditation-mgmt', [ItDashboardController::class, 'accreditation'])->name('accreditation-mgmt');

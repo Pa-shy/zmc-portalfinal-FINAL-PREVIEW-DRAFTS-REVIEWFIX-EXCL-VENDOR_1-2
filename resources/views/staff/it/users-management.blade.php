@@ -205,7 +205,6 @@
                                     @if($u->id !== auth()->id())
                                         <form method="POST" action="{{ route('staff.it.user.delete', $u) }}" class="d-inline" onsubmit="return confirm('PERMANENTLY DELETE {{ $u->name }}? This cannot be undone!')">
                                             @csrf
-                                            @method('DELETE')
                                             <button class="btn btn-sm btn-outline-danger" title="Delete User"><i class="ri-delete-bin-line"></i></button>
                                         </form>
                                     @endif
