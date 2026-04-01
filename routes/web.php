@@ -588,6 +588,9 @@ Route::middleware('auth')->group(function () {
                 ->name('approvals.approve');
             Route::post('/user-approvals/{user}/reject', [UserApprovalController::class, 'reject'])
                 ->name('approvals.reject');
+            Route::delete('/users/{user}', [UserAccessController::class, 'destroy'])
+                ->middleware('role:super_admin')
+                ->name('users.destroy');
         });
 
 

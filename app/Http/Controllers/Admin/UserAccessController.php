@@ -168,4 +168,29 @@ class UserAccessController extends Controller
 
         return back()->with('success', 'Account reset initiated. Share the setup link with the user.');
     }
+
+    public function destroy(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+
+        if ($user->hasRole('super_admin') && User::role('super_admin')->count() <= 1) {
+            return back()->with('error', 'Cannot delete the last super admin account.');
+        }
+
+        $userName = $user->name;
+        $userEmail = $user->email;
+
+        \App\Support\AuditTrail::log('user_deleted', $user, [
+            'deleted_name' => $userName,
+            'deleted_email' => $userEmail,
+        ]);
+
+        $user->roles()->detach();
+        $user->permissions()->detach();
+        $user->delete();
+
+        return back()->with('success', "User \"{$userName}\" ({$userEmail}) has been permanently deleted.");
+    }
 }

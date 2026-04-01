@@ -115,6 +115,15 @@
                 <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.users.access.edit', $u) }}">
                   <i class="ri-user-settings-line me-1"></i> Access
                 </a>
+                @if(auth()->user()->hasRole('super_admin') && $u->id !== auth()->id())
+                <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete {{ $u->name }}? This action cannot be undone.')">
+                  @csrf
+                  @method('DELETE')
+                  <button class="btn btn-sm btn-outline-danger ms-1">
+                    <i class="ri-delete-bin-line me-1"></i> Delete
+                  </button>
+                </form>
+                @endif
               </td>
             </tr>
           @empty
