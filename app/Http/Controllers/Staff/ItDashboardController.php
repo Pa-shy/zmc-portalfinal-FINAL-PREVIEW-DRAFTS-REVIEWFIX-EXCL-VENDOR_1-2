@@ -153,7 +153,11 @@ class ItDashboardController extends Controller
         // Pending staff approvals
         $pending = User::query()->whereNull('approved_at')->whereHas('roles')->latest('id')->paginate(15);
 
-        // ── Dashboard Overview Stats ───────────────────────────────────
+        $filterYear = $request->input('year', date('Y'));
+        $isCurrentYear = ((int) $filterYear === (int) date('Y'));
+        $yearStart = \Carbon\Carbon::create($filterYear, 1, 1)->startOfYear();
+        $yearEnd   = \Carbon\Carbon::create($filterYear, 12, 31)->endOfYear();
+
         $stats = [
             'total_users'      => $totalUsers,
             'app_stats'        => [
