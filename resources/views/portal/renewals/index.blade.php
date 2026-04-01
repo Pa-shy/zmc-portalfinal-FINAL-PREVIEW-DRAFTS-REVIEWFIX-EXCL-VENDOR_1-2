@@ -14,7 +14,7 @@
   <div class="form-container">
     <div class="form-header">
       <h1>AP5 — Renewal / Replacement</h1>
-      <p>Manage your accreditation and registration renewals under the Zimbabwe Media Commission Act (2020)</p>
+      <p>Manage your accreditation and registration renewals under the Statutory Instrument 169C (Registration, Accreditation and Levy) Regulations (2002)</p>
     </div>
 
     <div class="form-steps-container">

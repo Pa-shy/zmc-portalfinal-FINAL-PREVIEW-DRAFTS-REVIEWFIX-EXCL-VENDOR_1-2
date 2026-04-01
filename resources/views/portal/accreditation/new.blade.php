@@ -15,7 +15,7 @@
   <div class="form-container">
     <div class="form-header">
       <h1>Application for Accreditation of a Media Practitioner</h1>
-      <p>Zimbabwe Media Commission Act (2020), Statutory Instrument 169C (Registration, Accreditation and Levy) Regulations (2002)</p>
+      <p>Statutory Instrument 169C (Registration, Accreditation and Levy) Regulations (2002)</p>
     </div>
 
     <div class="form-steps-container">
