@@ -66,8 +66,12 @@ class FinancialAnalyticsService
         $previousYearStart = now()->subMonths($months)->subYear()->startOfMonth();
         $previousYearEnd = now()->subYear()->endOfMonth();
         
+        $dateExpr = DB::getDriverName() === 'sqlite' 
+            ? "strftime('%Y-%m', confirmed_at)" 
+            : "TO_CHAR(confirmed_at, 'YYYY-MM')";
+
         $previousYearData = Payment::select(
-            DB::raw("TO_CHAR(confirmed_at, 'YYYY-MM') as month"),
+            DB::raw("$dateExpr as month"),
             DB::raw('SUM(amount) as total_revenue')
         )
         ->where('status', 'paid')

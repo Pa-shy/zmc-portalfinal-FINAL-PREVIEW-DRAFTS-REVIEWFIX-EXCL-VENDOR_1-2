@@ -285,6 +285,9 @@ Route::middleware('auth')->group(function () {
             // NEW RENEWAL FLOW (AP5) - Number-Only Lookup
             Route::get('/renewals', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'index'])
                 ->name('renewals.index');
+            Route::get('/renewals/start/{type}', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'start'])
+                ->whereIn('type', ['renewal','replacement'])
+                ->name('renewals.start');
             Route::get('/renewals/select-type', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'selectType'])
                 ->name('renewals.select-type');
             Route::post('/renewals/select-type', [\App\Http\Controllers\Portal\MediaHouseRenewalController::class, 'storeType'])
@@ -401,8 +404,7 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
 
             Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-            // Live counters (no demo data)
-            Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats'])->name('dashboard.stats');
+            Route::get('/dashboard/refresh', [AdminDashboardController::class, 'refresh'])->name('dashboard.refresh');
 
             // Analytics
             Route::get('/analytics', [AdminAnalyticsController::class, 'index'])
@@ -480,6 +482,14 @@ Route::middleware('auth')->group(function () {
                 ->middleware('role:super_admin|it_admin|director|registrar')
                 ->name('audit.index');
 
+            Route::get('/audit/role-assignments', [AdminSystemController::class, 'roleAssignmentsAudit'])
+                ->middleware('role:super_admin|auditor')
+                ->name('audit.role-assignments');
+
+            Route::get('/audit/role-assignments/export', [AdminSystemController::class, 'exportRoleAssignments'])
+                ->middleware('role:super_admin|auditor')
+                ->name('audit.role-assignments.export');
+
             Route::get('/regions', [AdminSystemController::class, 'regions'])
                 ->middleware('role:super_admin|it_admin|director|registrar')
                 ->name('regions.index');
@@ -537,23 +547,31 @@ Route::middleware('auth')->group(function () {
 
             // Users + access
             Route::get('/users', [UserAccessController::class, 'index'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.index');
             // Split users into separate lists (pages)
             Route::get('/users/staff', [UserAccessController::class, 'staffIndex'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.staff');
             Route::get('/users/public', [UserAccessController::class, 'publicIndex'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.public');
 
             Route::get('/users/create', [UserAccessController::class, 'create'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.create');
             Route::post('/users', [UserAccessController::class, 'store'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.store');
 
             Route::get('/users/{user}/access', [UserAccessController::class, 'editAccess'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.access.edit');
             Route::post('/users/{user}/access', [UserAccessController::class, 'updateAccess'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.access.update');
             Route::post('/users/{user}/reset', [UserAccessController::class, 'resetAccount'])
+                ->middleware('role:super_admin|director|it_admin')
                 ->name('users.reset');
 
             // Roles + permissions (Super Admin & Director only)
@@ -920,6 +938,50 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | STAFF - PR OFFICER (Notices & Events Management)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['staff.portal','role:pr_officer|super_admin'])
+        ->prefix('staff/pr')
+        ->name('staff.pr.')
+        ->group(function () {
+            Route::get('/', [\App\Http\Controllers\Staff\PrOfficerController::class, 'dashboard'])->name('dashboard');
+
+            // Notices Management
+            Route::post('/notices', [\App\Http\Controllers\Staff\PrOfficerController::class, 'storeNotice'])->name('notices.store');
+            Route::put('/notices/{notice}', [\App\Http\Controllers\Staff\PrOfficerController::class, 'updateNotice'])->name('notices.update');
+            Route::delete('/notices/{notice}', [\App\Http\Controllers\Staff\PrOfficerController::class, 'destroyNotice'])->name('notices.destroy');
+
+            // Events Management
+            Route::post('/events', [\App\Http\Controllers\Staff\PrOfficerController::class, 'storeEvent'])->name('events.store');
+            Route::put('/events/{event}', [\App\Http\Controllers\Staff\PrOfficerController::class, 'updateEvent'])->name('events.update');
+            Route::delete('/events/{event}', [\App\Http\Controllers\Staff\PrOfficerController::class, 'destroyEvent'])->name('events.destroy');
+
+            // News Management
+            Route::post('/news', [\App\Http\Controllers\Staff\PrOfficerController::class, 'storeNews'])->name('news.store');
+            Route::put('/news/{news}', [\App\Http\Controllers\Staff\PrOfficerController::class, 'updateNews'])->name('news.update');
+            Route::delete('/news/{news}', [\App\Http\Controllers\Staff\PrOfficerController::class, 'destroyNews'])->name('news.destroy');
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | STAFF - PUBLIC INFORMATION COMPLIANCE MANAGER (Complaints & Appeals)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['staff.portal','role:public_info_compliance|super_admin|director|auditor'])
+        ->prefix('staff/compliance')
+        ->name('staff.public_info_compliance.')
+        ->group(function () {
+            Route::get('/', [\App\Http\Controllers\Staff\PublicInfoComplianceController::class, 'dashboard'])->name('dashboard');
+
+            // Complaints & Appeals Management
+            Route::post('/complaints', [\App\Http\Controllers\Staff\PublicInfoComplianceController::class, 'store'])->name('complaints.store');
+            Route::put('/complaints/{complaint}', [\App\Http\Controllers\Staff\PublicInfoComplianceController::class, 'update'])->name('complaints.update');
+            Route::delete('/complaints/{complaint}', [\App\Http\Controllers\Staff\PublicInfoComplianceController::class, 'destroy'])->name('complaints.destroy');
+        });
+
+    /*
+    |--------------------------------------------------------------------------
     | STAFF - IT ADMIN
     |--------------------------------------------------------------------------
     */
@@ -952,46 +1014,32 @@ Route::middleware('auth')->group(function () {
             Route::post('/tenders/{tender}', [ContentController::class, 'updateTender'])->name('tenders.update');
             Route::delete('/tenders/{tender}', [ContentController::class, 'destroyTender'])->name('tenders.destroy');
 
-            // Applicant resets
-            Route::get('/applicants', [ItAdminController::class, 'listApplicants'])->name('applicants.list');
-            Route::post('/applicants/{user}/reset', [ItAdminController::class, 'resetApplicant'])->name('applicants.reset');
-
-            // Unified Dashboard Routes
-            Route::get('/monitoring', [ItDashboardController::class, 'monitoring'])->name('monitoring');
-            Route::get('/drafts', [ItDashboardController::class, 'drafts'])->name('drafts');
-            Route::get('/files', [ItDashboardController::class, 'files'])->name('files');
-            Route::get('/errors', [ItDashboardController::class, 'errors'])->name('errors');
+            // System Users Management
             Route::get('/users-mgmt', [ItDashboardController::class, 'users'])->name('users-mgmt');
             Route::post('/user/{user}/role', [ItDashboardController::class, 'editUserRole'])->name('user.role');
             Route::post('/user/{user}/activate', [ItDashboardController::class, 'activateUser'])->name('user.activate');
             Route::post('/user/{user}/delete', [ItDashboardController::class, 'deleteUser'])->name('user.delete');
             Route::post('/user/{user}/resend-activation', [ItDashboardController::class, 'resendActivation'])->name('user.resend_activation');
-            Route::get('/workflow-mgmt', [ItDashboardController::class, 'workflow'])->name('workflow-mgmt');
-            Route::get('/accreditation-mgmt', [ItDashboardController::class, 'accreditation'])->name('accreditation-mgmt');
-            Route::get('/notifications-mgmt', [ItDashboardController::class, 'notifications'])->name('notifications-mgmt');
-            Route::get('/payments-mgmt', [ItDashboardController::class, 'payments'])->name('payments-mgmt');
-            Route::get('/security-mgmt', [ItDashboardController::class, 'security'])->name('security-mgmt');
-            Route::get('/backup-mgmt', [ItDashboardController::class, 'backup'])->name('backup-mgmt');
-            Route::get('/audit-mgmt', [ItDashboardController::class, 'audit'])->name('audit-mgmt');
-            Route::get('/system-mgmt', [ItDashboardController::class, 'system'])->name('system-mgmt');
-            Route::get('/performance-mgmt', [ItDashboardController::class, 'performance'])->name('performance-mgmt');
-            Route::get('/reports-mgmt', [ItDashboardController::class, 'reports'])->name('reports-mgmt');
-            Route::get('/mediahouses-mgmt', [ItDashboardController::class, 'mediahouses'])->name('mediahouses-mgmt');
-
-            // Read-only application detail + timeline
-            Route::get('/application-overview/{application}', [ItDashboardController::class, 'showApplication'])->name('application.overview');
-            Route::get('/application-overview/{application}/download-batch', [ItDashboardController::class, 'downloadBatch'])->name('application.download_batch');
-
-            // Actions
-            Route::post('/application/{application}/unlock', [ItDashboardController::class, 'unlockApplication'])->name('application.unlock');
-            Route::post('/application/{application}/reset', [ItDashboardController::class, 'resetApplication'])->name('application.reset');
             Route::post('/user/{user}/suspend', [ItDashboardController::class, 'suspendUser'])->name('user.suspend');
             Route::post('/user/{user}/reset-password', [ItDashboardController::class, 'forcePasswordReset'])->name('user.reset_password');
+
+            // Technical Administrative Routes
+            Route::get('/roles-mgmt', [ItDashboardController::class, 'roles'])->name('roles-mgmt');
+            Route::get('/security-mgmt', [ItDashboardController::class, 'security'])->name('security-mgmt');
+            Route::get('/templates-mgmt', [ItDashboardController::class, 'templates'])->name('templates-mgmt');
+            Route::get('/printers-mgmt', [ItDashboardController::class, 'printers'])->name('printers-mgmt');
+            Route::get('/numbering-mgmt', [ItDashboardController::class, 'numbering'])->name('numbering-mgmt');
+            Route::get('/categories-mgmt', [ItDashboardController::class, 'categories'])->name('categories-mgmt');
+            Route::get('/regions-mgmt', [ItDashboardController::class, 'regions'])->name('regions-mgmt');
+            Route::get('/document-settings-mgmt', [ItDashboardController::class, 'documentSettings'])->name('document-settings-mgmt');
+            Route::get('/qr-security-mgmt', [ItDashboardController::class, 'qrSecurity'])->name('qr-security-mgmt');
+            Route::get('/audit-mgmt', [ItDashboardController::class, 'audit'])->name('audit-mgmt');
+            Route::get('/reports-mgmt', [ItDashboardController::class, 'reports'])->name('reports-mgmt');
+            Route::get('/backup-mgmt', [ItDashboardController::class, 'backup'])->name('backup-mgmt');
+            Route::get('/system-mgmt', [ItDashboardController::class, 'system'])->name('system-mgmt');
+
+            // Global configurations actions
             Route::post('/config/save', [ItDashboardController::class, 'saveConfig'])->name('config.save');
-            Route::post('/fees/sync', [ItDashboardController::class, 'syncFees'])->name('fees.sync');
-            Route::post('/fees/save', [ItDashboardController::class, 'saveFee'])->name('fees.save');
-            Route::post('/notifications/template/save', [ItDashboardController::class, 'saveNotificationTemplate'])->name('notifications.template.save');
-            Route::post('/payments/process-queue', [ItDashboardController::class, 'processPaymentQueue'])->name('payments.process_queue');
             Route::post('/system/backup', [ItDashboardController::class, 'triggerBackup'])->name('system.backup');
             Route::post('/system/clear-cache', [ItDashboardController::class, 'clearCache'])->name('system.clear_cache');
             Route::post('/system/cleanup', [ItDashboardController::class, 'runCleanup'])->name('system.cleanup');
@@ -1035,10 +1083,12 @@ Route::middleware('auth')->group(function () {
             Route::get('/payments/waivers', [AuditorController::class, 'waivers'])->name('waivers');
             Route::get('/payments/waivers.csv', [AuditorController::class, 'waiversCsv'])->name('waivers.csv');
 
+            // 3) Complaints & Appeals oversight
+            Route::get('/complaints', [AuditorController::class, 'complaints'])->name('complaints');
+
             // 4) Activity logs
             Route::get('/logs', [AuditorController::class, 'logs'])->name('logs');
             Route::get('/logs.csv', [AuditorController::class, 'logsCsv'])->name('logs.csv');
-
 
             // 5) Reporting
             Route::get('/reports', [AuditorController::class, 'reports'])->name('reports');
@@ -1060,7 +1110,7 @@ Route::middleware('auth')->group(function () {
     | STAFF - DIRECTOR (Executive Dashboard)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['staff.portal','role:director|super_admin','director.view_only'])
+    Route::middleware(['staff.portal','role:director|super_admin|registrar','director.view_only'])
         ->prefix('staff/director')
         ->name('staff.director.')
         ->group(function () {
@@ -1089,6 +1139,12 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::post('/chatbot/message', [ChatbotController::class, 'message'])->name('chatbot.message');
+});
+
+// Password change route for staff with temporary passwords
+Route::middleware(['auth'])->group(function () {
+    Route::get('/staff/change-password', [\App\Http\Controllers\Staff\StaffAuthController::class, 'showPasswordChange'])->name('staff.password.change');
+    Route::post('/staff/change-password', [\App\Http\Controllers\Staff\StaffAuthController::class, 'processPasswordChange'])->name('staff.password.change.update');
 });
 
 // Public Verification

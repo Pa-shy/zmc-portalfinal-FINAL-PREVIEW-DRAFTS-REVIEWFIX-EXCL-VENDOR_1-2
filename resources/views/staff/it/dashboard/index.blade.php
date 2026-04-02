@@ -27,12 +27,6 @@
             @php
                 $tabs = [
                     'overview' => ['icon' => 'ri-dashboard-3-line', 'label' => 'Overview'],
-                    'monitoring' => ['icon' => 'ri-pulse-line', 'label' => 'App Monitoring'],
-                    'drafts' => ['icon' => 'ri-draft-line', 'label' => 'Drafts'],
-                    'files' => ['icon' => 'ri-file-cloud-line', 'label' => 'Files'],
-                    'errors' => ['icon' => 'ri-bug-line', 'label' => 'Logs & Errors'],
-                    'security' => ['icon' => 'ri-shield-flash-line', 'label' => 'Security'],
-                    'backup' => ['icon' => 'ri-database-2-line', 'label' => 'Backup'],
                     'audit' => ['icon' => 'ri-history-line', 'label' => 'Audit'],
                     'system' => ['icon' => 'ri-settings-5-line', 'label' => 'System'],
                 ];
@@ -58,75 +52,35 @@
                 <!-- Status Grid -->
                 <div class="col-xl-9">
                     <div class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="stats-card p-4 rounded-4 bg-white shadow-sm border border-slate-100">
                                 <div class="d-flex justify-content-between mb-3">
                                     <div class="icon-box bg-primary-subtle text-primary p-2 rounded-3"><i class="ri-user-line fs-4"></i></div>
-                                    <span class="text-success small fw-bold">+12% <i class="ri-arrow-right-up-line"></i></span>
+                                    <span class="text-success small fw-bold">Active</span>
                                 </div>
                                 <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ number_format($stats['total_users']) }}</h3>
-                                <p class="text-slate-600 small m-0 fw-medium">Total Registered Users</p>
+                                <p class="text-slate-600 small m-0 fw-medium">Total System Users</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="stats-card p-4 rounded-4 bg-white shadow-sm border border-slate-100">
                                 <div class="d-flex justify-content-between mb-3">
-                                    <div class="icon-box bg-purple-subtle text-purple p-2 rounded-3"><i class="ri-file-list-3-line fs-4"></i></div>
-                                    <span class="text-primary small fw-bold">New</span>
+                                    <div class="icon-box bg-purple-subtle text-purple p-2 rounded-3"><i class="ri-computer-line fs-4"></i></div>
+                                    <span class="text-primary small fw-bold">Active</span>
                                 </div>
-                                <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ number_format($stats['app_stats']['new']) }}</h3>
-                                <p class="text-slate-600 small m-0 fw-medium">Active Submissions</p>
+                                <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ count($activeSessions) }}</h3>
+                                <p class="text-slate-600 small m-0 fw-medium">Active Database Sessions</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="stats-card p-4 rounded-4 bg-white shadow-sm border border-slate-100">
                                 <div class="d-flex justify-content-between mb-3">
-                                    <div class="icon-box bg-orange-subtle text-orange p-2 rounded-3"><i class="ri-draft-line fs-4"></i></div>
-                                    <span class="text-orange small fw-bold">Active</span>
+                                    <div class="icon-box bg-success-subtle text-success p-2 rounded-3"><i class="ri-hard-drive-2-line fs-4"></i></div>
+                                    <span class="text-slate-500 small fw-bold">Capacity</span>
                                 </div>
-                                <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ number_format($stats['draft_count']) }}</h3>
-                                <p class="text-slate-600 small m-0 fw-medium">Draft Applications</p>
+                                <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ $driveSpace }}</h3>
+                                <p class="text-slate-600 small m-0 fw-medium">Available Storage</p>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stats-card p-4 rounded-4 bg-white shadow-sm border border-slate-100">
-                                <div class="d-flex justify-content-between mb-3">
-                                    <div class="icon-box bg-success-subtle text-success p-2 rounded-3"><i class="ri-checkbox-circle-line fs-4"></i></div>
-                                    <span class="text-slate-500 small fw-bold">Rate</span>
-                                </div>
-                                @php
-                                    $totalResolved = $stats['approval_metrics']['approved'] + $stats['approval_metrics']['rejected'];
-                                    $rate = $totalResolved > 0 ? round(($stats['approval_metrics']['approved'] / $totalResolved) * 100) : 0;
-                                @endphp
-                                <h3 class="fw-bold mb-1" style="color: #0f172a;">{{ $rate }}%</h3>
-                                <p class="text-slate-600 small m-0 fw-medium">Approval Efficiency</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Trends Chart -->
-                    <div class="card border-0 shadow-sm rounded-4 mt-4 overflow-hidden">
-                        <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="fw-bold m-0" style="color: #0f172a;">Accreditation & Registration Trends</h6>
-                                <p class="text-slate-600 small m-0">Monthly growth analysis for {{ date('Y') }}</p>
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-slate-100 border text-slate-600 rounded-pill px-3" data-bs-toggle="dropdown">
-                                    {{ $currentRangeLabel }} <i class="ri-arrow-down-s-line"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-2">
-                                    <li><a class="dropdown-item rounded-3 small fw-bold px-3 py-2 {{ request('trend_range') == '30_days' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['trend_range' => '30_days']) }}">Last 30 Days</a></li>
-                                    <li><a class="dropdown-item rounded-3 small fw-bold px-3 py-2 {{ request('trend_range') == '90_days' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['trend_range' => '90_days']) }}">Last 90 Days</a></li>
-                                    <li><a class="dropdown-item rounded-3 small fw-bold px-3 py-2 {{ request('trend_range') == '6_months' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['trend_range' => '6_months']) }}">Last 6 Months</a></li>
-                                    <li><a class="dropdown-item rounded-3 small fw-bold px-3 py-2 {{ (request('trend_range') == '12_months' || !request('trend_range')) ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['trend_range' => '12_months']) }}">Last 12 Months</a></li>
-                                    <li><a class="dropdown-item rounded-3 small fw-bold px-3 py-2 {{ request('trend_range') == 'this_year' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['trend_range' => 'this_year']) }}">This Year</a></li>
-                                    <li><a class="dropdown-item rounded-3 small fw-bold px-3 py-2 {{ request('trend_range') == 'all_time' ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['trend_range' => 'all_time']) }}">All Time</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div id="accreditationTrendsChart" style="height: 350px;"></div>
                         </div>
                     </div>
 
@@ -240,21 +194,17 @@
                                     <div class="list-group list-group-flush border-0">
                                         <div class="list-group-item d-flex justify-content-between align-items-center border-0 py-3">
                                             <div class="d-flex align-items-center gap-3">
-                                                <div class="p-2 bg-slate-50 rounded-circle"><i class="ri-timer-2-line text-slate-600"></i></div>
-                                                <span class="fw-bold text-slate-700">Avg. Turnaround Time</span>
+                                                <div class="p-2 bg-slate-50 rounded-circle"><i class="ri-server-line text-slate-600"></i></div>
+                                                <span class="fw-bold text-slate-700">System Core Version</span>
                                             </div>
-                                            <span class="fw-bold text-slate-900">{{ number_format($avgProcessingTime, 1) }} hrs</span>
+                                            <span class="fw-bold text-slate-900">{{ $envData['laravel_version'] }}</span>
                                         </div>
                                         <div class="list-group-item d-flex justify-content-between align-items-center border-0 py-3">
                                             <div class="d-flex align-items-center gap-3">
-                                                <div class="p-2 bg-slate-50 rounded-circle"><i class="ri-server-line text-slate-600"></i></div>
-                                                <span class="fw-bold text-slate-700">System Uptime</span>
+                                                <div class="p-2 bg-slate-50 rounded-circle"><i class="ri-code-s-slash-line text-slate-600"></i></div>
+                                                <span class="fw-bold text-slate-700">PHP Version</span>
                                             </div>
-                                            <div class="d-flex gap-1">
-                                                <span class="badge rounded-pill {{ ($health['database'] ?? false) ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} border">DB</span>
-                                                <span class="badge rounded-pill {{ ($health['storage'] ?? false) ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} border">Disk</span>
-                                                <span class="badge rounded-pill {{ ($health['queue'] ?? false) ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} border">Jobs</span>
-                                            </div>
+                                            <span class="fw-bold text-slate-900">{{ $envData['php_version'] }}</span>
                                         </div>
                                         <div class="list-group-item d-flex justify-content-between align-items-center border-0 py-3">
                                             <div class="d-flex align-items-center gap-3">
@@ -272,29 +222,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Payment Summary -->
-                        <div class="col-md-6">
-                             <div class="card border-0 shadow-sm rounded-4 h-100 p-2">
-                                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between">
-                                    <h6 class="fw-bold m-0">Payment Reconciliation</h6>
-                                    <a href="#" class="small text-primary fw-bold text-decoration-none">Export Ledger</a>
-                                </div>
-                                <div class="card-body p-0 px-4 pb-4">
-                                    <div class="d-flex gap-2 flex-wrap mb-4">
-                                        <div class="flex-grow-1 p-3 rounded-4 bg-slate-50 border border-slate-100 text-center">
-                                            <div class="text-slate-600 small fw-bold mb-1 uppercase letter-spacing-1">Confirmed</div>
-                                            <div class="fw-bold fs-4 text-slate-900">{{ number_format($paymentSummary['Paid'] ?? 0) }}</div>
-                                        </div>
-                                        <div class="flex-grow-1 p-3 rounded-4 bg-danger-subtle border border-danger-subtle text-center">
-                                            <div class="text-danger small fw-medium mb-1 uppercase letter-spacing-1">Failed</div>
-                                            <div class="fw-bold fs-4 text-danger">{{ number_format($paymentSummary['Failed'] ?? 0) }}</div>
-                                        </div>
-                                    </div>
-                                    <div id="paymentHealthChart" style="height: 80px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <!-- End Metrics Table -->
                 </div>
 
                 <!-- Right Sidebar Widgets -->
@@ -331,17 +259,11 @@
                     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
                         <h6 class="fw-bold mb-3">Quick Navigation</h6>
                         <div class="d-grid gap-2">
-                            <a href="{{ route('staff.it.applicants.list') }}" class="btn btn-slate-50 text-slate-700 btn-sm fw-bold border text-start px-3 py-2 d-flex align-items-center gap-2">
-                                <i class="ri-group-line text-primary"></i> Applicant Management
-                            </a>
-                            <a href="{{ route('admin.content.index') }}" class="btn btn-slate-50 text-slate-700 btn-sm fw-bold border text-start px-3 py-2 d-flex align-items-center gap-2">
-                                <i class="ri-article-line text-purple"></i> CMS Management
-                            </a>
                             <a href="{{ route('admin.audit.index') }}" class="btn btn-slate-50 text-slate-700 btn-sm fw-bold border text-start px-3 py-2 d-flex align-items-center gap-2">
                                 <i class="ri-shield-check-line text-danger"></i> System Audit Logs
                             </a>
-                            <a href="{{ route('admin.analytics') }}" class="btn btn-slate-50 text-slate-700 btn-sm fw-bold border text-start px-3 py-2 d-flex align-items-center gap-2">
-                                <i class="ri-line-chart-line text-success"></i> Performance Analytics
+                            <a href="{{ route('users-mgmt') }}" class="btn btn-slate-50 text-slate-700 btn-sm fw-bold border text-start px-3 py-2 d-flex align-items-center gap-2">
+                                <i class="ri-user-settings-line text-primary"></i> Internal Users
                             </a>
                         </div>
                     </div>
@@ -379,45 +301,6 @@
             </div>
         </div>
 
-        <!-- Monitoring Section -->
-        <div class="tab-pane fade" id="panel-monitoring" role="tabpanel">
-             @include('staff.it.dashboard.partials.monitoring', ['query' => $monitoringQuery])
-        </div>
-
-        <!-- Draft Section -->
-        <div class="tab-pane fade" id="panel-drafts" role="tabpanel">
-             @include('staff.it.dashboard.partials.drafts', ['drafts' => $draftsQuery])
-        </div>
-
-
-        <!-- Errors Section -->
-        <div class="tab-pane fade" id="panel-errors" role="tabpanel">
-             @include('staff.it.dashboard.partials.errors', ['logs' => $errorLogs])
-        </div>
-
-
-
-
-        <!-- Payments Section -->
-        <div class="tab-pane fade" id="panel-payments" role="tabpanel">
-             @include('staff.it.dashboard.partials.payments', ['transactions' => $recentTransactions, 'reconciliation' => $paymentReconciliation])
-        </div>
-
-        <!-- Files Section -->
-        <div class="tab-pane fade" id="panel-files" role="tabpanel">
-             @include('staff.it.dashboard.partials.files', ['files' => $filesQuery, 'storageStats' => $storageStats])
-        </div>
-
-        <!-- Security Section -->
-        <div class="tab-pane fade" id="panel-security" role="tabpanel">
-             @include('staff.it.dashboard.partials.security', ['sessions' => $activeSessions])
-        </div>
-
-        <!-- Backup Section -->
-        <div class="tab-pane fade" id="panel-backup" role="tabpanel">
-             @include('staff.it.dashboard.partials.backup', ['lastBackup' => $lastBackup ?? 'N/A', 'storageStats' => $storageStats])
-        </div>
-
         <!-- Audit Section -->
         <div class="tab-pane fade" id="panel-audit" role="tabpanel">
              @include('staff.it.dashboard.partials.audit', ['logs' => $auditLogs])
@@ -426,12 +309,6 @@
         <!-- System Section -->
         <div class="tab-pane fade" id="panel-system" role="tabpanel">
              @include('staff.it.dashboard.partials.system', ['env' => $systemEnv])
-        </div>
-
-
-        <!-- Reports Section -->
-        <div class="tab-pane fade" id="panel-reports" role="tabpanel">
-             @include('staff.it.dashboard.partials.reports')
         </div>
 
 
@@ -510,54 +387,7 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Accreditation & Registration Trends Chart
-        var trendsOptions = {
-            series: [{
-                name: 'Accreditations',
-                data: @json($accreditationTrends)
-            }, {
-                name: 'Registrations',
-                data: @json($registrationTrends)
-            }],
-            chart: {
-                height: 350,
-                type: 'area',
-                toolbar: { show: false },
-                fontFamily: 'Inter, sans-serif'
-            },
-            dataLabels: { enabled: false },
-            stroke: { curve: 'smooth', width: 3 },
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.45,
-                    opacityTo: 0.05,
-                    stops: [20, 100, 100, 100]
-                }
-            },
-            xaxis: {
-                categories: @json($trendLabels),
-                axisBorder: { show: false },
-                axisTicks: { show: false }
-            },
-            yaxis: { show: false },
-            grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
-            colors: ['#0f172a', '#3b82f6']
-        };
-
-        var trendsChart = new ApexCharts(document.querySelector("#accreditationTrendsChart"), trendsOptions);
-        trendsChart.render();
-
-        // mini Sparkline for payment health
-        var paymentOptions = {
-            series: [{ data: [12, 14, 18, 11, 15, 22, 19] }],
-            chart: { type: 'area', height: 80, sparkline: { enabled: true } },
-            stroke: { curve: 'smooth', width: 2 },
-            fill: { opacity: 0.3 },
-            colors: ['#3b82f6']
-        };
-        new ApexCharts(document.querySelector("#paymentHealthChart"), paymentOptions).render();
+        // No charts currently configured
     });
 </script>
 @endpush

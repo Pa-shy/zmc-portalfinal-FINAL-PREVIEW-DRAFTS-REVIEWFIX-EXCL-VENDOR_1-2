@@ -20,6 +20,9 @@
     </div>
   </div>
 
+  {{-- Analytics Overview Section --}}
+  @include('staff.partials.analytics-overview')
+
   <div class="row g-3 mb-4">
     <div class="col-md-3">
       <div class="zmc-card shadow-sm border-0 p-3">
@@ -89,6 +92,7 @@
             <a class="btn btn-sm btn-white border" href="{{ route('staff.auditor.logs') }}"><i class="ri-file-list-3-line me-1"></i>Audit Logs</a>
             <a class="btn btn-sm btn-white border" href="{{ route('staff.auditor.reports') }}"><i class="ri-bar-chart-2-line me-1"></i>Audit Reports</a>
             <a class="btn btn-sm btn-white border" href="{{ route('staff.auditor.security') }}"><i class="ri-shield-line me-1"></i>Security Oversight</a>
+            <a class="btn btn-sm btn-warning border" href="{{ route('admin.audit.role-assignments') }}"><i class="ri-shield-user-line me-1"></i>Role Assignments Audit</a>
           </div>
           <div class="mt-3 text-muted small">
             Tip: Use <b>Flag</b> on any record to log an anomaly (read-only workflows are enforced).
@@ -183,6 +187,13 @@
         @endforelse
         </tbody>
       </table>
+    </div>
+  </div>
+
+  {{-- Reports Section --}}
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      @include('staff.partials.accreditation-summary-report')
     </div>
   </div>
 

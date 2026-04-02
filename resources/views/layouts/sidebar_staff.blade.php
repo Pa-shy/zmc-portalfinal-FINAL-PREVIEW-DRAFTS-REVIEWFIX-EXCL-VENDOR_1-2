@@ -5,19 +5,19 @@
   $isAdminPanel = $user?->hasRole('super_admin') || $user?->hasRole('director');
 
   $portalTitle = match($role) {
-    'accreditation_officer' => 'Accreditation Officer Portal',
-    'accounts_payments'      => 'Accounts & Payments Portal',
-    'registrar'             => 'Registrar Portal',
-    'it_admin'              => 'IT Administration Portal',
-    'super_admin'           => 'Super Admin Portal',
-    'auditor'               => 'System Auditor Portal',
-    'production'            => 'Production Portal',
+    'accreditation_officer' => 'Accreditation Officer',
+    'accounts_payments'      => 'Accounts & Payments',
+    'registrar'             => 'Registrar',
+    'it_admin'              => 'IT Administration',
+    'super_admin'           => 'Super Admin',
+    'auditor'               => 'System Auditor',
+    'production'            => 'Production',
     'director'              => 'Director MDG Strategic Oversight',
-    'pr_officer'            => 'Public Relations Portal',
-    'public_info_compliance'=> 'Public Info & Compliance Portal',
-    'research_training'     => 'Research & Training Portal',
-    'chief_accountant'      => 'Chief Accountant Portal',
-    default                 => 'Staff Portal',
+    'pr_officer'            => 'Public Relations',
+    'public_info_compliance'=> 'Public Info & Compliance',
+    'research_training'     => 'Research & Training',
+    'chief_accountant'      => 'Chief Accountant',
+    default                 => 'Staff',
   };
 @endphp
 
@@ -314,6 +314,11 @@
           <i class="ri-bar-chart-line"></i> <span>Operational Reports</span>
         </a>
       </li>
+      <li class="{{ request()->routeIs('staff.director.reports.accreditation') ? 'active' : '' }}">
+        <a href="{{ route('staff.director.reports.accreditation') }}">
+          <i class="ri-line-chart-line"></i> <span>Accreditation Performance</span>
+        </a>
+      </li>
 
       <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
         Communications
@@ -398,8 +403,8 @@
       </li>
     @endif
 
-    {{-- Super Admin Section --}}
-    @if($user?->hasRole('super_admin'))
+    {{-- Super Admin / Director / IT Admin Oversight Section --}}
+    @if($user?->hasAnyRole(['super_admin', 'director', 'it_admin']))
       @php
         $c = $admin_sidebar_counts ?? [
           'mediahouse_total' => 0,
@@ -411,7 +416,7 @@
       @endphp
 
       <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
-        Super Admin
+        System Oversight & Admin
       </li>
 
       <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -488,6 +493,29 @@
       <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
         System Oversight
       </li>
+      <li class="zmc-has-submenu {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+        <a href="javascript:void(0)" class="d-flex align-items-center justify-content-between" onclick="this.nextElementSibling.classList.toggle('d-none')">
+          <span><i class="ri-group-line me-2"></i> User Accounts & Management</span>
+          <i class="ri-arrow-down-s-line"></i>
+        </a>
+        <ul class="list-unstyled ps-4 mt-2 {{ request()->routeIs('admin.users.*') ? '' : 'd-none' }}" style="font-size: 11px;">
+           <li class="mb-2">
+             <a href="{{ route('admin.users.index') }}" class="text-decoration-none {{ request()->routeIs('admin.users.index') ? 'text-warning fw-bold' : 'text-white-50' }}">
+               <i class="ri-list-check me-1"></i> Overview
+             </a>
+           </li>
+           <li class="mb-2">
+             <a href="{{ route('admin.users.staff') }}" class="text-decoration-none {{ request()->routeIs('admin.users.staff') ? 'text-warning fw-bold' : 'text-white-50' }}">
+               <i class="ri-user-star-line me-1"></i> Staff Accounts
+             </a>
+           </li>
+           <li class="mb-2">
+             <a href="{{ route('admin.users.public') }}" class="text-decoration-none {{ request()->routeIs('admin.users.public') ? 'text-warning fw-bold' : 'text-white-50' }}">
+               <i class="ri-user-heart-line me-1"></i> Public Users
+             </a>
+           </li>
+        </ul>
+      </li>
       <li class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}">
         <a href="{{ route('admin.audit.index') }}">
           <i class="ri-file-list-3-line"></i> <span>System Audit Logs</span>
@@ -502,7 +530,7 @@
 
     @if(!$isAdminPanel && ($role === 'it_admin' || $user?->hasRole('it_admin')))
       <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
-        IT Admin
+        IT Administration
       </li>
 
       <li class="{{ request()->routeIs('staff.it.dashboard') ? 'active' : '' }}">
@@ -513,48 +541,66 @@
       </li>
 
       <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
-        User Management
+        Identity & Access
       </li>
-      @if(Route::has('admin.users.public'))
-      <li class="{{ request()->routeIs('admin.users.public') ? 'active' : '' }}">
-        <a href="{{ route('admin.users.public') }}"><i class="ri-user-3-line"></i> <span>Public Users</span></a>
+      <li class="{{ request()->routeIs('users-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('users-mgmt') }}"><i class="ri-user-settings-line"></i> <span>Internal Users</span></a>
       </li>
-      @endif
-      @if(Route::has('admin.approvals.index'))
-      <li class="{{ request()->routeIs('admin.approvals.*') ? 'active' : '' }}">
-        <a href="{{ route('admin.approvals.index') }}"><i class="ri-user-follow-line"></i> <span>User Approvals</span></a>
+      <li class="{{ request()->routeIs('roles-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('roles-mgmt') }}"><i class="ri-shield-user-line"></i> <span>Roles & Permissions</span></a>
       </li>
-      @endif
+      <li class="{{ request()->routeIs('security-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('security-mgmt') }}"><i class="ri-lock-password-line"></i> <span>Access Control</span></a>
+      </li>
+
+      <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
+        System Configuration
+      </li>
+      <li class="{{ request()->routeIs('templates-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('templates-mgmt') }}"><i class="ri-layout-masonry-line"></i> <span>Card & Cert Templates</span></a>
+      </li>
+      <li class="{{ request()->routeIs('printers-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('printers-mgmt') }}"><i class="ri-printer-line"></i> <span>Hardware & Printing</span></a>
+      </li>
+      <li class="{{ request()->routeIs('numbering-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('numbering-mgmt') }}"><i class="ri-list-ordered"></i> <span>Automatic Numbering</span></a>
+      </li>
+      <li class="{{ request()->routeIs('categories-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('categories-mgmt') }}"><i class="ri-node-tree"></i> <span>Category Data</span></a>
+      </li>
+      <li class="{{ request()->routeIs('regions-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('regions-mgmt') }}"><i class="ri-map-pin-line"></i> <span>Regional Offices</span></a>
+      </li>
+      <li class="{{ request()->routeIs('document-settings-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('document-settings-mgmt') }}"><i class="ri-folder-settings-line"></i> <span>Document Rules</span></a>
+      </li>
+      <li class="{{ request()->routeIs('qr-security-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('qr-security-mgmt') }}"><i class="ri-qr-code-line"></i> <span>QR & Anti-Fraud</span></a>
+      </li>
 
       <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
         System Oversight
       </li>
-      <li class="{{ request()->routeIs('admin.audit.*') ? 'active' : '' }}">
-        <a href="{{ route('admin.audit.index') }}">
-          <i class="ri-file-list-3-line"></i> <span>System Audit Logs</span>
+      <li class="{{ request()->routeIs('audit-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('audit-mgmt') }}">
+          <i class="ri-list-check-2"></i> <span>Audit Logs</span>
         </a>
       </li>
-      <li class="{{ request()->routeIs('admin.users.login_activity') ? 'active' : '' }}">
-        <a href="{{ route('admin.users.login_activity') }}">
-          <i class="ri-login-box-line"></i> <span>User Login Trails</span>
+      <li class="{{ request()->routeIs('reports-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('reports-mgmt') }}">
+          <i class="ri-bar-chart-boxed-line"></i> <span>IT Reports</span>
         </a>
       </li>
-      @if(Route::has('staff.accounts.tools.logs'))
-      <li class="{{ request()->routeIs('staff.accounts.tools.logs') ? 'active' : '' }}">
-        <a href="{{ route('staff.accounts.tools.logs') }}">
-          <i class="ri-history-line"></i> <span>User Action Logs</span>
+      <li class="{{ request()->routeIs('backup-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('backup-mgmt') }}">
+          <i class="ri-database-2-line"></i> <span>Data & Backups</span>
         </a>
       </li>
-      @endif
-
-      <li class="menu-title" style="padding:10px 18px; font-size:var(--font-size-xs); letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.55);">
-        Security
+      <li class="{{ request()->routeIs('system-mgmt') ? 'active' : '' }}">
+        <a href="{{ route('system-mgmt') }}">
+          <i class="ri-settings-3-line"></i> <span>Core Settings</span>
+        </a>
       </li>
-      @if(Route::has('staff.auditor.security'))
-      <li class="{{ request()->routeIs('staff.auditor.security') ? 'active' : '' }}">
-        <a href="{{ route('staff.auditor.security') }}"><i class="ri-shield-line"></i> <span>Security Oversight</span></a>
-      </li>
-      @endif
     @endif
 
     @if(!$isAdminPanel && ($role === 'auditor' || $user?->hasRole('auditor')))

@@ -16,12 +16,45 @@ class UserAccessController extends Controller
     /**
      * /admin/users
      *
-     * Landing page that routes users to the dedicated lists.
-     * The user request was to have Public Users and Staff Users in their own lists.
+     * Main User & Account Management page showing both Staff and Public users.
      */
     public function index(Request $request)
     {
-        return redirect()->route('admin.users.staff');
+        $q = $request->get('q');
+
+        // Staff users query
+        $staffQuery = User::query()
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($qq) use ($q) {
+                    $qq->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%");
+                });
+            })
+            ->where('account_type', 'staff')
+            ->latest();
+
+        // Public users query
+        $publicQuery = User::query()
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($qq) use ($q) {
+                    $qq->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%");
+                });
+            })
+            ->where('account_type', 'public')
+            ->latest();
+
+        $staffUsers = $staffQuery->paginate(10, ['*'], 'staff_page')
+            ->withQueryString();
+        $publicUsers = $publicQuery->paginate(10, ['*'], 'public_page')
+            ->withQueryString();
+
+        $counts = [
+            'staff'  => User::where('account_type', 'staff')->count(),
+            'public' => User::where('account_type', 'public')->count(),
+        ];
+
+        return view('admin.users.index', compact('staffUsers', 'publicUsers', 'counts', 'q'));
     }
 
     /**

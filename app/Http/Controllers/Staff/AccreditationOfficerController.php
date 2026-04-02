@@ -401,7 +401,7 @@ public function approve(Request $request, Application $application)
             $rules = array_merge($baseRules, [
                 'first_name' => ['required', 'string', 'max:100'],
                 'surname' => ['required', 'string', 'max:100'],
-                'id_number' => ['required', 'string', 'max:50'],
+                'id_number' => ['required', 'string', 'regex:/^\d{2}-\d{6,7}-[A-Z]-\d{2}$/i'],
                 'category' => ['required', 'string', 'max:10'],
                 'receipt_number' => ['required', 'string', 'max:100'],
                 'employer_name' => ['required', 'string', 'max:255'],
@@ -440,7 +440,7 @@ public function approve(Request $request, Application $application)
             $rules = array_merge($baseRules, [
                 'renewal_first_name' => ['required', 'string', 'max:100'],
                 'renewal_surname' => ['required', 'string', 'max:100'],
-                'renewal_id_number' => ['required', 'string', 'max:50'],
+                'renewal_id_number' => ['required', 'string', 'regex:/^\d{2}-\d{6,7}-[A-Z]-\d{2}$/i'],
                 'lookup_number' => ['required', 'string', 'max:50'],
                 'renewal_receipt_number' => ['required', 'string', 'max:100'],
                 'renewal_email' => ['required', 'email', 'max:255'],
@@ -1100,14 +1100,14 @@ public function approve(Request $request, Application $application)
         if ($ageMin = $request->query('age_min')) {
             if ($this->hasColumn('applications','dob')) {
                 $q->whereNotNull('dob')
-                  ->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) >= ?', [(int)$ageMin]);
+                  ->whereDate('dob', '<=', now()->subYears((int)$ageMin));
             }
         }
 
         if ($ageMax = $request->query('age_max')) {
             if ($this->hasColumn('applications','dob')) {
                 $q->whereNotNull('dob')
-                  ->whereRaw('TIMESTAMPDIFF(YEAR, dob, CURDATE()) <= ?', [(int)$ageMax]);
+                  ->whereDate('dob', '>=', now()->subYears((int)$ageMax + 1)->addDay());
             }
         }
 

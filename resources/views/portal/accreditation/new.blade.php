@@ -35,6 +35,10 @@
           </div>
           <div class="step" data-step="4">
             <div class="step-number">4</div>
+            <div class="step-label">Past Work Samples</div>
+          </div>
+          <div class="step" data-step="5">
+            <div class="step-number">5</div>
             <div class="step-label">Uploads & Declaration</div>
           </div>
         </div>
@@ -59,7 +63,6 @@
                 <h4>Local Media Practitioner</h4>
                 <p>Zimbabwean citizens/residents applying for accreditation.</p>
                 <div style="margin-top:15px;">
-                  <span class="badge bg-light text-dark">14 Days Processing</span>
                   <span class="badge bg-light text-dark">National ID Required</span>
                 </div>
               </div>
@@ -69,7 +72,6 @@
                 <h4>Foreign Media Practitioner</h4>
                 <p>International media practitioners seeking temporary accreditation.</p>
                 <div style="margin-top:15px;">
-                  <span class="badge bg-light text-dark">21 Days Processing</span>
                   <span class="badge bg-light text-dark">Passport Required</span>
                 </div>
               </div>
@@ -458,8 +460,45 @@
           </div>
         </div>
 
-        {{-- ===================== STEP 4: UPLOADS + DECLARATION ===================== --}}
+        {{-- ===================== STEP 4: PAST WORK SAMPLES ===================== --}}
         <div class="step-content" id="ap3-step-4">
+          <h3 class="step-title">PAST WORK SAMPLES <span class="text-muted">(Optional)</span></h3>
+          <div class="current-step-info">
+            <i class="ri-information-line me-2"></i>
+            Provide samples of your previous work. This can be uploaded files or links to online publications.
+          </div>
+
+          {{-- File Uploads (Physical Samples) --}}
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Upload Samples (Articles, Photos, etc.)</label>
+              <div class="upload-area">
+                <i class="ri-folder-upload-line"></i>
+                <h5>Upload Past Work</h5>
+                <p>PDF/JPG/PNG/DOCX (Max 10MB per file)</p>
+                <input type="file" name="past_work_samples[]" id="pastWorkSamples" accept=".pdf,.jpg,.jpeg,.png,.docx" multiple style="display:none;">
+                <button type="button" class="upload-btn btn btn-sm btn-primary" onclick="document.getElementById('pastWorkSamples').click()">Choose Files</button>
+              </div>
+              <div id="pastWorkFilesList" class="uploaded-files-list mt-2"></div>
+            </div>
+          </div>
+
+          {{-- Web Links Section --}}
+          <h6 class="mt-4 fw-bold">ONLINE WORK LINKS <span class="text-muted">(Optional)</span></h6>
+          <div class="form-row">
+            <div class="form-field">
+              <div id="ap3PastWorkLinksRows">
+                {{-- Dynamic rows will be added here --}}
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="ap3AddPastWorkLinkRow">
+                <i class="ri-add-line"></i> Add Web Link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {{-- ===================== STEP 5: UPLOADS + DECLARATION ===================== --}}
+        <div class="step-content" id="ap3-step-5">
           <h3 class="step-title">ANNEXURES/UPLOADS & DECLARATION</h3>
           <div class="current-step-info">
             <i class="ri-information-line me-2"></i>
@@ -609,8 +648,10 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label required">Date</label>
-              <input type="date" class="form-control" name="declaration_date" required>
+              <input type="hidden" name="declaration_date" value="{{ date('Y-m-d') }}">
+              <div class="form-text text-muted">
+                <i class="ri-history-line me-1"></i> Date & Time: {{ now()->format('d M Y, H:i') }} (Automated)
+              </div>
             </div>
             <div class="form-field"></div>
           </div>
@@ -699,6 +740,7 @@
     document.getElementById('ap3-step-2'),
     document.getElementById('ap3-step-3'),
     document.getElementById('ap3-step-4'),
+    document.getElementById('ap3-step-5'),
   ];
 
   const ap3PrevBtn = document.getElementById('ap3PrevBtn');
@@ -742,7 +784,7 @@
     });
 
     ap3PrevBtn.style.display = step === 1 ? 'none' : 'inline-block';
-    ap3NextBtn.innerHTML = step === 4 ? 'Review & Submit <i class="ri-file-search-line"></i>' : 'Next <i class="ri-arrow-right-line"></i>';
+    ap3NextBtn.innerHTML = step === 5 ? 'Review & Submit <i class="ri-file-search-line"></i>' : 'Next <i class="ri-arrow-right-line"></i>';
   }
 
   function setRequiredWithin(container, isRequired) {
@@ -854,6 +896,19 @@
         }
       }
     }
+    
+    // Step 2: Custom validation for National ID (local scope)
+    if (step === 2 && scope === 'local') {
+      const idField = currentContent.querySelector('input[name="national_reg_no"]');
+      if (idField && idField.value.trim()) {
+        const idRegex = /^\d{2}-\d{6,7}-[A-Z]-\d{2}$/i;
+        if (!idRegex.test(idField.value.trim())) {
+          alert('Invalid National Reg. No format. Please use the format: 63-1234567-X-89');
+          idField.focus();
+          return false;
+        }
+      }
+    }
 
     // Step 3: Referees required (3 fixed rows)
     if (step === 3) {
@@ -912,6 +967,16 @@
     `;
   }
 
+  function rowHtmlPastWorkLink(idx){
+    return `
+      <div class="d-flex gap-2 mb-2 ap3-row" data-row="${idx}">
+        <input class="form-control" name="past_work_link_url_${idx}" placeholder="URL (e.g. https://example.com/article)">
+        <input class="form-control" name="past_work_link_desc_${idx}" placeholder="Description">
+        <button type="button" class="btn btn-light btn-sm ap3RemoveRow">Remove</button>
+      </div>
+    `;
+  }
+
   function initRepeater(containerId, addBtnId, rowBuilder){
     const container = document.getElementById(containerId);
     const btn = document.getElementById(addBtnId);
@@ -950,36 +1015,67 @@
 
     root.querySelectorAll('.upload-area input[type="file"]').forEach(input => {
       input.addEventListener('change', () => {
-        const file = input.files[0];
         const area = input.closest('.upload-area');
-        const list = area?.parentElement?.querySelector('.uploaded-files');
-        if(!file || !area || !list) return;
+        const list = area?.parentElement?.querySelector('.uploaded-files-list') || area?.parentElement?.querySelector('.uploaded-files');
+        if(!area || !list) return;
 
-        area.style.borderColor = '#10b981';
-        area.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
-
-        const fileName = file.name.length > 30 ? file.name.slice(0,30)+'...' : file.name;
-        const fileSize = (file.size/1024).toFixed(1)+' KB';
-
-        list.innerHTML = `
-          <div class="uploaded-file d-flex align-items-center justify-content-between p-2 border rounded mb-2">
-            <div class="d-flex align-items-center gap-2">
-              <i class="ri-file-text-line file-icon"></i>
-              <div>
-                <div class="file-name fw-semibold" style="font-size:13px;">${fileName}</div>
-                <div class="file-size text-muted" style="font-size:11px;">${fileSize}</div>
-              </div>
-            </div>
-            <button type="button" class="btn btn-sm btn-light">Remove</button>
-          </div>
-        `;
-
-        list.querySelector('button').addEventListener('click', () => {
-          input.value = '';
-          list.innerHTML = '';
+        if (input.files.length > 0) {
+          area.style.borderColor = '#10b981';
+          area.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
+        } else {
           area.style.borderColor = '';
           area.style.backgroundColor = '';
-        });
+          list.innerHTML = '';
+          return;
+        }
+
+        if (!input.multiple) {
+            const file = input.files[0];
+            const fileName = file.name.length > 30 ? file.name.slice(0,30)+'...' : file.name;
+            const fileSize = (file.size/1024).toFixed(1)+' KB';
+            list.innerHTML = `
+              <div class="uploaded-file d-flex align-items-center justify-content-between p-2 border rounded mb-2">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="ri-file-text-line file-icon"></i>
+                  <div>
+                    <div class="file-name fw-semibold" style="font-size:13px;">${fileName}</div>
+                    <div class="file-size text-muted" style="font-size:11px;">${fileSize}</div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-light remove-file">Remove</button>
+              </div>
+            `;
+            list.querySelector('.remove-file').addEventListener('click', () => {
+              input.value = '';
+              list.innerHTML = '';
+              area.style.borderColor = '';
+              area.style.backgroundColor = '';
+            });
+        } else {
+            let html = '';
+            Array.from(input.files).forEach((file, idx) => {
+                const fileName = file.name.length > 30 ? file.name.slice(0,30)+'...' : file.name;
+                const fileSize = (file.size/1024).toFixed(1)+' KB';
+                html += `
+                  <div class="uploaded-file d-flex align-items-center justify-content-between p-2 border rounded mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="ri-file-text-line file-icon"></i>
+                      <div>
+                        <div class="file-name fw-semibold" style="font-size:13px;">${fileName}</div>
+                        <div class="file-size text-muted" style="font-size:11px;">${fileSize}</div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+            });
+            list.innerHTML = html + `<button type="button" class="btn btn-sm btn-outline-danger w-100 clear-files">Clear All Files</button>`;
+            list.querySelector('.clear-files').addEventListener('click', () => {
+              input.value = '';
+              list.innerHTML = '';
+              area.style.borderColor = '';
+              area.style.backgroundColor = '';
+            });
+        }
       });
     });
   }
@@ -1091,6 +1187,7 @@
       });
     }
 
+    const pastLinks = extractRows('past_work_link_', formData, ['url','desc']);
     const files = getUploadedFiles();
 
     const highestHtml = highest.length ? `<ul class="mb-0">${highest.map(r=>`<li>${r.year||'-'} — ${r.institution||'-'} — ${r.qualification||'-'}</li>`).join('')}</ul>` : `<div class="text-muted">No rows provided.</div>`;
@@ -1227,6 +1324,13 @@
       ` : ''}
 
       <div class="review-section mt-4">
+        <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="ri-folder-open-line me-2"></i>Past Work Samples</h6>
+        <div class="mt-2"><strong>Web Links:</strong>
+          ${pastLinks.length ? `<ul class="mb-0">${pastLinks.map(r=>`<li><a href="${r.url}" target="_blank">${r.desc || r.url}</a></li>`).join('')}</ul>` : `<div class="text-muted">No web links provided.</div>`}
+        </div>
+      </div>
+
+      <div class="review-section mt-4">
         <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="ri-file-upload-line me-2"></i>Uploaded Documents</h6>
         ${filesHtml}
       </div>
@@ -1273,7 +1377,13 @@
     // attach files too
     document.querySelectorAll('#ap3Form input[type="file"]').forEach(input => {
       if (!visible(input)) return;
-      if (input.files && input.files[0]) fd.append(input.name, input.files[0]);
+      if (input.files.length > 0) {
+        if (input.multiple) {
+          Array.from(input.files).forEach(file => fd.append(input.name, file));
+        } else {
+          fd.append(input.name, input.files[0]);
+        }
+      }
     });
 
     const response = await fetch('{{ route("accreditation.saveDraft") }}', {
@@ -1322,7 +1432,13 @@
     const fileInputs = document.querySelectorAll('#ap3Form input[type="file"]');
     fileInputs.forEach(input => {
       if (!visible(input)) return;
-      if (input.files && input.files[0]) submitData.append(input.name, input.files[0]);
+      if (input.files.length > 0) {
+        if (input.multiple) {
+          Array.from(input.files).forEach(file => submitData.append(input.name, file));
+        } else {
+          submitData.append(input.name, input.files[0]);
+        }
+      }
     });
 
     if (ap3PaymentData) {
@@ -1424,12 +1540,12 @@
   ap3NextBtn.addEventListener('click', () => {
     if(!ap3ValidateStep(ap3CurrentStep)) return;
 
-    if(ap3CurrentStep === 4){
+    if(ap3CurrentStep === 5){
       showReviewModal();
       return;
     }
 
-    ap3CurrentStep = Math.min(4, ap3CurrentStep + 1);
+    ap3CurrentStep = Math.min(5, ap3CurrentStep + 1);
     ap3ShowStep(ap3CurrentStep);
   });
 
@@ -1460,8 +1576,11 @@
     // Qualifications repeaters (Local only)
     const highestRep = initRepeater('ap3HighestAcademicRows','ap3AddHighestAcademicRow', rowHtmlHighestAcademic);
     const profRep = initRepeater('ap3ProfessionalQualRows','ap3AddProfessionalQualRow', rowHtmlProfessionalQual);
+    const pastWorkRep = initRepeater('ap3PastWorkLinksRows','ap3AddPastWorkLinkRow', rowHtmlPastWorkLink);
+
     if (highestRep) highestRep.addRow();
     if (profRep) profRep.addRow();
+    if (pastWorkRep) pastWorkRep.addRow();
 
     // Hide local/foreign by default until selection
     applyScopeVisibility(document.getElementById('ap3_scope').value || 'local');

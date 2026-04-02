@@ -18,7 +18,7 @@ class SuperAdminSeeder extends Seeder
         ]);
 
         $user = User::updateOrCreate(
-            ['email' => 'superadmin@zmc.org.zw'],
+            ['email' => 'dubepatience258@gmail.com'],
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('Admin@12345'),

@@ -146,8 +146,9 @@
 
     .guide-step{display:flex;align-items:flex-start;margin-bottom:25px;padding-bottom:25px;border-bottom:1px solid var(--border-color);}
     .step-number-large{
-      background:var(--zmc-yellow);color:#000;width:36px;height:36px;border-radius:50%;
-      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;margin-right:15px;flex-shrink:0;
+      background:var(--zmc-yellow);color:#000;width:48px;height:48px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;margin-right:15px;flex-shrink:0;
+      box-shadow:0 4px 12px rgba(250,204,21,0.3);
     }
 
     @media (max-width:768px){

@@ -163,6 +163,17 @@ class AccreditationPortalController extends Controller
             $formData = [];
         }
 
+        // Validate National Reg. No from form_data (if local)
+        $scope = $request->input('journalist_scope', $formData['journalist_scope'] ?? $application->journalist_scope);
+        if ($scope === 'local' && !empty($formData['national_reg_no'])) {
+            if (!preg_match('/^\d{2}-\d{6,7}-[A-Z]-\d{2}$/i', $formData['national_reg_no'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid National Reg. No format. Please use the format: 63-1234567-X-89',
+                ], 422);
+            }
+        }
+
         $application->update([
             'journalist_scope'  => $request->input('journalist_scope', $formData['journalist_scope'] ?? $application->journalist_scope),
             'collection_region' => $request->input('collection_region', $formData['collection_region'] ?? $application->collection_region),
@@ -205,7 +216,7 @@ class AccreditationPortalController extends Controller
         abort_unless($user, 403);
 
         $data = $request->validate([
-            'id_number' => ['nullable', 'string', 'max:50'],
+            'id_number' => ['nullable', 'string', 'regex:/^\d{2}-\d{6,7}-[A-Z]-\d{2}$/i'],
             'passport_number' => ['nullable', 'string', 'max:50'],
             'phone_number' => ['nullable', 'string', 'max:30'],
             'phone2' => ['nullable', 'string', 'max:30'],
@@ -317,7 +328,7 @@ class AccreditationPortalController extends Controller
         ]);
     }
 
-    private function saveDraftDocuments(Request $request, Application $application, array $fields): void
+    private function saveDraftDocuments(Request $request, Application $application, array $fields, string $status = 'draft'): void
     {
         foreach ($fields as $field) {
             if (!$request->hasFile($field)) continue;
@@ -341,14 +352,12 @@ class AccreditationPortalController extends Controller
             $docData = [
                 'file_path'      => $path,
                 'original_name'  => $file->getClientOriginalName(),
-                'status'         => 'draft',
+                'status'         => $status,
+                'owner_id'       => auth()->id(),
+                'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
+                'size'           => method_exists($file, 'getSize')     ? $file->getSize()     : null,
+                'sha256'         => $sha256,
             ];
-
-            // Safely add columns only if they exist in DB
-            if (Schema::hasColumn('application_documents', 'owner_id')) $docData['owner_id'] = auth()->id();
-            if (Schema::hasColumn('application_documents', 'mime'))     $docData['mime']     = method_exists($file, 'getMimeType') ? $file->getMimeType() : null;
-            if (Schema::hasColumn('application_documents', 'size'))     $docData['size']     = method_exists($file, 'getSize')     ? $file->getSize()     : null;
-            if (Schema::hasColumn('application_documents', 'sha256'))   $docData['sha256']   = $sha256;
 
             ApplicationDocument::updateOrCreate(
                 [
@@ -357,11 +366,36 @@ class AccreditationPortalController extends Controller
                 ],
                 $docData
             );
+        }
 
-            // Optional mirror into files table
-            if (Schema::hasTable('files')) {
-                // If a FileRecord model existed we would use it here, 
-                // but since it's missing, we skip this to avoid 500 errors.
+        // Support multiple past work samples
+        if ($request->hasFile('past_work_samples')) {
+            $samples = $request->file('past_work_samples');
+            if (is_array($samples)) {
+                foreach ($samples as $idx => $file) {
+                    $docType = 'past_work_sample_' . ($idx + 1);
+                    $path = $file->store('documents/' . $application->id, 'public');
+                    $sha256 = null;
+                    try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
+
+                    $docData = [
+                        'file_path'      => $path,
+                        'original_name'  => $file->getClientOriginalName(),
+                        'status'         => $status,
+                        'owner_id'       => auth()->id(),
+                        'mime'           => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
+                        'size'           => method_exists($file, 'getSize')     ? $file->getSize()     : null,
+                        'sha256'         => $sha256,
+                    ];
+
+                    ApplicationDocument::updateOrCreate(
+                        [
+                            'application_id' => $application->id,
+                            'doc_type'       => $docType,
+                        ],
+                        $docData
+                    );
+                }
             }
         }
     }
@@ -462,6 +496,14 @@ class AccreditationPortalController extends Controller
             $collection = $request->input('collection_region') ?: ($formData['collection_region'] ?? null);
             if (!$collection) {
                 return response()->json(['success'=>false,'message'=>'Collection Office is required for local applications.'], 422);
+            }
+
+            // Strict format validation for national_reg_no
+            if (!preg_match('/^\d{2}-\d{6,7}-[A-Z]-\d{2}$/i', $formData['national_reg_no'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid National Reg. No format. Please use the format: 63-1234567-X-89',
+                ], 422);
             }
         }
 
@@ -639,7 +681,7 @@ class AccreditationPortalController extends Controller
         }
 
         // Upload documents to ApplicationDocument
-        $fileFields = [
+        $this->saveDraftDocuments($request, $application, [
             'passport_photo',
             'id_scan',
             'employment_letter',
@@ -647,41 +689,7 @@ class AccreditationPortalController extends Controller
             'educational_certificate',
             'passport_biodata_page',
             'clearance_letter',
-        ];
-
-        foreach ($fileFields as $field) {
-            if (!$request->hasFile($field)) continue;
-
-            $file = $request->file($field);
-            $sha256 = null;
-            try { $sha256 = hash_file('sha256', $file->getRealPath()); } catch (\Throwable $e) {}
-
-            $path = $file->store('documents/' . $application->id, 'public');
-
-            $docData = [
-                'file_path'      => $path,
-                'original_name'  => $file->getClientOriginalName(),
-                'status'         => 'pending',
-            ];
-
-            // Safely add columns only if they exist in DB
-            if (Schema::hasColumn('application_documents', 'owner_id')) $docData['owner_id'] = $user->id;
-            if (Schema::hasColumn('application_documents', 'mime'))     $docData['mime']     = method_exists($file, 'getMimeType') ? $file->getMimeType() : null;
-            if (Schema::hasColumn('application_documents', 'size'))     $docData['size']     = method_exists($file, 'getSize')     ? $file->getSize()     : null;
-            if (Schema::hasColumn('application_documents', 'sha256'))   $docData['sha256']   = $sha256;
-
-            ApplicationDocument::updateOrCreate(
-                [
-                    'application_id' => $application->id,
-                    'doc_type'       => $field,
-                ],
-                $docData
-            );
-
-            if (Schema::hasTable('files')) {
-                // Skip FileRecord mirror if model is missing
-            }
-        }
+        ], 'pending');
 
         return response()->json([
             'success'   => true,

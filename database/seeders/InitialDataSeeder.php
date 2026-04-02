@@ -310,7 +310,7 @@ class InitialDataSeeder extends Seeder
                     'name' => $ta['name'],
                     'password' => Hash::make('Test@12345'),
                     'account_status' => 'active',
-                    'account_type' => $ta['portal_type'],
+                    'account_type' => 'public',
                 ]
             );
         }

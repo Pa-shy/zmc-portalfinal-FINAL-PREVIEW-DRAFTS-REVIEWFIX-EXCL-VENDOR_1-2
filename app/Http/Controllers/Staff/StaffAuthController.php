@@ -39,6 +39,17 @@ class StaffAuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        $user = User::where('email', $credentials['email'])->first();
+
+        // Check for temporary password first
+        if ($user && $user->temp_password && $user->temp_password_expires_at && $user->temp_password_expires_at->isFuture()) {
+            if (\Hash::check($credentials['password'], $user->temp_password)) {
+                // Temporary password is valid, proceed with OTP
+                return $this->processLoginWithOtp($request, $user, true);
+            }
+        }
+
+        // Standard password authentication
         if (!Auth::attempt(
             ['email' => $credentials['email'], 'password' => $credentials['password']],
             $request->boolean('remember')
@@ -52,9 +63,15 @@ class StaffAuthController extends Controller
             return back()->withErrors(['email' => 'Invalid login credentials'])->withInput();
         }
 
-        $request->session()->regenerate();
+        return $this->processLoginWithOtp($request, Auth::user(), false);
+    }
 
-        $user = Auth::user();
+    /**
+     * Process login with OTP generation
+     */
+    private function processLoginWithOtp(Request $request, User $user, bool $usingTempPassword)
+    {
+        $request->session()->regenerate();
 
         if (!$user) {
             Auth::logout();
@@ -91,11 +108,16 @@ class StaffAuthController extends Controller
 
         $emailSent = false;
         try {
+            $subject = $usingTempPassword 
+                ? 'ZMC Staff Login - OTP Verification (Temp Password Used)'
+                : 'ZMC Staff Login - OTP Verification';
+                
             Mail::raw(
-                "Your ZMC Staff Login OTP is: {$otp}\n\nThis code expires in 10 minutes. If you did not request this, please ignore.",
-                function ($message) use ($user) {
+                "Your ZMC Staff Login OTP is: {$otp}\n\nThis code expires in 10 minutes. If you did not request this, please ignore." . 
+                ($usingTempPassword ? "\n\nNOTE: You logged in with a temporary password. You will be required to change your password." : ""),
+                function ($message) use ($user, $subject) {
                     $message->to($user->email)
-                        ->subject('ZMC Staff Login - OTP Verification');
+                        ->subject($subject);
                 }
             );
             $emailSent = true;
@@ -107,8 +129,13 @@ class StaffAuthController extends Controller
 
         $request->session()->put('otp_user_id', $user->id);
         $request->session()->put('otp_staff_roles', $staffRoles);
+        $request->session()->put('using_temp_password', $usingTempPassword);
 
-        \App\Support\AuditTrail::log('otp_sent', $user, ['email' => $user->email, 'delivered' => $emailSent]);
+        \App\Support\AuditTrail::log('otp_sent', $user, [
+            'email' => $user->email, 
+            'delivered' => $emailSent,
+            'using_temp_password' => $usingTempPassword,
+        ]);
 
         if (!$emailSent) {
             return redirect()->route('staff.otp.show')
@@ -194,6 +221,15 @@ class StaffAuthController extends Controller
         $request->session()->regenerate();
 
         $request->session()->forget(['otp_user_id', 'otp_staff_roles', 'otp_attempts']);
+
+        // Check if user logged in with temporary password and needs to change it
+        $usingTempPassword = $request->session()->get('using_temp_password', false);
+        $request->session()->forget('using_temp_password');
+        
+        if ($usingTempPassword || $user->password_change_required) {
+            return redirect()->route('staff.password.change')
+                ->with('info', 'Please change your password to continue. Your temporary password has expired or requires update.');
+        }
 
         $role = $staffRoles[0];
         $request->session()->put('active_staff_role', $role);
@@ -289,6 +325,42 @@ class StaffAuthController extends Controller
 
         return redirect()->route('staff.login')
             ->with('success', 'Account activated successfully. You can now log in.');
+    }
+
+    public function showPasswordChange(Request $request)
+    {
+        return view('staff.password-change');
+    }
+
+    public function processPasswordChange(Request $request)
+    {
+        $data = $request->validate([
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user = Auth::user();
+        
+        $user->password = \Hash::make($data['password']);
+        $user->temp_password = null;
+        $user->temp_password_expires_at = null;
+        $user->password_change_required = false;
+        $user->save();
+
+        \App\Support\AuditTrail::log('password_changed', $user);
+
+        // Redirect to appropriate dashboard based on role
+        $userRoles = $this->roleNamesForUser($user->id);
+        $staffRoles = array_values(array_intersect($userRoles, $this->staffAllowedRoles()));
+        
+        if (count($staffRoles) > 0) {
+            $role = $staffRoles[0];
+            $request->session()->put('active_staff_role', $role);
+            
+            return $this->redirectToRoleDashboard($role)
+                ->with('success', 'Password changed successfully. Welcome to the portal!');
+        }
+
+        return redirect()->route('home')->with('success', 'Password changed successfully.');
     }
 
     private function redirectToRoleDashboard(string $role)

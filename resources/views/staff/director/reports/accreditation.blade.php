@@ -19,34 +19,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="zmc-card h-100">
-                <h6 class="fw-bold mb-3">Processing Efficiency (Avg. Hours)</h6>
-                <div class="d-flex flex-column gap-4 mt-4">
-                    <div>
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="small">Accreditation Officer</span>
-                            <span class="fw-bold">{{ round($efficiency['officer'], 1) }}h</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-primary" style="width: 70%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="small">Registrar Review</span>
-                            <span class="fw-bold">{{ round($efficiency['registrar'], 1) }}h</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-info" style="width: 40%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-auto pt-4 text-center">
-                    <div class="text-muted smaller">Operational Target: <span class="fw-bold">48 Hours</span></div>
-                </div>
-            </div>
-        </div>
 
         <div class="col-md-6">
             <div class="zmc-card">
@@ -91,7 +63,7 @@
                                 <th>Month</th>
                                 <th>Submitted</th>
                                 <th>Approved</th>
-                                <th>Rejected</th>
+                                <th>Returned for Correction</th>
                             </tr>
                         </thead>
                         <tbody>

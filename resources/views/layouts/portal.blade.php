@@ -9,9 +9,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  {{-- Chart Libraries for Director Dashboard --}}
+  {{-- Chart Libraries for Director Media Development and Governance Dashboard --}}
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="{{ asset('js/director-dashboard-charts.js') }}"></script>
 
   {{-- Fonts & Icons --}}
@@ -535,10 +535,6 @@
       <section class="content">
         @yield('content')
       </section>
-
-      @if(!auth()->user() || !in_array(auth()->user()->account_type, ['staff']))
-      @include('layouts.chatbot')
-      @endif
     </main>
   </div>
 

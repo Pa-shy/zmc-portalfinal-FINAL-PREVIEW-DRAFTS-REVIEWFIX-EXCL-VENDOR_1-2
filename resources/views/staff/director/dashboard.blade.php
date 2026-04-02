@@ -29,6 +29,9 @@
         </div>
     </div>
 
+    {{-- Analytics Overview Section --}}
+    @include('staff.partials.analytics-overview')
+
     {{-- Section 1: Executive KPIs (11 Cards) --}}
     <div class="row g-3 mb-4">
         {{-- KPI 1: Total Active Accreditations --}}
@@ -97,14 +100,6 @@
             'subtitle' => 'Awaiting final decision'
         ])
 
-        {{-- KPI 8: Avg Processing Time --}}
-        @include('staff.director.partials.kpi-card', [
-            'title' => 'Avg. Processing Time',
-            'value' => $kpis['avg_processing_time'] . ' days',
-            'icon' => 'ri-timer-line',
-            'color' => 'primary',
-            'subtitle' => 'Submission to issuance'
-        ])
     </div>
 
     <div class="row g-3 mb-4">
@@ -168,14 +163,6 @@
                 'threshold' => 30
             ])
 
-            {{-- Risk 3: Processing Time SLA --}}
-            @include('staff.director.partials.risk-indicator', [
-                'title' => 'Processing Time SLA',
-                'value' => $riskIndicators['processing_time_sla']['value'],
-                'level' => $riskIndicators['processing_time_sla']['level'],
-                'icon' => 'ri-timer-flash-line',
-                'threshold' => 15
-            ])
 
             {{-- Risk 4: Revenue Drop --}}
             @include('staff.director.partials.risk-indicator', [
@@ -338,6 +325,13 @@
         </div>
     </div>
 
+    {{-- Reports Section --}}
+    <div class="row g-3 mt-4 mb-4">
+        <div class="col-md-4">
+            @include('staff.partials.accreditation-summary-report')
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -412,7 +406,6 @@ function updateKPIValues(kpis) {
         'revenue_ytd': 'Revenue (YTD)',
         'outstanding_revenue': 'Outstanding Revenue',
         'applications_in_pipeline': 'Applications in Pipeline',
-        'avg_processing_time': 'Avg. Processing Time',
         'approval_rate': 'Approval Rate',
         'active_compliance_flags': 'Active Compliance Flags',
         'total_media_houses': 'Media Houses Registered'
@@ -431,8 +424,6 @@ function updateKPIValues(kpis) {
                         // Format based on KPI type
                         if (key.includes('revenue')) {
                             newValue = '$' + Number(newValue).toLocaleString();
-                        } else if (key === 'avg_processing_time') {
-                            newValue = newValue + ' days';
                         } else if (key === 'approval_rate') {
                             newValue = newValue + '%';
                             // Update progress bar if exists

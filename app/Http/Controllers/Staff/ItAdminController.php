@@ -102,7 +102,9 @@ class ItAdminController extends Controller
         // Accreditation trends (monthly last 12 months) - use issued_at if available
         $accreditationTrend = [];
         if (Schema::hasColumn('applications', 'issued_at')) {
-            $dateFormat = "TO_CHAR(issued_at, 'YYYY-MM')";
+            $dateFormat = DB::getDriverName() === 'sqlite' 
+                ? "strftime('%Y-%m', issued_at)" 
+                : "TO_CHAR(issued_at, 'YYYY-MM')";
 
             $rows = Application::selectRaw("$dateFormat as ym, COUNT(*) as c")
                 ->whereNotNull('issued_at')
@@ -121,7 +123,12 @@ class ItAdminController extends Controller
         $avgProcessingHours = 0;
         if (Schema::hasColumn('applications', 'submitted_at')) {
             try {
-                $diffExpression = "EXTRACT(EPOCH FROM (COALESCE(decided_at, approved_at, rejected_at) - submitted_at)) / 3600";
+                $isSqlite = DB::getDriverName() === 'sqlite';
+                $endTimeExpr = "COALESCE(decided_at, approved_at, rejected_at)";
+                
+                $diffExpression = $isSqlite 
+                    ? "(julianday($endTimeExpr) - julianday(submitted_at)) * 24" 
+                    : "EXTRACT(EPOCH FROM ($endTimeExpr - submitted_at)) / 3600";
 
                 $avgProcessingHours = (float) Application::whereNotNull('submitted_at')
                     ->where(function ($q) {

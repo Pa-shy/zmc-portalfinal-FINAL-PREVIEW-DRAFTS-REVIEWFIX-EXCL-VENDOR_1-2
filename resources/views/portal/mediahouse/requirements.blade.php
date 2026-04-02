@@ -46,7 +46,7 @@
             <i class="ri-checkbox-circle-fill text-success mt-1"></i>
             <div><strong>5. Code of Conduct for Employees</strong><br><span class="text-muted small">Employee conduct and behaviour standards</span></div>
           </li>
-          <li class="d-flex align-items-start gap-2 mb-3">
+          <li class="d-flex align-items-start gap-2">
             <i class="ri-checkbox-circle-fill text-success mt-1"></i>
             <div><strong>6. Market Analysis</strong><br><span class="text-muted small">Analysis of the target market and media landscape</span></div>
           </li>
