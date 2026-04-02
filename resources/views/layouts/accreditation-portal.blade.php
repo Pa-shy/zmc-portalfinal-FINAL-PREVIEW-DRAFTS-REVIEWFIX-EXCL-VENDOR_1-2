@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>@yield('title', 'Accreditation Portal | ZMC')</title>
+  <title>@yield('title', 'Accreditation Applicant | ZMC')</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -291,7 +291,7 @@
 
   <header class="topbar">
     <div class="topbar-left">
-      <span class="topbar-title">@yield('page_title', 'APPLICATION PORTAL')</span>
+      <span class="topbar-title">@yield('page_title', 'ACCREDITATION APPLICANT')</span>
     </div>
     <div class="topbar-right">
       <a href="{{ Route::has('accreditation.communication') ? route('accreditation.communication') : '#' }}" class="btn btn-secondary btn-sm">
